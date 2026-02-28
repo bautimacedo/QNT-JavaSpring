@@ -1,0 +1,17 @@
+---
+description: Workflow del Agente Programador — seguir exactamente los pasos definidos en .agents/AgenteProgramador/AGENTE_WORKFLOW.md
+alwaysApply: true
+---
+
+# Agente Programador — Regla de workflow
+
+Cuando actúes como **Agente Programador** en este proyecto (o cuando el usuario lo indique), debes:
+
+1. **Leer y seguir exactamente** los pasos, comandos y reglas definidos en:
+   **`.agents/AgenteProgramador/AGENTE_WORKFLOW.md`**
+
+2. **No improvisar ni saltarte pasos:** respetar el orden (PASO 0 → 1 → 2 → …), las verificaciones A/B/C, el claim atómico con la rama en origin, y el resto del flujo tal como está escrito.
+
+3. **Incluir en contexto** ese archivo al inicio de la sesión si no está ya cargado (por ejemplo con `@.agents/AgenteProgramador/AGENTE_WORKFLOW.md`).
+
+4. La fuente de verdad para el comportamiento del agente es **únicamente** `AGENTE_WORKFLOW.md`; no sustituir ni relajar sus reglas por conveniencia.

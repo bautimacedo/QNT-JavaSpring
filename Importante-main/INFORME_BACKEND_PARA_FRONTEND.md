@@ -12,7 +12,7 @@ Este documento describe el **contrato del backend** para que el proyecto fronten
 
 **Stack backend:** Spring Boot 3.x, Java 17+, Spring Security (JWT), JPA/Hibernate, PostgreSQL.
 
-**Última actualización del informe:** Tras v0.13.0 (roles piloto en UI y password_mission). Este documento se actualiza **al finalizar cada tarea** del backend que afecte la API (endpoints, modelos, auth o convenciones).
+**Última actualización del informe:** Tras v0.14.0 (fix auth/me authorities y roles en mi-perfil). Este documento se actualiza **al finalizar cada tarea** del backend que afecte la API (endpoints, modelos, auth o convenciones).
 
 ---
 
@@ -104,7 +104,7 @@ Tras un registro exitoso, el frontend puede mostrar un mensaje del tipo "Cuenta 
 
 - **URL:** `GET /api/qnt/v1/auth/me`
 - **Headers:** `Authorization: Bearer <token>`
-- **Respuesta éxito (200):** JSON con el principal (AuthUser), por ejemplo:
+- **Respuesta éxito (200):** JSON con el principal, **siempre** con este formato (el backend devuelve un DTO controlado):
   ```json
   {
     "id": 1,
@@ -115,7 +115,7 @@ Tras un registro exitoso, el frontend puede mostrar un mensaje del tipo "Cuenta 
   ```
   - `id`: Long, ID del usuario.
   - `email` / `username`: mismo valor (email).
-  - `authorities`: array de strings con roles, con prefijo `ROLE_` (ej. `ROLE_ADMIN`, `ROLE_USER`).
+  - **`authorities`:** array de **strings** con los roles del usuario (prefijo `ROLE_`). Ejemplos: `["ROLE_ADMIN"]`, `["ROLE_PILOTO"]`, `["ROLE_PILOTO","ROLE_USER"]`. El frontend debe usar este campo para decidir si mostrar rutas como "Perfil Piloto" (comprobar si `authorities` incluye `"ROLE_PILOTO"`).
 
 - **Respuesta error:** **401** sin cuerpo si no hay token o es inválido.
 
@@ -155,6 +155,7 @@ Base: `/api/qnt/v1/usuarios`
 |--------|------|-------------|--------|
 | GET | `/usuarios` | Listar todos | ADMIN |
 | GET | `/usuarios/pendientes` | Listar usuarios pendientes de aprobación (estado PENDIENTE_APROBACION) | ADMIN |
+| GET | `/usuarios/pilotos` | Listar usuarios con rol ROLE_PILOTO | ADMIN |
 | GET | `/usuarios/search?email=` | Buscar por email | ADMIN |
 | POST | `/usuarios` | Crear usuario | ADMIN |
 | PUT | `/usuarios/{id}` | Actualizar usuario | ADMIN |
@@ -235,6 +236,8 @@ Base: `/api/qnt/v1/mi-perfil`. Todos los endpoints operan sobre el **usuario aut
 | DELETE | `/mi-perfil/licencias/{id}` | Eliminar mi licencia | PILOTO, ADMIN |
 | PUT | `/mi-perfil/licencias/{id}/imagen` | Subir imagen de licencia (multipart) | PILOTO, ADMIN |
 | GET | `/mi-perfil/licencias/{id}/imagen` | Obtener imagen de licencia | PILOTO, ADMIN |
+
+**Respuesta de GET /mi-perfil:** objeto con `usuario` (objeto Usuario completo, incluye `roles`: [{ id, codigo, nombre }]), `roles` (mismo array en la raíz, para comprobar permisos desde el front), `tieneImagenCma` (boolean) y `licencias` (array resumido si es PILOTO/ADMIN). El frontend puede usar `response.roles` o `response.usuario.roles` para saber si el usuario es piloto (p. ej. algún rol con `codigo === "ROLE_PILOTO"`).
 
 ---
 
@@ -565,4 +568,4 @@ Cuando el backend añada nuevos endpoints o cambie contratos, conviene actualiza
 
 ---
 
-*Documento generado para sincronizar backend (QNT-Gestion-Spring) con el proyecto frontend. Versión del informe: 1.3 (v0.13.0 — Roles piloto en UI y password_mission).*
+*Documento generado para sincronizar backend (QNT-Gestion-Spring) con el proyecto frontend. Versión del informe: 1.4 (v0.14.0 — Fix auth/me authorities y roles en mi-perfil).*

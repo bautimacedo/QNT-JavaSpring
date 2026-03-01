@@ -61,6 +61,7 @@ public class MiPerfilPilotoController {
             Usuario usuario = usuarioBusiness.load(auth.getId());
             Map<String, Object> body = new HashMap<>();
             body.put("usuario", usuario);
+            body.put("roles", usuario.getRoles() != null ? usuario.getRoles() : List.of());
             body.put("tieneImagenCma", usuario.getImagenCma() != null && usuario.getImagenCma().length > 0);
             if (isPilotoOrAdmin(authentication)) {
                 List<Licencia> licencias = licenciaBusiness.listByPiloto(auth.getId());

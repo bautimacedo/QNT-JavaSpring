@@ -3,6 +3,7 @@ package com.gestion.qnt.security.controller;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.gestion.qnt.config.ApiConstants;
+import com.gestion.qnt.controller.dto.AuthMeResponse;
 import com.gestion.qnt.debug.DebugLog;
 import com.gestion.qnt.security.AuthConstants;
 import com.gestion.qnt.security.AuthUser;
@@ -123,8 +124,17 @@ public class AuthRestController {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        Object principal = authentication.getPrincipal();
-        return ResponseEntity.ok(principal);
+        AuthUser user = (AuthUser) authentication.getPrincipal();
+        List<String> authorities = user.getAuthorities().stream()
+                .map(a -> a.getAuthority())
+                .collect(Collectors.toList());
+        AuthMeResponse body = new AuthMeResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getUsername(),
+                authorities
+        );
+        return ResponseEntity.ok(body);
     }
 
     /**

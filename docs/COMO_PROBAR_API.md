@@ -330,9 +330,83 @@ Todos los endpoints de licencias requieren el header **`Authorization: Bearer <t
   Header: `Authorization: Bearer <token>`  
   Respuesta **204 No Content**. Solo rol ADMIN.
 
+## Mi perfil
+
+Cualquier **usuario autenticado** puede ver y actualizar su perfil (datos personales y cambio de contraseña). Los usuarios con rol **PILOTO** o **ADMIN** además pueden gestionar el **CMA** (Certificado Médico Aeronáutico) y sus **licencias ANAC**. Todas las rutas requieren header **`Authorization: Bearer <token>`** y operan siempre sobre el usuario actual (no se puede editar a otro).
+
+### Configuración del perfil (cualquier usuario autenticado)
+
+- **Ver mi perfil:**  
+  `GET /api/qnt/v1/mi-perfil`  
+  Respuesta **200** con: `usuario` (sin password), `tieneImagenCma`, y si es PILOTO/ADMIN una lista `licencias` (id, nombre, numLicencia, caducidad).
+
+- **Actualizar datos (nombre, apellido, DNI):**  
+  `PUT /api/qnt/v1/mi-perfil`  
+  Body (JSON), todos opcionales; solo los enviados se actualizan:
+  ```json
+  {"nombre":"Juan","apellido":"Pérez","dni":"12345678"}
+  ```
+
+- **Cambiar mi contraseña:**  
+  `PUT /api/qnt/v1/mi-perfil/cambio-password`  
+  Body (JSON):
+  ```json
+  {"oldPassword":"claveActual","newPassword":"claveNueva"}
+  ```
+  Respuesta **200** si es correcta. **400** si la contraseña actual no coincide.
+
+### CMA (solo PILOTO o ADMIN)
+
+- **Ver CMA (vencimiento y si tiene imagen):**  
+  `GET /api/qnt/v1/mi-perfil/cma`  
+  Respuesta: `{"vencimiento":"2026-05-01","tieneImagen":true}`
+
+- **Actualizar vencimiento CMA:**  
+  `PUT /api/qnt/v1/mi-perfil/cma`  
+  Body: `{"vencimiento":"2026-05-01"}` (fecha ISO)
+
+- **Subir imagen del CMA:**  
+  `PUT /api/qnt/v1/mi-perfil/cma/imagen`  
+  Body: **multipart/form-data**, parte `file` (archivo imagen). Límite 10 MB.
+
+- **Obtener imagen del CMA:**  
+  `GET /api/qnt/v1/mi-perfil/cma/imagen`  
+  Respuesta: binario. **404** si no tiene imagen.
+
+### Mis licencias (solo PILOTO o ADMIN)
+
+- **Listar mis licencias:**  
+  `GET /api/qnt/v1/mi-perfil/licencias`
+
+- **Crear licencia:**  
+  `POST /api/qnt/v1/mi-perfil/licencias`  
+  Body (JSON):
+  ```json
+  {"nombre":"ANAC Comercial","numLicencia":"12345","fechaCompra":"2024-01-01","caducidad":"2026-01-01","version":"1","activo":true}
+  ```
+  Respuesta **201**. La licencia queda asociada al usuario actual (piloto).
+
+- **Actualizar mi licencia:**  
+  `PUT /api/qnt/v1/mi-perfil/licencias/{id}`  
+  Body: mismo formato (solo se actualizan las licencias del usuario actual). **404** si el id no existe o no es suya.
+
+- **Eliminar mi licencia:**  
+  `DELETE /api/qnt/v1/mi-perfil/licencias/{id}`  
+  **204** solo si la licencia es del usuario actual.
+
+- **Subir imagen de una licencia:**  
+  `PUT /api/qnt/v1/mi-perfil/licencias/{id}/imagen`  
+  Multipart, parte `file`. Solo para licencias propias.
+
+- **Obtener imagen de una licencia:**  
+  `GET /api/qnt/v1/mi-perfil/licencias/{id}/imagen`  
+  **404** si no tiene imagen o no es suya.
+
+**Rol ROLE_PILOTO:** debe existir en la tabla `roles` (ej. `codigo = 'ROLE_PILOTO', nombre = 'Piloto'`) para que un usuario pueda usar los endpoints de CMA y licencias. Si no existe, crearlo vía API de roles (como ADMIN) o por SQL.
+
 ## Rutas protegidas
 
-- `/api/qnt/v1/usuarios/**`, `/api/qnt/v1/roles/**`, `/api/qnt/v1/compras/**`, `/api/qnt/v1/seguros/**` y `/api/qnt/v1/licencias/**` requieren autenticación (JWT).
+- `/api/qnt/v1/usuarios/**`, `/api/qnt/v1/roles/**`, `/api/qnt/v1/compras/**`, `/api/qnt/v1/seguros/**`, `/api/qnt/v1/licencias/**` y **`/api/qnt/v1/mi-perfil/**`** requieren autenticación (JWT).
 - La mayoría de endpoints exigen rol ADMIN (`@PreAuthorize("hasRole('ADMIN')")`).
 - Sin token, las peticiones a estas rutas devuelven **401**.
 - **Si el login devuelve 403:** quita el header `Authorization` (y cualquier Bearer token) de la petición de login en Postman; esa ruta es pública y no debe llevar token.

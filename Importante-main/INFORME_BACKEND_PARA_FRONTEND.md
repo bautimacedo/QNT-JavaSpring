@@ -12,6 +12,8 @@ Este documento describe el **contrato del backend** para que el proyecto fronten
 
 **Stack backend:** Spring Boot 3.x, Java 17+, Spring Security (JWT), JPA/Hibernate, PostgreSQL.
 
+**Última actualización del informe:** Tras v0.12.0 (mi-perfil: configuración, CMA y licencias ANAC). Este documento se actualiza **al finalizar cada tarea** del backend que afecte la API (endpoints, modelos, auth o convenciones).
+
 ---
 
 ## 2. Base URL y entorno
@@ -31,6 +33,7 @@ Todas las rutas REST (salvo login y demo) van bajo este prefijo. El frontend deb
 ### 3.1 Rutas públicas (sin token)
 
 - **POST** `/api/qnt/v1/auth/login` — Login. No requiere `Authorization`.
+- **POST** `/api/qnt/v1/auth/register` — Registro de nuevo usuario. No requiere `Authorization`. El usuario queda en estado **PENDIENTE_APROBACION** hasta que un ADMIN lo apruebe.
 - **GET** `/api/qnt/v1/demo/**` — Solo desarrollo (ej.: codificar contraseña, verificar hash). No usar en producción.
 - **GET** `/v3/api-docs/**`, `/swagger-ui.html`, `/swagger-ui/**` — Documentación Swagger (si está habilitada).
 
@@ -62,12 +65,42 @@ El frontend debe guardar el token devuelto por login y enviarlo en **todas** las
   Cuerpo en **texto plano** con el JWT (string). No es JSON.
 - **Respuesta error:**
   - **400** — "Faltan username y password" (texto plano)
-  - **401** — "Credenciales incorrectas" u otro mensaje de auth (texto plano)
+  - **401** — "Credenciales incorrectas" / "Contraseña incorrecta" (texto plano)
+  - **403** — Cuenta no habilitada para login (texto plano con mensaje para mostrar al usuario):
+    - `Tu cuenta está pendiente de aprobación por un administrador` — usuario recién registrado, aún no aprobado.
+    - `Tu cuenta está desactivada` — usuario desactivado por un admin.
   - **500** — "Error al autenticar" (texto plano)
 
-El frontend debe almacenar el token (p. ej. memoria o localStorage) y usarlo en el header `Authorization: Bearer <token>`.
+El frontend debe almacenar el token (p. ej. memoria o localStorage) y usarlo en el header `Authorization: Bearer <token>`. Ante **403** en login, mostrar el mensaje del cuerpo al usuario (no confundir con “sin permisos”: aquí el usuario no puede acceder hasta ser aprobado o reactivado).
 
-### 3.4 Usuario actual (/auth/me)
+### 3.4 Registro (POST /auth/register)
+
+- **URL:** `POST /api/qnt/v1/auth/register`
+- **Content-Type:** `application/json`
+- **Headers:** No enviar `Authorization` (ruta pública).
+- **Body (JSON):**
+  ```json
+  {
+    "nombre": "Juan",
+    "apellido": "Piloto",
+    "email": "juan@ejemplo.com",
+    "password": "miClaveSegura"
+  }
+  ```
+  - **nombre** (string, obligatorio).
+  - **apellido** (string, opcional).
+  - **email** (string, obligatorio, debe ser válido).
+  - **password** (string, obligatorio, mínimo 6 caracteres).
+
+- **Respuesta éxito (201):** JSON con el usuario creado (sin campo `password`). El usuario tiene `estado: "PENDIENTE_APROBACION"` y `activo: false`; no puede hacer login hasta que un ADMIN lo apruebe.
+- **Respuesta error:**
+  - **400** — Errores de validación (campos obligatorios, email inválido, password corta). Cuerpo puede ser objeto de validación o mensaje.
+  - **409** — "Ya existe un Usuario con email ..." (email duplicado).
+  - **500** — Error interno.
+
+Tras un registro exitoso, el frontend puede mostrar un mensaje del tipo "Cuenta creada. Un administrador debe aprobar tu acceso" y redirigir a login (si el usuario intenta entrar antes de ser aprobado, recibirá 403 con el mensaje de pendiente de aprobación).
+
+### 3.5 Usuario actual (/auth/me)
 
 - **URL:** `GET /api/qnt/v1/auth/me`
 - **Headers:** `Authorization: Bearer <token>`
@@ -88,7 +121,7 @@ El frontend debe almacenar el token (p. ej. memoria o localStorage) y usarlo en 
 
 Útil para mostrar “usuario logueado” y decidir permisos en la UI (por rol).
 
-### 3.5 Expiración del token
+### 3.6 Expiración del token
 
 Por defecto el token expira en **1 hora** (3600000 ms). Configurable en backend con `jwt.expiration-ms`. El frontend puede refrescar el token haciendo login de nuevo; no hay endpoint de refresh en este informe.
 
@@ -111,6 +144,7 @@ Resumen por recurso. Todos bajo `GET/POST/PUT/DELETE` según la tabla; **todos r
 | Método | Ruta | Descripción | Auth |
 |--------|------|-------------|------|
 | POST | `/api/qnt/v1/auth/login` | Login (body JSON o params) | No |
+| POST | `/api/qnt/v1/auth/register` | Registro (usuario queda pendiente de aprobación) | No |
 | GET | `/api/qnt/v1/auth/me` | Usuario actual (principal) | Sí |
 
 ### 5.2 Usuarios
@@ -120,9 +154,11 @@ Base: `/api/qnt/v1/usuarios`
 | Método | Ruta | Descripción | Roles |
 |--------|------|-------------|--------|
 | GET | `/usuarios` | Listar todos | ADMIN |
+| GET | `/usuarios/pendientes` | Listar usuarios pendientes de aprobación (estado PENDIENTE_APROBACION) | ADMIN |
 | GET | `/usuarios/search?email=` | Buscar por email | ADMIN |
 | POST | `/usuarios` | Crear usuario | ADMIN |
 | PUT | `/usuarios/{id}` | Actualizar usuario | ADMIN |
+| PUT | `/usuarios/{id}/aprobar` | Aprobar usuario pendiente (asignar rol y activar; body: AprobarUsuarioRequest) | ADMIN |
 | POST | `/usuarios/change-password` | Cambiar contraseña | ADMIN, USER |
 | PUT | `/usuarios/disable?email=` | Desactivar usuario | ADMIN |
 | PUT | `/usuarios/enable?email=` | Activar usuario | ADMIN |
@@ -178,6 +214,26 @@ Base: `/api/qnt/v1/seguros`
 | PUT | `/seguros/{id}` | Actualizar seguro | ADMIN, USER |
 | DELETE | `/seguros/{id}` | Eliminar seguro | ADMIN |
 
+### 5.7 Mi perfil
+
+Base: `/api/qnt/v1/mi-perfil`. Todos los endpoints operan sobre el **usuario autenticado** (no se envía usuarioId). Configuración (perfil y cambio de contraseña) para **cualquier usuario autenticado**; CMA y licencias solo para **PILOTO** o **ADMIN**.
+
+| Método | Ruta | Descripción | Roles |
+|--------|------|-------------|--------|
+| GET | `/mi-perfil` | Datos del usuario actual + tieneImagenCma + licencias (si piloto) | Autenticado |
+| PUT | `/mi-perfil` | Actualizar nombre, apellido, dni | Autenticado |
+| PUT | `/mi-perfil/cambio-password` | Cambiar contraseña (body: oldPassword, newPassword) | Autenticado |
+| GET | `/mi-perfil/cma` | Vencimiento CMA y tieneImagen | PILOTO, ADMIN |
+| PUT | `/mi-perfil/cma` | Actualizar vencimiento CMA (body: vencimiento) | PILOTO, ADMIN |
+| PUT | `/mi-perfil/cma/imagen` | Subir imagen CMA (multipart, parte `file`) | PILOTO, ADMIN |
+| GET | `/mi-perfil/cma/imagen` | Obtener imagen CMA | PILOTO, ADMIN |
+| GET | `/mi-perfil/licencias` | Listar mis licencias | PILOTO, ADMIN |
+| POST | `/mi-perfil/licencias` | Crear licencia (piloto = usuario actual) | PILOTO, ADMIN |
+| PUT | `/mi-perfil/licencias/{id}` | Actualizar mi licencia | PILOTO, ADMIN |
+| DELETE | `/mi-perfil/licencias/{id}` | Eliminar mi licencia | PILOTO, ADMIN |
+| PUT | `/mi-perfil/licencias/{id}/imagen` | Subir imagen de licencia (multipart) | PILOTO, ADMIN |
+| GET | `/mi-perfil/licencias/{id}/imagen` | Obtener imagen de licencia | PILOTO, ADMIN |
+
 ---
 
 ## 6. Modelos de datos (para el frontend)
@@ -194,12 +250,14 @@ Tipos y campos que el backend envía/recibe. Fechas en formato **ISO-8601** (`yy
 | email | string | Único, usado como login |
 | password | — | No se serializa en JSON (@JsonIgnore) |
 | roles | Array de Role | Objetos con id, codigo, nombre |
+| estado | string | Enum: `PENDIENTE_APROBACION`, `ACTIVO`, `DESACTIVADO`. Solo si es ACTIVO puede hacer login. |
 | dni | string \| null | |
 | cmaVencimiento | string (date) \| null | ISO-8601 |
 | cmaImagenes | string \| null | |
+| imagenCma | — | No se serializa; usar GET /mi-perfil/cma/imagen |
 | horasVuelo | number \| null | |
 | cantidadVuelos | number \| null | |
-| activo | boolean | |
+| activo | boolean | Sincronizado con estado (ACTIVO → true; otros → false) |
 
 ### 6.2 Role
 
@@ -222,14 +280,67 @@ Tipos y campos que el backend envía/recibe. Fechas en formato **ISO-8601** (`yy
 
 Se usa `roleIds` o `roleCodigos` para asignar roles al crear.
 
-### 6.4 AssignRoleRequest (asignar / quitar rol)
+### 6.4 RegisterRequest (POST /auth/register)
+
+| Campo | Tipo | Obligatorio |
+|-------|------|-------------|
+| nombre | string | Sí |
+| apellido | string | No |
+| email | string | Sí (formato email válido) |
+| password | string | Sí (mín. 6 caracteres) |
+
+### 6.5 AprobarUsuarioRequest (PUT /usuarios/{id}/aprobar)
+
+| Campo | Tipo | Obligatorio |
+|-------|------|-------------|
+| roleCodigo | string | Sí. Valores típicos: `ROLE_ADMIN`, `ROLE_PILOTO`, `ROLE_USER` (deben existir en BD). |
+
+El usuario debe estar en estado `PENDIENTE_APROBACION`. Tras aprobar, pasa a `ACTIVO`, se le asigna el rol indicado y puede hacer login.
+
+### 6.6 ActualizarMiPerfilRequest (PUT /mi-perfil)
+
+| Campo | Tipo | Obligatorio |
+|-------|------|-------------|
+| nombre | string \| null | No; solo los enviados se actualizan |
+| apellido | string \| null | No |
+| dni | string \| null | No |
+
+### 6.7 CambioPasswordMiPerfilRequest (PUT /mi-perfil/cambio-password)
+
+| Campo | Tipo | Obligatorio |
+|-------|------|-------------|
+| oldPassword | string | Sí |
+| newPassword | string | Sí (mín. 6 caracteres) |
+
+### 6.8 CmaVencimientoRequest (PUT /mi-perfil/cma)
+
+| Campo | Tipo |
+|-------|------|
+| vencimiento | string (date) \| null | ISO-8601 |
+
+### 6.9 CrearLicenciaMiPerfilRequest (POST /mi-perfil/licencias)
+
+| Campo | Tipo | Obligatorio |
+|-------|------|-------------|
+| nombre | string \| null | |
+| numLicencia | string \| null | |
+| fechaCompra | string (date) \| null | |
+| caducidad | string (date) \| null | |
+| version | string \| null | |
+| activo | boolean \| null | Default true |
+
+### 6.10 ActualizarLicenciaMiPerfilRequest (PUT /mi-perfil/licencias/{id})
+
+Mismos campos que CrearLicenciaMiPerfilRequest; todos opcionales.
+
+### 6.11 AssignRoleRequest (asignar / quitar rol)
 
 | Campo | Tipo |
 |-------|------|
 | email | string |
 | roleCodigo | string |
 
-### 6.5 ChangePasswordRequest
+### 6.12 ChangePasswordRequest
 
 | Campo | Tipo |
 |-------|------|
@@ -237,7 +348,7 @@ Se usa `roleIds` o `roleCodigos` para asignar roles al crear.
 | oldPassword | string |
 | newPassword | string |
 
-### 6.6 Compra (entidad)
+### 6.13 Compra (entidad)
 
 | Campo | Tipo | Notas |
 |-------|------|--------|
@@ -254,7 +365,7 @@ Se usa `roleIds` o `roleCodigos` para asignar roles al crear.
 | observaciones | string \| null | |
 | imagenFactura | — | No se serializa; usar GET .../imagen |
 
-### 6.7 Proveedor (anidado en Compra)
+### 6.14 Proveedor (anidado en Compra)
 
 | Campo | Tipo |
 |-------|------|
@@ -269,7 +380,7 @@ Se usa `roleIds` o `roleCodigos` para asignar roles al crear.
 
 No hay CRUD dedicado de Proveedor en la API; se crea/usa desde Compras (proveedorId o proveedorNombre).
 
-### 6.8 Site (anidado en Compra)
+### 6.15 Site (anidado en Compra)
 
 | Campo | Tipo |
 |-------|------|
@@ -278,7 +389,7 @@ No hay CRUD dedicado de Proveedor en la API; se crea/usa desde Compras (proveedo
 
 No hay CRUD dedicado de Site en la API actual; se referencia por `siteId` en CreateCompraRequest.
 
-### 6.9 CreateCompraRequest (POST/PUT compra)
+### 6.16 CreateCompraRequest (POST/PUT compra)
 
 | Campo | Tipo | Obligatorio |
 |-------|------|-------------|
@@ -294,7 +405,7 @@ No hay CRUD dedicado de Site en la API actual; se referencia por `siteId` en Cre
 | siteId | number \| null | |
 | observaciones | string \| null | |
 
-### 6.10 Licencia (entidad)
+### 6.17 Licencia (entidad)
 
 | Campo | Tipo | Notas |
 |-------|------|--------|
@@ -302,12 +413,14 @@ No hay CRUD dedicado de Site en la API actual; se referencia por `siteId` en Cre
 | nombre | string | |
 | numLicencia | string \| null | |
 | compra | Compra \| null | Objeto anidado (puede ser solo id en algunos casos) |
+| piloto | Usuario \| null | Piloto al que pertenece (para licencias ANAC / mi-perfil) |
 | fechaCompra | string (date) \| null | |
 | caducidad | string (date) \| null | |
 | version | string \| null | |
 | activo | boolean | Default true |
+| imagen | — | No se serializa; usar GET /mi-perfil/licencias/{id}/imagen cuando sea propia |
 
-### 6.11 CreateLicenciaRequest
+### 6.18 CreateLicenciaRequest
 
 | Campo | Tipo | Obligatorio |
 |-------|------|-------------|
@@ -319,7 +432,7 @@ No hay CRUD dedicado de Site en la API actual; se referencia por `siteId` en Cre
 | version | string \| null | |
 | activo | boolean \| null | |
 
-### 6.12 Seguro (entidad)
+### 6.19 Seguro (entidad)
 
 | Campo | Tipo | Notas |
 |-------|------|--------|
@@ -331,7 +444,7 @@ No hay CRUD dedicado de Site en la API actual; se referencia por `siteId` en Cre
 | observaciones | string \| null | |
 | compra | Compra \| null | Anidado |
 
-### 6.13 CreateSeguroRequest
+### 6.20 CreateSeguroRequest
 
 | Campo | Tipo | Obligatorio |
 |-------|------|-------------|
@@ -367,7 +480,7 @@ El frontend puede mostrar la imagen con una URL tipo blob o usando el array buff
 | 204 | No Content (p. ej. DELETE correcto, cambio de contraseña) |
 | 400 | Bad Request (validación, parámetros faltantes, mensaje en cuerpo) |
 | 401 | Unauthorized (sin token, token inválido/expirado o credenciales incorrectas en login) |
-| 403 | Forbidden (token válido pero sin permiso para el recurso/acción) |
+| 403 | Forbidden: (1) token válido pero sin permiso para el recurso/acción; (2) **en login**: cuenta pendiente de aprobación o desactivada — el cuerpo lleva el mensaje para mostrar al usuario. |
 | 404 | Not Found (recurso no existe; a veces cuerpo vacío, a veces mensaje) |
 | 409 | Conflict (ej. email ya existe al crear usuario, código de rol duplicado) |
 | 500 | Error interno (mensaje opcional en cuerpo) |
@@ -378,8 +491,9 @@ No hay un formato estándar único de error: a veces el cuerpo es un string (men
 
 ## 9. Roles y permisos
 
-- **ROLE_ADMIN:** acceso completo (usuarios, roles, CRUD de compras, licencias, seguros, delete donde aplique, enable/disable usuario, asignar/quitar roles).
-- **ROLE_USER:** puede listar y gestionar compras, licencias y seguros (CRUD salvo delete de licencia/seguro que es solo ADMIN); puede cambiar su contraseña. No puede gestionar usuarios ni roles.
+- **ROLE_ADMIN:** acceso completo (usuarios, roles, CRUD de compras, licencias, seguros, delete donde aplique, enable/disable usuario, asignar/quitar roles, mi-perfil completo incl. CMA y licencias).
+- **ROLE_PILOTO:** puede gestionar **mi-perfil** (datos, cambio de contraseña, CMA y sus licencias ANAC). No puede gestionar otros usuarios ni el CRUD global de licencias/seguros/compras salvo lo expuesto en la API general según configuración.
+- **ROLE_USER:** puede listar y gestionar compras, licencias y seguros (CRUD salvo delete de licencia/seguro que es solo ADMIN); puede cambiar su contraseña y ver/editar **mi-perfil** (datos y cambio de contraseña, sin CMA ni licencias propias). No puede gestionar usuarios ni roles.
 
 En las respuestas de `/auth/me`, los roles vienen con prefijo `ROLE_` (ej. `ROLE_ADMIN`). Para comparar en el front: usar el string completo o normalizar quitando el prefijo según convención del front.
 
@@ -388,6 +502,12 @@ En las respuestas de `/auth/me`, los roles vienen con prefijo `ROLE_` (ej. `ROLE
 ## 10. Enums (valores válidos)
 
 Usar exactamente estos valores en los JSON (strings).
+
+### EstadoUsuario (usuario)
+
+- `PENDIENTE_APROBACION` — Recién registrado, sin aprobar; no puede hacer login.
+- `ACTIVO` — Puede usar la aplicación y hacer login.
+- `DESACTIVADO` — Desactivado por admin; no puede hacer login.
 
 ### TipoCompra (compras)
 
@@ -441,4 +561,4 @@ Cuando el backend añada nuevos endpoints o cambie contratos, conviene actualiza
 
 ---
 
-*Documento generado para sincronizar backend (QNT-Gestion-Spring) con el proyecto frontend. Versión del informe: 1.0.*
+*Documento generado para sincronizar backend (QNT-Gestion-Spring) con el proyecto frontend. Versión del informe: 1.2 (v0.12.0 — Mi perfil, CMA y licencias ANAC).*

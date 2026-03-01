@@ -51,6 +51,13 @@ public class Usuario {
     @Column(name = "cma_imagenes")
     private String cmaImagenes;
 
+    /** Imagen del Certificado Médico Aeronáutico. No se serializa en JSON. */
+    @Lob
+    @Column(name = "imagen_cma", nullable = true)
+    @Basic(optional = true)
+    @JsonIgnore
+    private byte[] imagenCma;
+
     @Column(name = "horas_vuelo")
     private Integer horasVuelo;
 

@@ -110,6 +110,7 @@ ls agent-bootstrap/prompts/pendientes/ | sort | grep "^v" | head -5
 
 Va a tomar [VERSION] — [nombre] de la cola
 y ejecutarlo completo: implementación, tests, commit, tag y merge.
+Al terminar invocará al Agente Tester para verificación; cuando el Tester reporte OK, te dará el checkpoint.
 
 Te va a pedir confirmación en cada checkpoint antes de continuar.
 
@@ -122,7 +123,7 @@ Luego invocar el AGENTE_DEV pasando todo el contexto:
 [DELEGANDO A AGENTE_DEV]
 Lee agent-bootstrap/AGENTE_DEV.md y ejecutá el ciclo completo.
 Contexto: el usuario quiere ejecutar la siguiente versión disponible en la cola.
-Cuando termines, volvé a reportar al AGENTE_CEO para el siguiente paso.
+Al terminar, invocá al Agente Tester (Importante-main/AgenteQA/AGENTE_TESTER.md) para verificación; cuando reporte "Listo para merge", volvé a reportar al AGENTE_CEO para el siguiente paso.
 ```
 
 **Si no hay pendientes:**

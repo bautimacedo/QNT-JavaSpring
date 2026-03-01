@@ -88,6 +88,17 @@ cd gestion
 ./mvnw test
 ```
 
+### Agente Tester y pipeline
+
+- **Desde Cursor:** para que un agente ejecute la batería de tests y reporte, invocá:  
+  **"Lee Importante-main/AgenteQA/AGENTE_TESTER.md y ejecutá la verificación"**.  
+  (También vale: **"Lee agent-bootstrap/AGENTE_TESTER.md y ejecutá la verificación"** — redirige al mismo agente.)  
+  Eso corre `mvn test` y, si la app está levantada, el smoke test de la API (`./scripts/smoke-test-api.sh`).
+
+- **Pipeline secuencial (PM → Programador → Tester):** solo le hablás al PM; el PM invoca al Programador y el Programador al Tester. Ver [Importante-main/PIPELINE_SECUENCIAL.md](./Importante-main/PIPELINE_SECUENCIAL.md).
+
+- **En el pipeline (GitHub Actions):** en cada push y en cada PR a `main`/`master` se ejecuta el mismo flujo de tests (build + JUnit). Ver [.github/workflows/test.yml](./.github/workflows/test.yml).
+
 ---
 
 ## Roadmap y documentación

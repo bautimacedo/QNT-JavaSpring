@@ -262,6 +262,31 @@ echo "✅ ${VERSION} completo"
 
 ---
 
+## PASO 6.5 — Invocar al Agente Tester (verificación antes del checkpoint)
+
+Antes de actualizar documentación y dar el checkpoint al usuario, **invocá al Agente Tester** para verificación formal. Así el pipeline queda: PM → Programador → Tester.
+
+**Instrucción:**
+
+1. Ejecutá la verificación técnica que usa el Tester (los mismos comandos):
+   ```bash
+   ./gestion/mvnw -f gestion/pom.xml clean test -q
+   ```
+2. Si falla → corregí el código o los tests, volvé a commitear en la rama correspondiente (o en main si ya mergeaste), y repetí hasta que pase.
+3. Además, **invocá formalmente al Agente Tester** para que emita el reporte estándar:
+   ```
+   [INVOCANDO A AGENTE TESTER]
+   Lee Importante-main/AgenteQA/AGENTE_TESTER.md y ejecutá la verificación.
+   Contexto: acabo de completar [VERSION] — [nombre]. Rama mergeada a [MAIN_BRANCH].
+   Reportá si está listo para merge o no.
+   ```
+
+Si el Tester reporta **No listo**, no continuar al PASO 7 ni al checkpoint (PASO 8.5). Corregir, volver a verificar y a invocar al Tester hasta **Listo para merge**.
+
+Solo cuando el Tester reporte **Listo para merge**, seguir al PASO 7.
+
+---
+
 ## PASO 7 — Actualizar documentación de estado
 
 Si el proyecto tiene un dashboard o documento de estado, actualizarlo:
@@ -282,6 +307,7 @@ Si el proyecto tiene un dashboard o documento de estado, actualizarlo:
 📁 Archivado en: agent-bootstrap/prompts/completados/[ARCHIVO]
 🏷️  Tag creado: [TAG]
 🌿 Rama mergeada: [BRANCH] → [MAIN_BRANCH]
+✅ Agente Tester: [Listo para merge] (verificación ejecutada en PASO 6.5)
 🔓 Prompts desbloqueados: [lista de prompts que ahora tienen sus deps OK]
 📋 Próximo disponible: [siguiente archivo con las 3 verificaciones en verde]
 ```
@@ -316,6 +342,7 @@ Si el proyecto tiene un dashboard o documento de estado, actualizarlo:
    - Tests:      ✅/❌ ([N] tests pasando)
    - Lint:       ✅/❌
    - Tipado:     ✅/❌
+   - Agente Tester: ✅ (ejecutado en PASO 6.5)
 ══════════════════════════════════════════════════
 ```
 
@@ -382,3 +409,4 @@ Pendientes bloqueados: [lista con qué dep falta a cada uno]
    Podés tomar el prompt: moverlo a `pendientes/` y empezar de cero
 4. **Los tags de git son la fuente de verdad** de qué está completado — no los archivos en carpetas
 5. **Máximo 1 prompt por agente** a la vez — terminá el actual antes de tomar otro
+6. **Siempre invocar al Agente Tester** (PASO 6.5) antes del checkpoint; no dar por terminada la versión sin reporte "Listo para merge" del Tester

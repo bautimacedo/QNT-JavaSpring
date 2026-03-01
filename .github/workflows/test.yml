@@ -1,0 +1,40 @@
+# Pipeline de tests — Agente Tester
+# Se ejecuta en cada push y en cada PR a main/master.
+# Ejecuta los mismos comandos que el Agente Tester desde el IDE (mvn test).
+
+name: Tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    name: Build & test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run tests
+        run: ./mvnw clean test -q
+        working-directory: gestion
+
+      - name: Report success
+        if: success()
+        run: echo "✅ Build y tests OK"
+
+      - name: Report failure
+        if: failure()
+        run: |
+          echo "❌ Build o tests fallaron. Revisar el log de Maven arriba."
+          exit 1

@@ -253,6 +253,41 @@ Luego actualizar `ROADMAP.md` agregando la nueva versión en la sección correct
 
 ---
 
+## PASO 4.5 — Invocar al Agente Programador (pipeline secuencial)
+
+Después de generar el prompt y actualizar el ROADMAP, **invocá al Agente Programador** para que ejecute la tarea recién definida. Así se cierra el flujo: PM → Programador → Tester sin que el usuario tenga que llamar a cada agente.
+
+**Instrucción para delegar (escribir en la conversación o pasar al siguiente agente):**
+
+```
+[DELEGANDO A AGENTE PROGRAMADOR]
+
+Ejecutá la tarea usando el prompt que acabo de generar.
+
+Contexto obligatorio a leer:
+- @Importante-main/AgenteProgramador/README.md
+- @Importante-main/AgenteProgramador/AGENTE_WORKFLOW.md
+- @Importante-main/AgenteProgramador/PROMPT_TAREA.template.md
+- @agent-bootstrap/prompts/pendientes/[ARCHIVO_GENERADO].md
+
+(Reemplazá [ARCHIVO_GENERADO] por el nombre real del archivo que guardaste, ej. v0.5.0-order-notifications.md.)
+
+Seguí el AGENTE_WORKFLOW.md desde el PASO 0. Cuando termines la implementación, verificación técnica, commit, tag y merge, invocá al Agente Tester (Importante-main/AgenteQA/AGENTE_TESTER.md) para la verificación final antes del checkpoint. Cuando el Tester reporte OK, volvé a reportar al PM o al usuario con el resumen.
+```
+
+Si en tu entorno no podés "invocar" otro agente automáticamente, al menos **mostrá al usuario** este bloque y decile explícitamente:
+
+```
+✅ Prompt guardado. Para continuar el pipeline, copiá y ejecutá en una nueva conversación (o pasale al agente Programador):
+
+Lee Importante-main/AgenteProgramador/AGENTE_WORKFLOW.md y ejecutá la tarea.
+Contexto: @Importante-main/AgenteProgramador/README.md @Importante-main/AgenteProgramador/PROMPT_TAREA.template.md @agent-bootstrap/prompts/pendientes/[ARCHIVO].md
+```
+
+Luego ir al PASO 5.
+
+---
+
 ## PASO 5 — Checkpoint y propuesta de siguiente versión
 
 Después de cada versión definida:
@@ -299,6 +334,10 @@ Estado de la cola completa:
 
 Para arrancar el agente de ejecución:
   → "Lee agent-bootstrap/AGENTE_WORKFLOW.md y ejecutá el ciclo."
+
+Si usás el pipeline secuencial (PM → Programador → Tester):
+  → Tras generar el prompt, invocá al Programador con README + AGENTE_WORKFLOW + PROMPT_TAREA.template + @archivo-generado.
+  → El Programador al terminar invocará al Tester. Ver Importante-main/PIPELINE_SECUENCIAL.md.
 ══════════════════════════════════════════════════
 ```
 
@@ -312,3 +351,4 @@ Para arrancar el agente de ejecución:
 4. **Una versión por sesión mínimo** — no terminar la sesión sin haber generado algo concreto
 5. **Lenguaje adaptable** — técnico con devs, funcional con clientes
 6. **El ROADMAP es la fuente de verdad** — siempre actualizarlo al final
+7. **Pipeline secuencial:** después de generar un prompt (PASO 4), invocá al Agente Programador con el contexto indicado en PASO 4.5 para que la tarea se ejecute sin que el usuario tenga que llamar a cada agente

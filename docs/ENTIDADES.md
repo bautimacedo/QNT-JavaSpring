@@ -79,7 +79,7 @@ Las reglas de negocio sobre estados, relaciones y flujos están en [DOMINIO.md](
 - Batería(s) asignada(s) (relación con Batería).
 - Hélices (relación con Hélice).
 - Speakers, Luces (si se modelan como entidades o como atributos/cantidad).
-- Misiones (lista de misiones en las que participó).
+- Misiones (lista de misiones en las que participa).
 - Licencia ANAC (si aplica).
 - Cantidad de vuelos, Cantidad de minutos volados.
 - Incidentes (texto o FK a entidad Incidente si se define).
@@ -116,6 +116,7 @@ Las reglas de negocio sobre estados, relaciones y flujos están en [DOMINIO.md](
 
 **LICENCIA**
 - Nombre (ej. FlightHub 2, FlytBase).
+- NumLicencia
 - Fecha de compra, Caducidad.
 - Versión (ej. Enterprise).
 - Activo (sí/no).

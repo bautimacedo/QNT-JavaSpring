@@ -9,6 +9,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gestion.qnt.model.enums.Estado;
+
 @Entity
 @Table(name = "docks")
 @Getter

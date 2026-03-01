@@ -1,4 +1,4 @@
-package com.gestion.qnt.model;
+package com.gestion.qnt.model.enums;
 
 /**
  * Estado de equipos: Dock, Dron, Bateria, Helice, AntenaRtk, AntenaStarlink.

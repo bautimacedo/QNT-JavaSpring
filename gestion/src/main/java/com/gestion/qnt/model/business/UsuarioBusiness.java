@@ -1,5 +1,6 @@
 package com.gestion.qnt.model.business;
 
+import com.gestion.qnt.model.Role;
 import com.gestion.qnt.model.Usuario;
 import com.gestion.qnt.model.business.exceptions.BusinessException;
 import com.gestion.qnt.model.business.exceptions.FoundException;
@@ -9,6 +10,7 @@ import com.gestion.qnt.repository.UsuarioRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 
@@ -96,6 +98,86 @@ public class UsuarioBusiness implements IUsuarioBusiness {
         } catch (Exception e) {
             log.error("Error al eliminar usuario con id {}", id, e);
             throw new BusinessException("Error al eliminar usuario", e);
+        }
+    }
+
+    @Override
+    public void changePassword(String email, String oldPassword, String newPassword, PasswordEncoder encoder) throws NotFoundException, BusinessException {
+        try {
+            Usuario user = load(email);
+            if (!encoder.matches(oldPassword, user.getPassword())) {
+                throw new BusinessException("Contraseña anterior incorrecta");
+            }
+            user.setPassword(encoder.encode(newPassword));
+            update(user);
+        } catch (NotFoundException | BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error al cambiar contraseña para email {}", email, e);
+            throw new BusinessException("Error al cambiar contraseña", e);
+        }
+    }
+
+    @Override
+    public void disable(String email) throws NotFoundException, BusinessException {
+        try {
+            Usuario user = load(email);
+            user.setActivo(false);
+            update(user);
+        } catch (NotFoundException | BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error al desactivar usuario con email {}", email, e);
+            throw new BusinessException("Error al desactivar usuario", e);
+        }
+    }
+
+    @Override
+    public void enable(String email) throws NotFoundException, BusinessException {
+        try {
+            Usuario user = load(email);
+            user.setActivo(true);
+            update(user);
+        } catch (NotFoundException | BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error al activar usuario con email {}", email, e);
+            throw new BusinessException("Error al activar usuario", e);
+        }
+    }
+
+    @Override
+    public Usuario addRole(Role role, Usuario user) throws NotFoundException, BusinessException {
+        try {
+            load(user.getId());
+            if (user.getRoles() == null) {
+                user.setRoles(new java.util.ArrayList<>());
+            }
+            if (user.getRoles().stream().noneMatch(r -> r.getId().equals(role.getId()))) {
+                user.getRoles().add(role);
+            }
+            return update(user);
+        } catch (NotFoundException | BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error al asignar rol al usuario {}", user.getId(), e);
+            throw new BusinessException("Error al asignar rol", e);
+        }
+    }
+
+    @Override
+    public Usuario removeRole(Role role, Usuario user) throws NotFoundException, BusinessException {
+        try {
+            load(user.getId());
+            if (user.getRoles() != null) {
+                user.getRoles().removeIf(r -> r.getId().equals(role.getId()));
+            }
+            return update(user);
+        } catch (NotFoundException | BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error al quitar rol del usuario {}", user.getId(), e);
+            throw new BusinessException("Error al quitar rol", e);
         }
     }
 }

@@ -6,6 +6,8 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
+import com.gestion.qnt.model.enums.Estado;
+
 @Entity
 @Table(name = "antenas_starlink", uniqueConstraints = @UniqueConstraint(columnNames = "dock_id"))
 @Getter

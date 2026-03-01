@@ -1,4 +1,4 @@
-package com.gestion.qnt.model;
+package com.gestion.qnt.model.enums;
 
 /**
  * Estado de una misión.

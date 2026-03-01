@@ -1,5 +1,6 @@
 package com.gestion.qnt.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,6 +29,7 @@ public class Usuario {
     private String email;
 
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -52,4 +54,7 @@ public class Usuario {
 
     @Column(name = "cantidad_vuelos")
     private Integer cantidadVuelos;
+
+    @Column(nullable = false)
+    private Boolean activo = true;
 }

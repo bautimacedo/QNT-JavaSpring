@@ -6,6 +6,8 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+import com.gestion.qnt.model.enums.EstadoMision;
+
 @Entity
 @Table(name = "misiones")
 @Getter

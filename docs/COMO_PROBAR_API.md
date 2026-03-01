@@ -151,6 +151,27 @@ Todos los endpoints de compras requieren el header **`Authorization: Bearer <tok
 
 Valores válidos de `tipoCompra`: `LICENCIA_SW`, `REPUESTO`, `COMBUSTIBLE`, `VIATICO`, `SEGURO`, `EQUIPO`, `OTRO`.
 
+### Imagen de la factura
+
+- **Subir imagen:**  
+  `PUT /api/qnt/v1/compras/{id}/imagen`  
+  Header: `Authorization: Bearer <token>`  
+  Body: **multipart/form-data** con un campo de tipo archivo llamado `file` (por ejemplo un JPG o PNG).  
+  Ejemplo con curl (reemplazar `1` por el id de la compra y `factura.jpg` por la ruta del archivo):
+  ```bash
+  curl -X PUT "http://localhost:8080/api/qnt/v1/compras/1/imagen" \
+    -H "Authorization: Bearer <TOKEN>" \
+    -F "file=@factura.jpg"
+  ```
+  Respuesta **200 OK** si la compra existe. Tamaño máximo por defecto: 10 MB (`spring.servlet.multipart.max-file-size`).
+
+- **Obtener imagen:**  
+  `GET /api/qnt/v1/compras/{id}/imagen`  
+  Header: `Authorization: Bearer <token>`  
+  Respuesta: cuerpo binario de la imagen con `Content-Type: application/octet-stream`. **404** si la compra no existe o no tiene imagen asociada.
+
+- La respuesta de `GET /api/qnt/v1/compras/{id}` (compra completa) **no** incluye el campo de imagen en JSON para evitar payloads grandes.
+
 ## Rutas protegidas
 
 - `/api/qnt/v1/usuarios/**`, `/api/qnt/v1/roles/**` y `/api/qnt/v1/compras/**` requieren autenticación (JWT).

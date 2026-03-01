@@ -7,6 +7,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gestion.qnt.model.enums.TipoCompra;
 
 @Entity
@@ -53,4 +54,11 @@ public class Compra {
     @Lob
     @Column
     private String observaciones;
+
+    /** Imagen de la factura (opcional). No se serializa en JSON para evitar payload enorme. */
+    @Lob
+    @Column(name = "imagen_factura", nullable = true)
+    @Basic(optional = true)
+    @JsonIgnore
+    private byte[] imagenFactura;
 }

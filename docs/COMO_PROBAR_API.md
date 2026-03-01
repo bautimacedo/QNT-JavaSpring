@@ -221,9 +221,60 @@ Todos los endpoints de seguros requieren el header **`Authorization: Bearer <tok
   Header: `Authorization: Bearer <token>`  
   Respuesta **204 No Content**. Solo rol ADMIN.
 
+## Licencias
+
+Todos los endpoints de licencias requieren el header **`Authorization: Bearer <token>`**. Sin token → **401**.
+
+- **Listar:**  
+  `GET /api/qnt/v1/licencias`  
+  Header: `Authorization: Bearer <token>`
+
+- **Obtener por id:**  
+  `GET /api/qnt/v1/licencias/{id}`  
+  Header: `Authorization: Bearer <token>`
+
+- **Crear:**  
+  `POST /api/qnt/v1/licencias`  
+  Header: `Authorization: Bearer <token>`  
+  Body (JSON), ejemplo:
+  ```json
+  {
+    "nombre": "Windows 11 Pro",
+    "numLicencia": "XXXXX-XXXXX-XXXXX",
+    "compraId": 1,
+    "fechaCompra": "2025-01-15",
+    "caducidad": "2026-01-15",
+    "version": "11",
+    "activo": true
+  }
+  ```
+  Respuesta **201 Created**. Si `compraId` no existe → **404**. Si no se envía `activo`, por defecto es `true`.
+
+- **Actualizar:**  
+  `PUT /api/qnt/v1/licencias/{id}`  
+  Header: `Authorization: Bearer <token>`  
+  Body (mismo formato; `id` en la URL):
+  ```json
+  {
+    "nombre": "Windows 11 Pro",
+    "numLicencia": "XXXXX-XXXXX-XXXXX",
+    "compraId": null,
+    "fechaCompra": "2025-01-15",
+    "caducidad": "2027-01-15",
+    "version": "11",
+    "activo": false
+  }
+  ```
+  Respuesta **200 OK**. Si la licencia o la compra no existen → **404**.
+
+- **Eliminar:**  
+  `DELETE /api/qnt/v1/licencias/{id}`  
+  Header: `Authorization: Bearer <token>`  
+  Respuesta **204 No Content**. Solo rol ADMIN.
+
 ## Rutas protegidas
 
-- `/api/qnt/v1/usuarios/**`, `/api/qnt/v1/roles/**`, `/api/qnt/v1/compras/**` y `/api/qnt/v1/seguros/**` requieren autenticación (JWT).
+- `/api/qnt/v1/usuarios/**`, `/api/qnt/v1/roles/**`, `/api/qnt/v1/compras/**`, `/api/qnt/v1/seguros/**` y `/api/qnt/v1/licencias/**` requieren autenticación (JWT).
 - La mayoría de endpoints exigen rol ADMIN (`@PreAuthorize("hasRole('ADMIN')")`).
 - Sin token, las peticiones a estas rutas devuelven **401**.
 - **Si el login devuelve 403:** quita el header `Authorization` (y cualquier Bearer token) de la petición de login en Postman; esa ruta es pública y no debe llevar token.

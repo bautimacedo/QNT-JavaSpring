@@ -172,9 +172,58 @@ Valores válidos de `tipoCompra`: `LICENCIA_SW`, `REPUESTO`, `COMBUSTIBLE`, `VIA
 
 - La respuesta de `GET /api/qnt/v1/compras/{id}` (compra completa) **no** incluye el campo de imagen en JSON para evitar payloads grandes.
 
+## Seguros
+
+Todos los endpoints de seguros requieren el header **`Authorization: Bearer <token>`**. Sin token → **401**.
+
+- **Listar:**  
+  `GET /api/qnt/v1/seguros`  
+  Header: `Authorization: Bearer <token>`
+
+- **Obtener por id:**  
+  `GET /api/qnt/v1/seguros/{id}`  
+  Header: `Authorization: Bearer <token>`
+
+- **Crear:**  
+  `POST /api/qnt/v1/seguros`  
+  Header: `Authorization: Bearer <token>`  
+  Body (JSON), ejemplo:
+  ```json
+  {
+    "aseguradora": "La Caja Seguros",
+    "numeroPoliza": "POL-2025-001",
+    "vigenciaDesde": "2025-01-01",
+    "vigenciaHasta": "2026-01-01",
+    "observaciones": "Cobertura total",
+    "compraId": 1
+  }
+  ```
+  Respuesta **201 Created** con el seguro creado. Si `compraId` no existe → **404**.
+
+- **Actualizar:**  
+  `PUT /api/qnt/v1/seguros/{id}`  
+  Header: `Authorization: Bearer <token>`  
+  Body (mismo formato; `id` en la URL):
+  ```json
+  {
+    "aseguradora": "La Caja Seguros",
+    "numeroPoliza": "POL-2025-001",
+    "vigenciaDesde": "2025-01-01",
+    "vigenciaHasta": "2026-06-01",
+    "observaciones": "Renovado",
+    "compraId": null
+  }
+  ```
+  Respuesta **200 OK**. Si el seguro o la compra no existen → **404**.
+
+- **Eliminar:**  
+  `DELETE /api/qnt/v1/seguros/{id}`  
+  Header: `Authorization: Bearer <token>`  
+  Respuesta **204 No Content**. Solo rol ADMIN.
+
 ## Rutas protegidas
 
-- `/api/qnt/v1/usuarios/**`, `/api/qnt/v1/roles/**` y `/api/qnt/v1/compras/**` requieren autenticación (JWT).
+- `/api/qnt/v1/usuarios/**`, `/api/qnt/v1/roles/**`, `/api/qnt/v1/compras/**` y `/api/qnt/v1/seguros/**` requieren autenticación (JWT).
 - La mayoría de endpoints exigen rol ADMIN (`@PreAuthorize("hasRole('ADMIN')")`).
 - Sin token, las peticiones a estas rutas devuelven **401**.
 - **Si el login devuelve 403:** quita el header `Authorization` (y cualquier Bearer token) de la petición de login en Postman; esa ruta es pública y no debe llevar token.

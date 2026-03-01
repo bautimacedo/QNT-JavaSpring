@@ -12,7 +12,7 @@ Este documento describe el **contrato del backend** para que el proyecto fronten
 
 **Stack backend:** Spring Boot 3.x, Java 17+, Spring Security (JWT), JPA/Hibernate, PostgreSQL.
 
-**Última actualización del informe:** Tras v0.12.0 (mi-perfil: configuración, CMA y licencias ANAC). Este documento se actualiza **al finalizar cada tarea** del backend que afecte la API (endpoints, modelos, auth o convenciones).
+**Última actualización del informe:** Tras v0.13.0 (roles piloto en UI y password_mission). Este documento se actualiza **al finalizar cada tarea** del backend que afecte la API (endpoints, modelos, auth o convenciones).
 
 ---
 
@@ -176,6 +176,8 @@ Base: `/api/qnt/v1/roles`
 | POST | `/roles` | Crear rol | ADMIN |
 | PUT | `/roles/{id}` | Actualizar rol | ADMIN |
 
+> **Instrucción para el frontend:** `GET /roles` devuelve **todos** los roles de la base de datos (ej. ROLE_ADMIN, ROLE_PILOTO, ROLE_USER). El frontend debe usar esta respuesta para poblar el desplegable "Asignar rol" y mostrar **todos** los roles devueltos, sin filtrar por código ni hardcodear una lista. Así, cuando exista un nuevo rol en la BD, aparecerá automáticamente.
+
 ### 5.4 Compras
 
 Base: `/api/qnt/v1/compras`
@@ -221,7 +223,7 @@ Base: `/api/qnt/v1/mi-perfil`. Todos los endpoints operan sobre el **usuario aut
 | Método | Ruta | Descripción | Roles |
 |--------|------|-------------|--------|
 | GET | `/mi-perfil` | Datos del usuario actual + tieneImagenCma + licencias (si piloto) | Autenticado |
-| PUT | `/mi-perfil` | Actualizar nombre, apellido, dni | Autenticado |
+| PUT | `/mi-perfil` | Actualizar nombre, apellido, dni, passwordMission (opcional, máx. 30 caracteres) | Autenticado |
 | PUT | `/mi-perfil/cambio-password` | Cambiar contraseña (body: oldPassword, newPassword) | Autenticado |
 | GET | `/mi-perfil/cma` | Vencimiento CMA y tieneImagen | PILOTO, ADMIN |
 | PUT | `/mi-perfil/cma` | Actualizar vencimiento CMA (body: vencimiento) | PILOTO, ADMIN |
@@ -257,6 +259,7 @@ Tipos y campos que el backend envía/recibe. Fechas en formato **ISO-8601** (`yy
 | imagenCma | — | No se serializa; usar GET /mi-perfil/cma/imagen |
 | horasVuelo | number \| null | |
 | cantidadVuelos | number \| null | |
+| passwordMission | string \| null | Opcional, máx. 30 caracteres. Dato del piloto (clave para misiones). Editable en PUT /mi-perfil. |
 | activo | boolean | Sincronizado con estado (ACTIVO → true; otros → false) |
 
 ### 6.2 Role
@@ -304,6 +307,7 @@ El usuario debe estar en estado `PENDIENTE_APROBACION`. Tras aprobar, pasa a `AC
 | nombre | string \| null | No; solo los enviados se actualizan |
 | apellido | string \| null | No |
 | dni | string \| null | No |
+| passwordMission | string \| null | No; máx. 30 caracteres. Dato del piloto (clave para misiones), no es la contraseña de login. |
 
 ### 6.7 CambioPasswordMiPerfilRequest (PUT /mi-perfil/cambio-password)
 
@@ -492,7 +496,7 @@ No hay un formato estándar único de error: a veces el cuerpo es un string (men
 ## 9. Roles y permisos
 
 - **ROLE_ADMIN:** acceso completo (usuarios, roles, CRUD de compras, licencias, seguros, delete donde aplique, enable/disable usuario, asignar/quitar roles, mi-perfil completo incl. CMA y licencias).
-- **ROLE_PILOTO:** puede gestionar **mi-perfil** (datos, cambio de contraseña, CMA y sus licencias ANAC). No puede gestionar otros usuarios ni el CRUD global de licencias/seguros/compras salvo lo expuesto en la API general según configuración.
+- **ROLE_PILOTO:** puede gestionar **mi-perfil** (datos, cambio de contraseña, **password_mission** —máx. 30 caracteres—, CMA y sus licencias ANAC). Debe poder editar sus datos de piloto: licencia(s) ANAC, certificado CMA y password_mission desde mi-perfil. No puede gestionar otros usuarios ni el CRUD global de licencias/seguros/compras salvo lo expuesto en la API general según configuración.
 - **ROLE_USER:** puede listar y gestionar compras, licencias y seguros (CRUD salvo delete de licencia/seguro que es solo ADMIN); puede cambiar su contraseña y ver/editar **mi-perfil** (datos y cambio de contraseña, sin CMA ni licencias propias). No puede gestionar usuarios ni roles.
 
 En las respuestas de `/auth/me`, los roles vienen con prefijo `ROLE_` (ej. `ROLE_ADMIN`). Para comparar en el front: usar el string completo o normalizar quitando el prefijo según convención del front.
@@ -561,4 +565,4 @@ Cuando el backend añada nuevos endpoints o cambie contratos, conviene actualiza
 
 ---
 
-*Documento generado para sincronizar backend (QNT-Gestion-Spring) con el proyecto frontend. Versión del informe: 1.2 (v0.12.0 — Mi perfil, CMA y licencias ANAC).*
+*Documento generado para sincronizar backend (QNT-Gestion-Spring) con el proyecto frontend. Versión del informe: 1.3 (v0.13.0 — Roles piloto en UI y password_mission).*

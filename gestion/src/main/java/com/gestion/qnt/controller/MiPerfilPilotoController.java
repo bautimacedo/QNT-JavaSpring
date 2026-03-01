@@ -93,6 +93,11 @@ public class MiPerfilPilotoController {
             if (request.nombre() != null && !request.nombre().isBlank()) usuario.setNombre(request.nombre());
             if (request.apellido() != null) usuario.setApellido(request.apellido().isBlank() ? null : request.apellido());
             if (request.dni() != null) usuario.setDni(request.dni().isBlank() ? null : request.dni());
+            if (request.passwordMission() != null) {
+                String pm = request.passwordMission().trim();
+                if (pm.length() > 30) pm = pm.substring(0, 30);
+                usuario.setPasswordMission(pm.isBlank() ? null : pm);
+            }
             usuarioBusiness.update(usuario);
             return ResponseEntity.ok(usuario);
         } catch (NotFoundException e) {

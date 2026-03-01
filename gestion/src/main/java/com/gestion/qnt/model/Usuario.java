@@ -64,6 +64,10 @@ public class Usuario {
     @Column(name = "cantidad_vuelos")
     private Integer cantidadVuelos;
 
+    /** Clave/contraseña para misiones; relevante para pilotos. Máx. 30 caracteres. */
+    @Column(name = "password_mission", length = 30, nullable = true)
+    private String passwordMission;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false, length = 30)
     private EstadoUsuario estado = EstadoUsuario.ACTIVO;

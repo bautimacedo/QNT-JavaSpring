@@ -5,6 +5,24 @@
 - Base de datos PostgreSQL con BD `qnt_spring` (o configurar `DB_URL` en `application.properties`).
 - Aplicación arrancada: `mvn -f gestion/pom.xml spring-boot:run`.
 
+### Error: "no existe la columna u1_0.estado"
+
+Si al registrar un usuario o hacer login aparece en logs:
+
+```text
+org.postgresql.util.PSQLException: ERROR: no existe la columna u1_0.estado
+```
+
+es que la tabla `usuarios` no tiene la columna `estado` (añadida en v0.11.0 para el flujo registro/aprobación). **Solución:**
+
+1. **Opción A — Migración SQL:** Ejecutar el script que añade la columna:
+   ```bash
+   psql -U postgres -d qnt_spring -f scripts/sql/add-estado-usuarios.sql
+   ```
+2. **Opción B — Reiniciar la app:** Con `spring.jpa.hibernate.ddl-auto=update`, al arrancar la aplicación Hibernate puede crear la columna. Detén el servidor y vuelve a ejecutar `./mvnw spring-boot:run` (o `mvn -f gestion/pom.xml spring-boot:run`).
+
+Tras añadir la columna, el registro y el login deberían funcionar con normalidad.
+
 ## Contraseña del usuario en BD
 
 El login compara la contraseña enviada con el **hash BCrypt** guardado en `usuarios.password`. Si ves "Credenciales incorrectas" con usuario y contraseña correctos, el hash en BD no coincide. Para corregirlo:
@@ -340,12 +358,13 @@ Cualquier **usuario autenticado** puede ver y actualizar su perfil (datos person
   `GET /api/qnt/v1/mi-perfil`  
   Respuesta **200** con: `usuario` (sin password), `tieneImagenCma`, y si es PILOTO/ADMIN una lista `licencias` (id, nombre, numLicencia, caducidad).
 
-- **Actualizar datos (nombre, apellido, DNI):**  
+- **Actualizar datos (nombre, apellido, DNI, password_mission):**  
   `PUT /api/qnt/v1/mi-perfil`  
   Body (JSON), todos opcionales; solo los enviados se actualizan:
   ```json
-  {"nombre":"Juan","apellido":"Pérez","dni":"12345678"}
+  {"nombre":"Juan","apellido":"Pérez","dni":"12345678","passwordMission":"claveMision30"}
   ```
+  `passwordMission` es opcional, máx. 30 caracteres (relevante para pilotos).
 
 - **Cambiar mi contraseña:**  
   `PUT /api/qnt/v1/mi-perfil/cambio-password`  

@@ -6,5 +6,7 @@ package com.gestion.qnt.controller.dto;
 public record ActualizarMiPerfilRequest(
         String nombre,
         String apellido,
-        String dni
+        String dni,
+        /** Opcional; máx. 30 caracteres. Relevante para pilotos. */
+        String passwordMission
 ) {}

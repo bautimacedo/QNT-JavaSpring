@@ -2,6 +2,7 @@ package com.gestion.qnt.controller;
 
 import com.gestion.qnt.config.ApiConstants;
 import com.gestion.qnt.controller.dto.AssignRoleRequest;
+import com.gestion.qnt.controller.dto.AprobarUsuarioRequest;
 import com.gestion.qnt.controller.dto.ChangePasswordRequest;
 import com.gestion.qnt.controller.dto.CreateUsuarioRequest;
 import com.gestion.qnt.model.Role;
@@ -17,6 +18,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +45,38 @@ public class UsuarioRestController {
             return ResponseEntity.ok(usuarioBusiness.list());
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Lista usuarios con estado PENDIENTE_APROBACION (solo ADMIN).
+     */
+    @GetMapping("/pendientes")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Usuario>> listPendientes() {
+        try {
+            return ResponseEntity.ok(usuarioBusiness.listPendientes());
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Aprueba un usuario pendiente: asigna rol y pone estado ACTIVO (solo ADMIN).
+     */
+    @PutMapping("/{id}/aprobar")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> aprobar(@PathVariable Long id, @Valid @RequestBody AprobarUsuarioRequest request) {
+        try {
+            Usuario updated = usuarioBusiness.aprobar(id, request.roleCodigo());
+            return ResponseEntity.ok(updated);
+        } catch (NotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (BusinessException e) {
+            if ("El usuario no está pendiente de aprobación".equals(e.getMessage())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 

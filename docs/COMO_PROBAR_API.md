@@ -53,6 +53,63 @@ Si no hay usuarios en BD, no se puede hacer login. Opciones:
   El `<token>` es el string que devuelve el body del login (200 OK). No se vuelven a enviar username ni password en los headers.
 - Los **datos del recurso** (ej. cuerpo de una compra, de un usuario) van en el **body** en formato **JSON**.
 
+### Registro público (sin token)
+
+Cualquiera puede registrarse; el usuario queda con estado **PENDIENTE_APROBACION** y no puede hacer login hasta que un ADMIN lo apruebe.
+
+- **Registro:**  
+  `POST /api/qnt/v1/auth/register` — **no** enviar header `Authorization`.  
+  Body (JSON):
+  ```json
+  {
+    "nombre": "Juan",
+    "apellido": "Piloto",
+    "email": "juan@ejemplo.com",
+    "password": "miClaveSegura"
+  }
+  ```
+  Respuesta **201 Created** con el usuario creado (sin password en el body).  
+  Si el email ya existe → **409 Conflict**.
+
+### Login según estado
+
+- **Login (usuario ACTIVO):**  
+  `POST /api/qnt/v1/auth/login` con body JSON (no enviar header `Authorization`):
+  ```json
+  {"username":"admin@ejemplo.com","password":"miClave"}
+  ```
+  Respuesta **200** con el token JWT en el cuerpo (text/plain).
+
+- **Login (usuario PENDIENTE_APROBACION):**  
+  Mismo request con email/password de un usuario recién registrado y aún no aprobado.  
+  Respuesta **403 Forbidden** con mensaje: `Tu cuenta está pendiente de aprobación por un administrador`.
+
+- **Login (usuario DESACTIVADO):**  
+  Si un admin desactivó al usuario.  
+  Respuesta **403 Forbidden** con mensaje: `Tu cuenta está desactivada`.
+
+### Aprobación por ADMIN
+
+Solo usuarios con rol ADMIN pueden listar pendientes y aprobar.
+
+- **Listar usuarios pendientes de aprobación:**  
+  `GET /api/qnt/v1/usuarios/pendientes`  
+  Header: `Authorization: Bearer <token>` (admin).  
+  Respuesta **200** con la lista de usuarios con `estado == PENDIENTE_APROBACION`.
+
+- **Aprobar usuario (asignar rol y activar):**  
+  `PUT /api/qnt/v1/usuarios/{id}/aprobar`  
+  Header: `Authorization: Bearer <token>` (admin).  
+  Body (JSON):
+  ```json
+  {"roleCodigo": "ROLE_PILOTO"}
+  ```
+  Valores típicos: `ROLE_ADMIN`, `ROLE_PILOTO`, `ROLE_USER` (deben existir en la tabla `roles`).  
+  Respuesta **200 OK** con el usuario actualizado (estado ACTIVO, con el rol asignado). A partir de ahí el usuario puede hacer login.  
+  Si el usuario no está pendiente de aprobación → **400 Bad Request**. Si usuario o rol no existen → **404**.
+
+### Resto del flujo (roles, usuarios, etc.)
+
 1. **Crear un rol** (si no existe):  
    `POST /api/qnt/v1/roles` con header `Authorization: Bearer <token>` y body:
    ```json
@@ -127,7 +184,8 @@ Todos los endpoints de compras requieren el header **`Authorization: Bearer <tok
     "observaciones": "Entrega en oficina"
   }
   ```
-  Respuesta **201 Created** con la compra creada en el body. Si `proveedorId` o `siteId` no existen → **404**.
+  **Proveedor:** se puede enviar **`proveedorId`** (id de un proveedor ya existente) o **`proveedorNombre`** (nombre del proveedor). Si se envía `proveedorNombre` y no existe un proveedor con ese nombre, se crea automáticamente y se asocia a la compra. Hay que enviar al menos uno de los dos.
+  Respuesta **201 Created** con la compra creada en el body. Si se usa `proveedorId` y no existe → **404**. Si `siteId` no existe → **404**.
 
 - **Editar:**  
   `PUT /api/qnt/v1/compras/{id}`  
@@ -278,3 +336,13 @@ Todos los endpoints de licencias requieren el header **`Authorization: Bearer <t
 - La mayoría de endpoints exigen rol ADMIN (`@PreAuthorize("hasRole('ADMIN')")`).
 - Sin token, las peticiones a estas rutas devuelven **401**.
 - **Si el login devuelve 403:** quita el header `Authorization` (y cualquier Bearer token) de la petición de login en Postman; esa ruta es pública y no debe llevar token.
+
+## Migración: columna estado (usuarios existentes)
+
+Si la tabla `usuarios` ya tiene datos antes de usar el flujo registro/aprobación, hay que agregar la columna `estado` con valor por defecto para que los usuarios actuales sigan pudiendo hacer login (se consideran ACTIVO). Con `spring.jpa.hibernate.ddl-auto=update`, Hibernate puede crear la columna; si la BD ya existía sin esa columna, ejecutar en PostgreSQL:
+
+```sql
+ALTER TABLE usuarios ADD COLUMN estado VARCHAR(30) NOT NULL DEFAULT 'ACTIVO';
+```
+
+Si la columna ya existe pero sin default y hay filas con NULL, actualizar: `UPDATE usuarios SET estado = 'ACTIVO' WHERE estado IS NULL;`

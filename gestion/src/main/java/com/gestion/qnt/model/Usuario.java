@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import com.gestion.qnt.model.enums.EstadoUsuario;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +56,10 @@ public class Usuario {
 
     @Column(name = "cantidad_vuelos")
     private Integer cantidadVuelos;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado", nullable = false, length = 30)
+    private EstadoUsuario estado = EstadoUsuario.ACTIVO;
 
     @Column(nullable = false)
     private Boolean activo = true;

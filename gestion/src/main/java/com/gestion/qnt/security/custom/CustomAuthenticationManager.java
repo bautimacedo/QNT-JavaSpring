@@ -1,6 +1,7 @@
 package com.gestion.qnt.security.custom;
 
 import com.gestion.qnt.model.Usuario;
+import com.gestion.qnt.model.enums.EstadoUsuario;
 import com.gestion.qnt.model.business.exceptions.BusinessException;
 import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import com.gestion.qnt.model.business.interfaces.IUsuarioBusiness;
@@ -13,6 +14,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -73,8 +75,20 @@ public class CustomAuthenticationManager implements AuthenticationManager {
             throw new BadCredentialsException("Contraseña incorrecta");
         }
 
+        EstadoUsuario estado = usuario.getEstado();
+        if (estado != null && estado != EstadoUsuario.ACTIVO) {
+            if (estado == EstadoUsuario.PENDIENTE_APROBACION) {
+                throw new DisabledException("Tu cuenta está pendiente de aprobación por un administrador");
+            }
+            if (estado == EstadoUsuario.DESACTIVADO) {
+                throw new DisabledException("Tu cuenta está desactivada");
+            }
+            throw new DisabledException("Tu cuenta está desactivada");
+        }
+
+        // Compatibilidad: si estado es ACTIVO, asegurar activo == true
         if (!Boolean.TRUE.equals(usuario.getActivo())) {
-            throw new org.springframework.security.authentication.DisabledException("Usuario desactivado");
+            throw new DisabledException("Tu cuenta está desactivada");
         }
 
         var roleCodigos = usuario.getRoles() == null

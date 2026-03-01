@@ -29,6 +29,10 @@ public interface IUsuarioBusiness {
 
     void enable(String email) throws NotFoundException, BusinessException;
 
+    List<Usuario> listPendientes() throws BusinessException;
+
+    Usuario aprobar(Long usuarioId, String roleCodigo) throws NotFoundException, BusinessException;
+
     Usuario addRole(Role role, Usuario user) throws NotFoundException, BusinessException;
 
     Usuario removeRole(Role role, Usuario user) throws NotFoundException, BusinessException;

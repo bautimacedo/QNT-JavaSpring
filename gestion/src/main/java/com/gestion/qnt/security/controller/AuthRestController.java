@@ -7,9 +7,12 @@ import com.gestion.qnt.debug.DebugLog;
 import com.gestion.qnt.security.AuthConstants;
 import com.gestion.qnt.security.AuthUser;
 import com.gestion.qnt.security.custom.CustomAuthenticationManager;
+import com.gestion.qnt.model.Usuario;
+import com.gestion.qnt.model.enums.EstadoUsuario;
 import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import com.gestion.qnt.model.business.interfaces.IUsuarioBusiness;
 import com.gestion.qnt.model.business.exceptions.BusinessException;
+import com.gestion.qnt.model.business.exceptions.FoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +20,7 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -79,10 +84,37 @@ public class AuthRestController {
                     Map.of("message", e.getMessage()), "A");
             // #endregion
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales incorrectas");
+        } catch (DisabledException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         } catch (AuthenticationServiceException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al autenticar");
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+    }
+
+    /**
+     * Registro público. Crea un usuario con estado PENDIENTE_APROBACION (sin roles).
+     * Debe ser aprobado por un ADMIN para poder hacer login.
+     */
+    @PostMapping(value = "/auth/register", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
+        try {
+            Usuario usuario = new Usuario();
+            usuario.setNombre(request.getNombre());
+            usuario.setApellido(request.getApellido());
+            usuario.setEmail(request.getEmail());
+            usuario.setPassword(passwordEncoder.encode(request.getPassword()));
+            usuario.setEstado(EstadoUsuario.PENDIENTE_APROBACION);
+            usuario.setActivo(false);
+            usuario.setRoles(new java.util.ArrayList<>());
+
+            Usuario created = usuarioBusiness.add(usuario);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (FoundException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 

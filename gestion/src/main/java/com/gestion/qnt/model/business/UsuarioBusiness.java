@@ -2,10 +2,12 @@ package com.gestion.qnt.model.business;
 
 import com.gestion.qnt.model.Role;
 import com.gestion.qnt.model.Usuario;
+import com.gestion.qnt.model.enums.EstadoUsuario;
 import com.gestion.qnt.model.business.exceptions.BusinessException;
 import com.gestion.qnt.model.business.exceptions.FoundException;
 import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import com.gestion.qnt.model.business.interfaces.IUsuarioBusiness;
+import com.gestion.qnt.model.business.interfaces.IRoleBusiness;
 import com.gestion.qnt.repository.UsuarioRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,9 @@ public class UsuarioBusiness implements IUsuarioBusiness {
 
     @Autowired
     private UsuarioRepository repository;
+
+    @Autowired
+    private IRoleBusiness roleBusiness;
 
     @Override
     public List<Usuario> list() throws BusinessException {
@@ -123,6 +128,7 @@ public class UsuarioBusiness implements IUsuarioBusiness {
         try {
             Usuario user = load(email);
             user.setActivo(false);
+            user.setEstado(EstadoUsuario.DESACTIVADO);
             update(user);
         } catch (NotFoundException | BusinessException e) {
             throw e;
@@ -137,12 +143,43 @@ public class UsuarioBusiness implements IUsuarioBusiness {
         try {
             Usuario user = load(email);
             user.setActivo(true);
+            user.setEstado(EstadoUsuario.ACTIVO);
             update(user);
         } catch (NotFoundException | BusinessException e) {
             throw e;
         } catch (Exception e) {
             log.error("Error al activar usuario con email {}", email, e);
             throw new BusinessException("Error al activar usuario", e);
+        }
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public List<Usuario> listPendientes() throws BusinessException {
+        try {
+            return repository.findByEstado(EstadoUsuario.PENDIENTE_APROBACION);
+        } catch (Exception e) {
+            log.error("Error al listar usuarios pendientes", e);
+            throw new BusinessException("Error al listar usuarios pendientes", e);
+        }
+    }
+
+    @Override
+    public Usuario aprobar(Long usuarioId, String roleCodigo) throws NotFoundException, BusinessException {
+        try {
+            Usuario usuario = load(usuarioId);
+            if (usuario.getEstado() != EstadoUsuario.PENDIENTE_APROBACION) {
+                throw new BusinessException("El usuario no está pendiente de aprobación");
+            }
+            Role role = roleBusiness.load(roleCodigo);
+            usuario.setEstado(EstadoUsuario.ACTIVO);
+            usuario.setActivo(true);
+            return addRole(role, usuario);
+        } catch (NotFoundException | BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error al aprobar usuario {}", usuarioId, e);
+            throw new BusinessException("Error al aprobar usuario", e);
         }
     }
 

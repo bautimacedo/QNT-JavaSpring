@@ -8,6 +8,11 @@ import com.gestion.qnt.repository.CompraRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.gestion.qnt.controller.dto.CreateCompraRequest;
+import com.gestion.qnt.model.Proveedor;
+import com.gestion.qnt.model.Site;
+import com.gestion.qnt.model.business.interfaces.IProveedorBusiness;
+import com.gestion.qnt.model.business.interfaces.ISiteBusiness;
 
 import java.util.List;
 
@@ -17,6 +22,12 @@ public class CompraBusiness implements ICompraBusiness {
 
     @Autowired
     private CompraRepository repository;
+
+    @Autowired
+    private IProveedorBusiness proveedorBusiness;
+
+    @Autowired
+    private ISiteBusiness siteBusiness;
 
     @Override
     public List<Compra> list() throws BusinessException {
@@ -42,9 +53,29 @@ public class CompraBusiness implements ICompraBusiness {
     }
 
     @Override
-    public Compra add(Compra entity) throws BusinessException {
+    public Compra add(CreateCompraRequest request) throws NotFoundException, BusinessException {
         try {
-            return repository.save(entity);
+            Proveedor proveedor = proveedorBusiness.load(request.proveedorId());
+            Site site = null;
+            if (request.siteId() != null) {
+                site = siteBusiness.load(request.siteId());
+            }
+
+            Compra compra = new Compra();
+            compra.setProveedor(proveedor);
+            compra.setFechaCompra(request.fechaCompra());
+            compra.setFechaFactura(request.fechaFactura());
+            compra.setNumeroFactura(request.numeroFactura());
+            compra.setImporte(request.importe());
+            compra.setMoneda(request.moneda() != null && !request.moneda().isBlank() ? request.moneda() : "ARS");
+            compra.setTipoCompra(request.tipoCompra());
+            compra.setDescripcion(request.descripcion());
+            compra.setSite(site);
+            compra.setObservaciones(request.observaciones());
+
+            return repository.save(compra);
+        } catch (NotFoundException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Error al agregar compra", e);
             throw new BusinessException("Error al agregar compra", e);
@@ -60,6 +91,36 @@ public class CompraBusiness implements ICompraBusiness {
             throw e;
         } catch (Exception e) {
             log.error("Error al actualizar compra con id {}", entity.getId(), e);
+            throw new BusinessException("Error al actualizar compra", e);
+        }
+    }
+
+    @Override
+    public Compra update(Long id, CreateCompraRequest request) throws NotFoundException, BusinessException {
+        try {
+            Compra existing = load(id);
+
+            Proveedor proveedor = proveedorBusiness.load(request.proveedorId());
+            existing.setProveedor(proveedor);
+            existing.setFechaCompra(request.fechaCompra());
+            existing.setFechaFactura(request.fechaFactura());
+            existing.setNumeroFactura(request.numeroFactura());
+            existing.setImporte(request.importe());
+            existing.setMoneda(request.moneda() != null && !request.moneda().isBlank() ? request.moneda() : "ARS");
+            existing.setTipoCompra(request.tipoCompra());
+            existing.setDescripcion(request.descripcion());
+            if (request.siteId() != null) {
+                existing.setSite(siteBusiness.load(request.siteId()));
+            } else {
+                existing.setSite(null);
+            }
+            existing.setObservaciones(request.observaciones());
+
+            return repository.save(existing);
+        } catch (NotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error al actualizar compra con id {}", id, e);
             throw new BusinessException("Error al actualizar compra", e);
         }
     }

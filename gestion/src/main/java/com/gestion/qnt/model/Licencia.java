@@ -1,6 +1,5 @@
 package com.gestion.qnt.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,11 +26,6 @@ public class Licencia {
     @JoinColumn(name = "compra_id")
     private Compra compra;
 
-    /** Piloto al que pertenece esta licencia (para licencias ANAC / mi-perfil). */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "piloto_id")
-    private Usuario piloto;
-
     @Column(name = "fecha_compra")
     private LocalDate fechaCompra;
 
@@ -43,11 +37,4 @@ public class Licencia {
 
     @Column(nullable = false)
     private Boolean activo = true;
-
-    /** Imagen/documento de la licencia. No se serializa en JSON. */
-    @Lob
-    @Column(name = "imagen", nullable = true)
-    @Basic(optional = true)
-    @JsonIgnore
-    private byte[] imagen;
 }

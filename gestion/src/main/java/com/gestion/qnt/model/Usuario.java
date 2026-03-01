@@ -74,4 +74,10 @@ public class Usuario {
 
     @Column(nullable = false)
     private Boolean activo = true;
+
+    @Lob
+    @Column(name = "imagen_perfil", nullable = true)
+    @Basic(optional = true)
+    @JsonIgnore
+    private byte[] imagenPerfil;
 }

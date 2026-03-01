@@ -10,8 +10,6 @@ public interface ILicenciaBusiness {
 
     List<Licencia> list() throws BusinessException;
 
-    List<Licencia> listByPiloto(Long pilotoId) throws BusinessException;
-
     Licencia load(Long id) throws NotFoundException, BusinessException;
 
     Licencia add(Licencia entity) throws BusinessException;

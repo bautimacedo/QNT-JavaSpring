@@ -179,7 +179,9 @@ Póliza de seguro. Dock y Dron referencian un Seguro (no un String). Opcionalmen
 
 ---
 
-### 2.9 Licencia (software: FlightHub, FlytBase)
+### 2.9 Licencia (solo software: FlightHub, FlytBase, etc.)
+
+Entidad exclusiva para licencias de software. No incluye certificaciones de piloto (ver LicenciaANAC).
 
 | Atributo      | Tipo Java  | BD / Notas |
 |---------------|------------|------------|
@@ -198,7 +200,28 @@ Póliza de seguro. Dock y Dron referencian un Seguro (no un String). Opcionalmen
 
 ---
 
-### 2.10 AntenaRtk
+### 2.10 LicenciaANAC (certificaciones de piloto)
+
+Tabla: `licencias_anac`. Certificaciones ANAC del piloto (CMA, certificado de idoneidad). El nombre y número de licencia del piloto están en **Usuario**, no aquí.
+
+| Atributo                    | Tipo Java  | BD / Notas |
+|-----------------------------|------------|------------|
+| id                          | Long       | PK |
+| **pilotoId**                | Long       | FK NOT NULL → usuarios |
+| fechaVencimientoCma         | LocalDate  | nullable |
+| fechaEmision                | LocalDate  | nullable |
+| caducidad                   | LocalDate  | nullable |
+| imagenCma                   | byte[]     | @Lob, nullable |
+| imagenCertificadoIdoneidad  | byte[]     | @Lob, nullable |
+| activo                      | Boolean    | default true |
+
+**Relaciones:**  
+- **Many-to-One** → `Usuario` (piloto).  
+- **Nota:** No tiene `nombre` ni `numeroLicencia`; esos datos pertenecen al piloto en Usuario.
+
+---
+
+### 2.11 AntenaRtk
 
 | Atributo     | Tipo Java | BD / Notas |
 |--------------|-----------|------------|
@@ -217,7 +240,7 @@ Póliza de seguro. Dock y Dron referencian un Seguro (no un String). Opcionalmen
 
 ---
 
-### 2.11 AntenaStarlink
+### 2.12 AntenaStarlink
 
 | Atributo         | Tipo Java  | BD / Notas |
 |------------------|------------|------------|
@@ -236,7 +259,7 @@ Póliza de seguro. Dock y Dron referencian un Seguro (no un String). Opcionalmen
 
 ---
 
-### 2.12 Bateria
+### 2.13 Bateria
 
 | Atributo           | Tipo Java   | BD / Notas |
 |--------------------|-------------|------------|
@@ -259,7 +282,7 @@ Póliza de seguro. Dock y Dron referencian un Seguro (no un String). Opcionalmen
 
 ---
 
-### 2.13 Helice
+### 2.14 Helice
 
 | Atributo           | Tipo Java   | BD / Notas |
 |--------------------|-------------|------------|
@@ -282,7 +305,7 @@ Póliza de seguro. Dock y Dron referencian un Seguro (no un String). Opcionalmen
 
 ---
 
-### 2.14 MantenimientoDock
+### 2.15 MantenimientoDock
 
 | Atributo    | Tipo Java | BD / Notas |
 |-------------|-----------|------------|
@@ -298,7 +321,7 @@ Póliza de seguro. Dock y Dron referencian un Seguro (no un String). Opcionalmen
 
 ---
 
-### 2.15 MantenimientoDron
+### 2.16 MantenimientoDron
 
 | Atributo           | Tipo Java       | BD / Notas |
 |--------------------|-----------------|------------|
@@ -319,7 +342,7 @@ Póliza de seguro. Dock y Dron referencian un Seguro (no un String). Opcionalmen
 
 ---
 
-### 2.16 Instalacion (trazabilidad)
+### 2.17 Instalacion (trazabilidad)
 
 Registro de quién instaló/reemplazó un componente (dock, dron, batería, hélice) y cuándo.
 
@@ -341,7 +364,7 @@ Registro de quién instaló/reemplazó un componente (dock, dron, batería, hél
 
 ---
 
-### 2.17 Role (tabla de roles)
+### 2.18 Role (tabla de roles)
 
 Entidad para roles del sistema (admin, piloto, mantenimiento, etc.). Permite ampliar después con permisos por rol.
 
@@ -356,7 +379,7 @@ Entidad para roles del sistema (admin, piloto, mantenimiento, etc.). Permite amp
 
 ---
 
-### 2.18 Usuario
+### 2.19 Usuario
 
 | Atributo       | Tipo Java   | BD / Notas |
 |----------------|-------------|------------|
@@ -371,14 +394,15 @@ Entidad para roles del sistema (admin, piloto, mantenimiento, etc.). Permite amp
 | cmaImagenes    | String      | rutas o JSON, nullable |
 | horasVuelo     | Integer     | nullable |
 | cantidadVuelos | Integer     | nullable |
+| imagenPerfil   | byte[]      | @Lob, nullable (foto de perfil; no serializar en JSON) |
 
 **Relaciones:**  
 - **Many-to-Many** → `Role` (tabla `usuario_roles`).  
-- **One-to-Many** → `MantenimientoDock`, `MantenimientoDron`, `Instalacion`, `Mision` (como piloto).
+- **One-to-Many** → `MantenimientoDock`, `MantenimientoDron`, `Instalacion`, `Mision` (como piloto), `LicenciaANAC`.
 
 ---
 
-### 2.19 Pozo
+### 2.20 Pozo
 
 | Atributo   | Tipo Java | BD / Notas |
 |------------|-----------|------------|
@@ -393,7 +417,7 @@ Entidad para roles del sistema (admin, piloto, mantenimiento, etc.). Permite amp
 
 ---
 
-### 2.20 Mision
+### 2.21 Mision
 
 | Atributo         | Tipo Java     | BD / Notas |
 |------------------|---------------|------------|
@@ -414,7 +438,7 @@ Entidad para roles del sistema (admin, piloto, mantenimiento, etc.). Permite amp
 
 ---
 
-### 2.21 Log (auditoría / trazabilidad)
+### 2.22 Log (auditoría / trazabilidad)
 
 | Atributo    | Tipo Java | BD / Notas |
 |-------------|-----------|------------|
@@ -443,6 +467,7 @@ Entidad para roles del sistema (admin, piloto, mantenimiento, etc.). Permite amp
 | Dock               | N:1 Site; 1:1 Dron; N:1 Licencia, AntenaRtk, AntenaStarlink, **Seguro**, MantenimientoDock (ultimoMantenimiento); 1:N MantenimientoDock | N:1 Site; 1:1 Dron; 1:N MantenimientoDock |
 | Dron               | N:1 Dock, **MantenimientoDron** (ultimoMantenimiento); 1:N MantenimientoDron, Bateria, Helice, Mision; N:1 **Seguro** | 1:1 Dock; 1:N Bateria, Helice, Mision |
 | Licencia           | N:1 **Compra** (opcional)     | 1:N Dock |
+| LicenciaANAC       | N:1 Usuario (piloto)          | — |
 | AntenaRtk          | N:1 Dock (dueño FK)           | 1:1 Dock |
 | AntenaStarlink     | N:1 Dock (dueño FK)           | 1:1 Dock |
 | Bateria            | N:1 Dron                      | 1:N Dron; N:1 MantenimientoDron (bateriaVieja/bateriaNueva) |
@@ -451,7 +476,7 @@ Entidad para roles del sistema (admin, piloto, mantenimiento, etc.). Permite amp
 | MantenimientoDron  | N:1 Dron, N:1 Usuario; N:1 Bateria (vieja), N:1 Bateria (nueva); N:N Helice (viejas/nuevas) | 1:1 Dron (ultimoMantenimiento) |
 | Instalacion        | N:1 Usuario; N:1 Dock/Dron/Bateria/Helice (opcionales) | — |
 | **Role**           | N:N Usuario                   | N:N Usuario (tabla usuario_roles) |
-| Usuario            | N:N Role; 1:N MantenimientoDock, MantenimientoDron, Instalacion, Mision | — |
+| Usuario            | N:N Role; 1:N MantenimientoDock, MantenimientoDron, Instalacion, Mision, LicenciaANAC | — |
 | Pozo               | 1:N Mision                    | N:1 Site |
 | Mision             | N:1 Usuario, Dock, Dron, Pozo | — |
 | Log                | N:1 Usuario (opcional)        | — (referencia polimórfica por tipo+id) |

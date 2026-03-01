@@ -12,7 +12,7 @@ Este documento describe el **contrato del backend** para que el proyecto fronten
 
 **Stack backend:** Spring Boot 3.x, Java 17+, Spring Security (JWT), JPA/Hibernate, PostgreSQL.
 
-**Última actualización del informe:** Tras v0.14.0 (fix auth/me authorities y roles en mi-perfil). Este documento se actualiza **al finalizar cada tarea** del backend que afecte la API (endpoints, modelos, auth o convenciones).
+**Última actualización del informe:** Tras v0.15.0 (separar Licencia SW de LicenciaANAC, foto de perfil). Este documento se actualiza **al finalizar cada tarea** del backend que afecte la API (endpoints, modelos, auth o convenciones).
 
 ---
 
@@ -219,25 +219,25 @@ Base: `/api/qnt/v1/seguros`
 
 ### 5.7 Mi perfil
 
-Base: `/api/qnt/v1/mi-perfil`. Todos los endpoints operan sobre el **usuario autenticado** (no se envía usuarioId). Configuración (perfil y cambio de contraseña) para **cualquier usuario autenticado**; CMA y licencias solo para **PILOTO** o **ADMIN**.
+Base: `/api/qnt/v1/mi-perfil`. Todos los endpoints operan sobre el **usuario autenticado** (no se envía usuarioId). Configuración (perfil y cambio de contraseña) para **cualquier usuario autenticado**; licencias ANAC solo para **PILOTO** o **ADMIN**.
 
 | Método | Ruta | Descripción | Roles |
 |--------|------|-------------|--------|
-| GET | `/mi-perfil` | Datos del usuario actual + tieneImagenCma + licencias (si piloto) | Autenticado |
-| PUT | `/mi-perfil` | Actualizar nombre, apellido, dni, passwordMission (opcional, máx. 30 caracteres) | Autenticado |
-| PUT | `/mi-perfil/cambio-password` | Cambiar contraseña (body: oldPassword, newPassword) | Autenticado |
-| GET | `/mi-perfil/cma` | Vencimiento CMA y tieneImagen | PILOTO, ADMIN |
-| PUT | `/mi-perfil/cma` | Actualizar vencimiento CMA (body: vencimiento) | PILOTO, ADMIN |
-| PUT | `/mi-perfil/cma/imagen` | Subir imagen CMA (multipart, parte `file`) | PILOTO, ADMIN |
-| GET | `/mi-perfil/cma/imagen` | Obtener imagen CMA | PILOTO, ADMIN |
-| GET | `/mi-perfil/licencias` | Listar mis licencias | PILOTO, ADMIN |
-| POST | `/mi-perfil/licencias` | Crear licencia (piloto = usuario actual) | PILOTO, ADMIN |
-| PUT | `/mi-perfil/licencias/{id}` | Actualizar mi licencia | PILOTO, ADMIN |
-| DELETE | `/mi-perfil/licencias/{id}` | Eliminar mi licencia | PILOTO, ADMIN |
-| PUT | `/mi-perfil/licencias/{id}/imagen` | Subir imagen de licencia (multipart) | PILOTO, ADMIN |
-| GET | `/mi-perfil/licencias/{id}/imagen` | Obtener imagen de licencia | PILOTO, ADMIN |
+| GET | `/mi-perfil` | Datos del usuario + tieneFotoPerfil + licencias ANAC (si piloto) | Autenticado |
+| PUT | `/mi-perfil` | Actualizar nombre, apellido, dni, passwordMission | Autenticado |
+| PUT | `/mi-perfil/cambio-password` | Cambiar contraseña | Autenticado |
+| PUT | `/mi-perfil/foto-perfil` | Subir foto de perfil (multipart, parte `file`) | Autenticado |
+| GET | `/mi-perfil/foto-perfil` | Obtener foto de perfil | Autenticado |
+| GET | `/mi-perfil/licencias` | Listar mis licencias ANAC | PILOTO, ADMIN |
+| POST | `/mi-perfil/licencias` | Crear licencia ANAC (piloto = usuario actual) | PILOTO, ADMIN |
+| PUT | `/mi-perfil/licencias/{id}` | Actualizar mi licencia ANAC | PILOTO, ADMIN |
+| DELETE | `/mi-perfil/licencias/{id}` | Eliminar mi licencia ANAC | PILOTO, ADMIN |
+| PUT | `/mi-perfil/licencias/{id}/imagen-cma` | Subir imagen CMA de licencia (multipart) | PILOTO, ADMIN |
+| GET | `/mi-perfil/licencias/{id}/imagen-cma` | Obtener imagen CMA de licencia | PILOTO, ADMIN |
+| PUT | `/mi-perfil/licencias/{id}/imagen-certificado-idoneidad` | Subir imagen Cert. Idoneidad (multipart) | PILOTO, ADMIN |
+| GET | `/mi-perfil/licencias/{id}/imagen-certificado-idoneidad` | Obtener imagen Cert. Idoneidad | PILOTO, ADMIN |
 
-**Respuesta de GET /mi-perfil:** objeto con `usuario` (objeto Usuario completo, incluye `roles`: [{ id, codigo, nombre }]), `roles` (mismo array en la raíz, para comprobar permisos desde el front), `tieneImagenCma` (boolean) y `licencias` (array resumido si es PILOTO/ADMIN). El frontend puede usar `response.roles` o `response.usuario.roles` para saber si el usuario es piloto (p. ej. algún rol con `codigo === "ROLE_PILOTO"`).
+**Respuesta de GET /mi-perfil:** objeto con `usuario`, `roles` (array en la raíz), `tieneFotoPerfil` (boolean) y `licencias` (array con: id, fechaVencimientoCma, fechaEmision, caducidad, tieneImagenCma, tieneImagenCertificadoIdoneidad, activo) si PILOTO/ADMIN.
 
 ---
 
@@ -259,7 +259,7 @@ Tipos y campos que el backend envía/recibe. Fechas en formato **ISO-8601** (`yy
 | dni | string \| null | |
 | cmaVencimiento | string (date) \| null | ISO-8601 |
 | cmaImagenes | string \| null | |
-| imagenCma | — | No se serializa; usar GET /mi-perfil/cma/imagen |
+| imagenPerfil | — | No se serializa; usar GET /mi-perfil/foto-perfil |
 | horasVuelo | number \| null | |
 | cantidadVuelos | number \| null | |
 | passwordMission | string \| null | Opcional, máx. 30 caracteres. Dato del piloto (clave para misiones). Editable en PUT /mi-perfil. |
@@ -319,35 +319,27 @@ El usuario debe estar en estado `PENDIENTE_APROBACION`. Tras aprobar, pasa a `AC
 | oldPassword | string | Sí |
 | newPassword | string | Sí (mín. 6 caracteres) |
 
-### 6.8 CmaVencimientoRequest (PUT /mi-perfil/cma)
-
-| Campo | Tipo |
-|-------|------|
-| vencimiento | string (date) \| null | ISO-8601 |
-
-### 6.9 CrearLicenciaMiPerfilRequest (POST /mi-perfil/licencias)
+### 6.8 CrearLicenciaMiPerfilRequest (POST /mi-perfil/licencias)
 
 | Campo | Tipo | Obligatorio |
 |-------|------|-------------|
-| nombre | string \| null | |
-| numLicencia | string \| null | |
-| fechaCompra | string (date) \| null | |
-| caducidad | string (date) \| null | |
-| version | string \| null | |
-| activo | boolean \| null | Default true |
+| fechaVencimientoCma | string (date) \| null | No |
+| fechaEmision | string (date) \| null | No |
+| caducidad | string (date) \| null | No |
+| activo | boolean \| null | No |
 
-### 6.10 ActualizarLicenciaMiPerfilRequest (PUT /mi-perfil/licencias/{id})
+### 6.9 ActualizarLicenciaMiPerfilRequest (PUT /mi-perfil/licencias/{id})
 
-Mismos campos que CrearLicenciaMiPerfilRequest; todos opcionales.
+Mismos campos que CrearLicenciaMiPerfilRequest (fechaVencimientoCma, fechaEmision, caducidad, activo); todos opcionales.
 
-### 6.11 AssignRoleRequest (asignar / quitar rol)
+### 6.10 AssignRoleRequest (asignar / quitar rol)
 
 | Campo | Tipo |
 |-------|------|
 | email | string |
 | roleCodigo | string |
 
-### 6.12 ChangePasswordRequest
+### 6.11 ChangePasswordRequest
 
 | Campo | Tipo |
 |-------|------|
@@ -355,7 +347,7 @@ Mismos campos que CrearLicenciaMiPerfilRequest; todos opcionales.
 | oldPassword | string |
 | newPassword | string |
 
-### 6.13 Compra (entidad)
+### 6.12 Compra (entidad)
 
 | Campo | Tipo | Notas |
 |-------|------|--------|
@@ -372,7 +364,7 @@ Mismos campos que CrearLicenciaMiPerfilRequest; todos opcionales.
 | observaciones | string \| null | |
 | imagenFactura | — | No se serializa; usar GET .../imagen |
 
-### 6.14 Proveedor (anidado en Compra)
+### 6.13 Proveedor (anidado en Compra)
 
 | Campo | Tipo |
 |-------|------|
@@ -387,7 +379,7 @@ Mismos campos que CrearLicenciaMiPerfilRequest; todos opcionales.
 
 No hay CRUD dedicado de Proveedor en la API; se crea/usa desde Compras (proveedorId o proveedorNombre).
 
-### 6.15 Site (anidado en Compra)
+### 6.14 Site (anidado en Compra)
 
 | Campo | Tipo |
 |-------|------|
@@ -396,7 +388,7 @@ No hay CRUD dedicado de Proveedor en la API; se crea/usa desde Compras (proveedo
 
 No hay CRUD dedicado de Site en la API actual; se referencia por `siteId` en CreateCompraRequest.
 
-### 6.16 CreateCompraRequest (POST/PUT compra)
+### 6.15 CreateCompraRequest (POST/PUT compra)
 
 | Campo | Tipo | Obligatorio |
 |-------|------|-------------|
@@ -412,7 +404,7 @@ No hay CRUD dedicado de Site en la API actual; se referencia por `siteId` en Cre
 | siteId | number \| null | |
 | observaciones | string \| null | |
 
-### 6.17 Licencia (entidad)
+### 6.16 Licencia (entidad)
 
 | Campo | Tipo | Notas |
 |-------|------|--------|
@@ -420,12 +412,25 @@ No hay CRUD dedicado de Site en la API actual; se referencia por `siteId` en Cre
 | nombre | string | |
 | numLicencia | string \| null | |
 | compra | Compra \| null | Objeto anidado (puede ser solo id en algunos casos) |
-| piloto | Usuario \| null | Piloto al que pertenece (para licencias ANAC / mi-perfil) |
 | fechaCompra | string (date) \| null | |
 | caducidad | string (date) \| null | |
 | version | string \| null | |
 | activo | boolean | Default true |
-| imagen | — | No se serializa; usar GET /mi-perfil/licencias/{id}/imagen cuando sea propia |
+
+Solo licencias de software (SW); las licencias ANAC del piloto están en LicenciaANAC.
+
+### 6.17 LicenciaANAC (entidad)
+
+| Campo | Tipo | Notas |
+|-------|------|--------|
+| id | number | PK |
+| piloto | object (Usuario) | Lazy; no se serializa directamente |
+| fechaVencimientoCma | string (date) \| null | |
+| fechaEmision | string (date) \| null | |
+| caducidad | string (date) \| null | |
+| imagenCma | — | No se serializa; usar GET /mi-perfil/licencias/{id}/imagen-cma |
+| imagenCertificadoIdoneidad | — | No se serializa; usar GET /mi-perfil/licencias/{id}/imagen-certificado-idoneidad |
+| activo | boolean | |
 
 ### 6.18 CreateLicenciaRequest
 
@@ -568,4 +573,4 @@ Cuando el backend añada nuevos endpoints o cambie contratos, conviene actualiza
 
 ---
 
-*Documento generado para sincronizar backend (QNT-Gestion-Spring) con el proyecto frontend. Versión del informe: 1.4 (v0.14.0 — Fix auth/me authorities y roles en mi-perfil).*
+*Documento generado para sincronizar backend (QNT-Gestion-Spring) con el proyecto frontend. Versión del informe: 1.5 (v0.15.0 — Separar Licencia SW de LicenciaANAC y foto de perfil).*

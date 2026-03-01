@@ -29,16 +29,6 @@ public class LicenciaBusiness implements ILicenciaBusiness {
     }
 
     @Override
-    public List<Licencia> listByPiloto(Long pilotoId) throws BusinessException {
-        try {
-            return repository.findByPilotoId(pilotoId);
-        } catch (Exception e) {
-            log.error("Error al listar licencias por piloto {}", pilotoId, e);
-            throw new BusinessException("Error al listar licencias del piloto", e);
-        }
-    }
-
-    @Override
     public Licencia load(Long id) throws NotFoundException, BusinessException {
         try {
             return repository.findById(id)

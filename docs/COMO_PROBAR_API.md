@@ -115,6 +115,11 @@ Solo usuarios con rol ADMIN pueden listar pendientes y aprobar.
   Header: `Authorization: Bearer <token>` (admin).  
   Respuesta **200** con la lista de usuarios con `estado == PENDIENTE_APROBACION`.
 
+- **Listar pilotos:**  
+  `GET /api/qnt/v1/usuarios/pilotos`  
+  Header: `Authorization: Bearer <token>` (admin).  
+  Respuesta **200** con la lista de usuarios que tienen el rol ROLE_PILOTO.
+
 - **Aprobar usuario (asignar rol y activar):**  
   `PUT /api/qnt/v1/usuarios/{id}/aprobar`  
   Header: `Authorization: Bearer <token>` (admin).  
@@ -350,13 +355,13 @@ Todos los endpoints de licencias requieren el header **`Authorization: Bearer <t
 
 ## Mi perfil
 
-Cualquier **usuario autenticado** puede ver y actualizar su perfil (datos personales y cambio de contraseña). Los usuarios con rol **PILOTO** o **ADMIN** además pueden gestionar el **CMA** (Certificado Médico Aeronáutico) y sus **licencias ANAC**. Todas las rutas requieren header **`Authorization: Bearer <token>`** y operan siempre sobre el usuario actual (no se puede editar a otro).
+Cualquier **usuario autenticado** puede ver y actualizar su perfil (datos personales, foto de perfil y cambio de contraseña). Los usuarios con rol **PILOTO** o **ADMIN** además pueden gestionar sus **licencias ANAC** (con CMA y certificado de idoneidad por licencia). Todas las rutas requieren header **`Authorization: Bearer <token>`** y operan siempre sobre el usuario actual (no se puede editar a otro).
 
 ### Configuración del perfil (cualquier usuario autenticado)
 
 - **Ver mi perfil:**  
   `GET /api/qnt/v1/mi-perfil`  
-  Respuesta **200** con: `usuario` (sin password), `tieneImagenCma`, y si es PILOTO/ADMIN una lista `licencias` (id, nombre, numLicencia, caducidad).
+  Respuesta **200** con: `usuario` (sin password), `roles`, `tieneFotoPerfil` (boolean), y si es PILOTO/ADMIN una lista `licencias` (id, fechaVencimientoCma, fechaEmision, caducidad, tieneImagenCma, tieneImagenCertificadoIdoneidad, activo).
 
 - **Actualizar datos (nombre, apellido, DNI, password_mission):**  
   `PUT /api/qnt/v1/mi-perfil`  
@@ -374,54 +379,72 @@ Cualquier **usuario autenticado** puede ver y actualizar su perfil (datos person
   ```
   Respuesta **200** si es correcta. **400** si la contraseña actual no coincide.
 
-### CMA (solo PILOTO o ADMIN)
+### Foto de perfil (cualquier usuario autenticado)
 
-- **Ver CMA (vencimiento y si tiene imagen):**  
-  `GET /api/qnt/v1/mi-perfil/cma`  
-  Respuesta: `{"vencimiento":"2026-05-01","tieneImagen":true}`
+- **Subir foto de perfil:**  
+  `PUT /api/qnt/v1/mi-perfil/foto-perfil`  
+  Header: `Authorization: Bearer <token>`  
+  Body: **multipart/form-data** con un campo de tipo archivo llamado `file` (por ejemplo un JPG o PNG).  
+  Ejemplo con curl (reemplazar `foto.jpg` por la ruta del archivo):
+  ```bash
+  curl -X PUT "http://localhost:8080/api/qnt/v1/mi-perfil/foto-perfil" \
+    -H "Authorization: Bearer <TOKEN>" \
+    -F "file=@foto.jpg"
+  ```
+  Respuesta **200 OK**. Tamaño máximo por defecto: 10 MB.
 
-- **Actualizar vencimiento CMA:**  
-  `PUT /api/qnt/v1/mi-perfil/cma`  
-  Body: `{"vencimiento":"2026-05-01"}` (fecha ISO)
+- **Obtener foto de perfil:**  
+  `GET /api/qnt/v1/mi-perfil/foto-perfil`  
+  Header: `Authorization: Bearer <token>`  
+  Respuesta: cuerpo binario de la imagen con `Content-Type` apropiado. **404** si el usuario no tiene foto de perfil.
 
-- **Subir imagen del CMA:**  
-  `PUT /api/qnt/v1/mi-perfil/cma/imagen`  
-  Body: **multipart/form-data**, parte `file` (archivo imagen). Límite 10 MB.
+### Mis licencias ANAC (solo PILOTO o ADMIN)
 
-- **Obtener imagen del CMA:**  
-  `GET /api/qnt/v1/mi-perfil/cma/imagen`  
-  Respuesta: binario. **404** si no tiene imagen.
-
-### Mis licencias (solo PILOTO o ADMIN)
+Las licencias ANAC usan el modelo **LicenciaANAC** (no Licencia). Cada licencia tiene fechas de CMA, emisión y caducidad, y puede tener imágenes de CMA y certificado de idoneidad.
 
 - **Listar mis licencias:**  
-  `GET /api/qnt/v1/mi-perfil/licencias`
+  `GET /api/qnt/v1/mi-perfil/licencias`  
+  Respuesta con la lista de licencias ANAC del usuario actual.
 
-- **Crear licencia:**  
+- **Crear licencia ANAC:**  
   `POST /api/qnt/v1/mi-perfil/licencias`  
   Body (JSON):
   ```json
-  {"nombre":"ANAC Comercial","numLicencia":"12345","fechaCompra":"2024-01-01","caducidad":"2026-01-01","version":"1","activo":true}
+  {"fechaVencimientoCma":"2026-12-01","fechaEmision":"2025-01-15","caducidad":"2027-01-15","activo":true}
   ```
   Respuesta **201**. La licencia queda asociada al usuario actual (piloto).
 
 - **Actualizar mi licencia:**  
   `PUT /api/qnt/v1/mi-perfil/licencias/{id}`  
-  Body: mismo formato (solo se actualizan las licencias del usuario actual). **404** si el id no existe o no es suya.
+  Body (mismo formato; solo se actualizan las licencias del usuario actual):
+  ```json
+  {"fechaVencimientoCma":"2026-12-01","fechaEmision":"2025-01-15","caducidad":"2027-01-15","activo":true}
+  ```
+  **404** si el id no existe o no es suya.
 
 - **Eliminar mi licencia:**  
   `DELETE /api/qnt/v1/mi-perfil/licencias/{id}`  
   **204** solo si la licencia es del usuario actual.
 
-- **Subir imagen de una licencia:**  
-  `PUT /api/qnt/v1/mi-perfil/licencias/{id}/imagen`  
-  Multipart, parte `file`. Solo para licencias propias.
+### Imágenes por licencia ANAC (solo PILOTO o ADMIN)
 
-- **Obtener imagen de una licencia:**  
-  `GET /api/qnt/v1/mi-perfil/licencias/{id}/imagen`  
-  **404** si no tiene imagen o no es suya.
+- **Subir imagen CMA de una licencia:**  
+  `PUT /api/qnt/v1/mi-perfil/licencias/{id}/imagen-cma`  
+  Body: **multipart/form-data**, parte `file`. Solo para licencias propias. Límite 10 MB.
 
-**Rol ROLE_PILOTO:** debe existir en la tabla `roles` (ej. `codigo = 'ROLE_PILOTO', nombre = 'Piloto'`) para que un usuario pueda usar los endpoints de CMA y licencias. Si no existe, crearlo vía API de roles (como ADMIN) o por SQL.
+- **Obtener imagen CMA de una licencia:**  
+  `GET /api/qnt/v1/mi-perfil/licencias/{id}/imagen-cma`  
+  Respuesta: binario. **404** si no tiene imagen o no es suya.
+
+- **Subir imagen certificado de idoneidad:**  
+  `PUT /api/qnt/v1/mi-perfil/licencias/{id}/imagen-certificado-idoneidad`  
+  Body: **multipart/form-data**, parte `file`. Solo para licencias propias. Límite 10 MB.
+
+- **Obtener imagen certificado de idoneidad:**  
+  `GET /api/qnt/v1/mi-perfil/licencias/{id}/imagen-certificado-idoneidad`  
+  Respuesta: binario. **404** si no tiene imagen o no es suya.
+
+**Rol ROLE_PILOTO:** debe existir en la tabla `roles` (ej. `codigo = 'ROLE_PILOTO', nombre = 'Piloto'`) para que un usuario pueda usar los endpoints de licencias ANAC. Si no existe, crearlo vía API de roles (como ADMIN) o por SQL.
 
 ## Rutas protegidas
 

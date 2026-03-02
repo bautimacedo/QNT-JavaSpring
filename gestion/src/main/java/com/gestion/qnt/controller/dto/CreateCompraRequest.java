@@ -1,6 +1,7 @@
 package com.gestion.qnt.controller.dto;
 
 import com.gestion.qnt.model.enums.TipoCompra;
+import com.gestion.qnt.model.enums.TipoEquipo;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -8,11 +9,13 @@ import java.time.LocalDate;
 
 /**
  * DTO para crear o actualizar una Compra.
- * Los IDs (proveedorId, siteId) se resuelven en el controller a entidades.
+ * Proveedor: indicar proveedorId (existente) o proveedorNombre (se crea si no existe).
+ * Site: siteId opcional.
+ * tipoEquipo y descripcionEquipo: solo aplican cuando tipoCompra = EQUIPO.
  */
 public record CreateCompraRequest(
-        @NotNull(message = "proveedorId es obligatorio")
         Long proveedorId,
+        String proveedorNombre,
 
         @NotNull(message = "fechaCompra es obligatoria")
         LocalDate fechaCompra,
@@ -29,7 +32,14 @@ public record CreateCompraRequest(
         @NotNull(message = "tipoCompra es obligatorio")
         TipoCompra tipoCompra,
 
+        TipoEquipo tipoEquipo,
+        String descripcionEquipo,
+
         String descripcion,
         Long siteId,
         String observaciones
-) {}
+) {
+    public boolean hasProveedor() {
+        return (proveedorId != null) || (proveedorNombre != null && !proveedorNombre.isBlank());
+    }
+}

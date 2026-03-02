@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.gestion.qnt.controller.dto.CreateCompraRequest;
 import com.gestion.qnt.model.Proveedor;
 import com.gestion.qnt.model.Site;
+import com.gestion.qnt.model.enums.TipoCompra;
 import com.gestion.qnt.model.business.interfaces.IProveedorBusiness;
 import com.gestion.qnt.model.business.interfaces.ISiteBusiness;
 
@@ -32,7 +33,7 @@ public class CompraBusiness implements ICompraBusiness {
     @Override
     public List<Compra> list() throws BusinessException {
         try {
-            return repository.findAll();
+            return repository.findAllWithProveedorAndSite();
         } catch (Exception e) {
             log.error("Error al listar compras", e);
             throw new BusinessException("Error al listar compras", e);
@@ -40,9 +41,19 @@ public class CompraBusiness implements ICompraBusiness {
     }
 
     @Override
+    public List<Compra> listFiltered(TipoCompra tipoCompra, Long proveedorId) throws BusinessException {
+        try {
+            return repository.findFilteredWithProveedorAndSite(tipoCompra, proveedorId);
+        } catch (Exception e) {
+            log.error("Error al filtrar compras", e);
+            throw new BusinessException("Error al filtrar compras", e);
+        }
+    }
+
+    @Override
     public Compra load(Long id) throws NotFoundException, BusinessException {
         try {
-            return repository.findById(id)
+            return repository.findByIdWithProveedorAndSite(id)
                     .orElseThrow(() -> new NotFoundException("No existe Compra con id " + id));
         } catch (NotFoundException e) {
             throw e;
@@ -55,7 +66,13 @@ public class CompraBusiness implements ICompraBusiness {
     @Override
     public Compra add(CreateCompraRequest request) throws NotFoundException, BusinessException {
         try {
-            Proveedor proveedor = proveedorBusiness.load(request.proveedorId());
+            if (!request.hasProveedor()) {
+                throw new BusinessException("Se debe indicar proveedorId o proveedorNombre");
+            }
+            Proveedor proveedor = request.proveedorId() != null
+                    ? proveedorBusiness.load(request.proveedorId())
+                    : proveedorBusiness.loadOrCreate(request.proveedorNombre());
+
             Site site = null;
             if (request.siteId() != null) {
                 site = siteBusiness.load(request.siteId());
@@ -72,6 +89,20 @@ public class CompraBusiness implements ICompraBusiness {
             compra.setDescripcion(request.descripcion());
             compra.setSite(site);
             compra.setObservaciones(request.observaciones());
+
+            if (request.tipoCompra() == TipoCompra.EQUIPO) {
+                if (request.tipoEquipo() == null) {
+                    throw new BusinessException("Se debe indicar el tipoEquipo cuando el tipo de compra es EQUIPO");
+                }
+                compra.setTipoEquipo(request.tipoEquipo());
+                compra.setDescripcionEquipo(request.descripcionEquipo());
+                // TODO Logica de Stock e Inventario
+                // compra.getTipoEquipo() indica qué entidad crear (DRON, DOCK, BATERIA, etc.)
+                // compra.getDescripcionEquipo() puede usarse como nombre/modelo inicial del ítem
+            } else {
+                compra.setTipoEquipo(null);
+                compra.setDescripcionEquipo(null);
+            }
 
             return repository.save(compra);
         } catch (NotFoundException e) {
@@ -100,7 +131,13 @@ public class CompraBusiness implements ICompraBusiness {
         try {
             Compra existing = load(id);
 
-            Proveedor proveedor = proveedorBusiness.load(request.proveedorId());
+            if (!request.hasProveedor()) {
+                throw new BusinessException("Se debe indicar proveedorId o proveedorNombre");
+            }
+            Proveedor proveedor = request.proveedorId() != null
+                    ? proveedorBusiness.load(request.proveedorId())
+                    : proveedorBusiness.loadOrCreate(request.proveedorNombre());
+
             existing.setProveedor(proveedor);
             existing.setFechaCompra(request.fechaCompra());
             existing.setFechaFactura(request.fechaFactura());
@@ -115,6 +152,20 @@ public class CompraBusiness implements ICompraBusiness {
                 existing.setSite(null);
             }
             existing.setObservaciones(request.observaciones());
+
+            if (request.tipoCompra() == TipoCompra.EQUIPO) {
+                if (request.tipoEquipo() == null) {
+                    throw new BusinessException("Se debe indicar el tipoEquipo cuando el tipo de compra es EQUIPO");
+                }
+                existing.setTipoEquipo(request.tipoEquipo());
+                existing.setDescripcionEquipo(request.descripcionEquipo());
+                // TODO Logica de Stock e Inventario
+                // existing.getTipoEquipo() indica qué entidad crear (DRON, DOCK, BATERIA, etc.)
+                // existing.getDescripcionEquipo() puede usarse como nombre/modelo inicial del ítem
+            } else {
+                existing.setTipoEquipo(null);
+                existing.setDescripcionEquipo(null);
+            }
 
             return repository.save(existing);
         } catch (NotFoundException e) {

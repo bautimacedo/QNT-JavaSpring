@@ -135,6 +135,22 @@ Tipos de compra para clasificar el gasto. Valores sugeridos:
 
 ---
 
+### 2.6b TipoEquipo (enum)
+
+Especifica qué tipo de equipo se compró. Solo aplica cuando `tipoCompra = EQUIPO`.
+
+| Valor (Java)       | Descripción |
+|---------------------|-------------|
+| `DRON`              | Dron |
+| `DOCK`              | Dock |
+| `BATERIA`           | Batería |
+| `HELICE`            | Hélice |
+| `ANTENA_RTK`        | Antena RTK |
+| `ANTENA_STARLINK`   | Antena Starlink |
+| `OTRO`              | Otro equipo |
+
+---
+
 ### 2.7 Compra
 
 Registro de toda compra o gasto, vinculada a un **Proveedor**. Incluye: licencia de software, repuestos, combustible yendo a un site, viáticos, seguros, etc.
@@ -149,6 +165,8 @@ Registro de toda compra o gasto, vinculada a un **Proveedor**. Incluye: licencia
 | importe       | BigDecimal  | NOT NULL |
 | moneda        | String      | NOT NULL, default "ARS" |
 | tipoCompra    | TipoCompra  | enum, NOT NULL (LICENCIA_SW, REPUESTO, COMBUSTIBLE, etc.) |
+| tipoEquipo    | TipoEquipo  | enum, nullable. Solo cuando tipoCompra = EQUIPO (DRON, DOCK, BATERIA, HELICE, ANTENA_RTK, ANTENA_STARLINK, OTRO) |
+| descripcionEquipo | String  | VARCHAR(255), nullable. Texto libre para detallar el equipo comprado. Solo aplica cuando tipoCompra = EQUIPO |
 | descripcion   | String      | @Lob, nullable |
 | siteId        | Long        | FK nullable → Site (ej. combustible cargado yendo a ese site) |
 | observaciones | String      | @Lob, nullable |
@@ -189,7 +207,7 @@ Entidad exclusiva para licencias de software. No incluye certificaciones de pilo
 | nombre        | String     | NOT NULL (ej. FlightHub 2, FlytBase) |
 | numLicencia   | String     | nullable |
 | **compraId**  | Long       | FK nullable → Compra (la compra que adquirió esta licencia; tipo LICENCIA_SW) |
-| fechaCompra   | LocalDate  | nullable (redundante con Compra; mantener si se usa en UI) |
+| fechaCompra   | LocalDate  | nullable (redundante con Compra; mantener si se usa en UI) |Lee Importante-main/AgenteDesigner/prompts-para-designer/v0.7.0-PROMPT-PROGRAMADOR-licencias-anac-refactor.md y ejecutá todos los pasos.
 | caducidad     | LocalDate  | nullable |
 | version       | String     | nullable (ej. Enterprise) |
 | activo        | Boolean    | NOT NULL, default true |

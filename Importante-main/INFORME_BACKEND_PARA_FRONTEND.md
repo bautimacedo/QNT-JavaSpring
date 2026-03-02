@@ -12,7 +12,7 @@ Este documento describe el **contrato del backend** para que el proyecto fronten
 
 **Stack backend:** Spring Boot 3.x, Java 17+, Spring Security (JWT), JPA/Hibernate, PostgreSQL.
 
-**Última actualización del informe:** Tras v0.15.0 (separar Licencia SW de LicenciaANAC, foto de perfil). Este documento se actualiza **al finalizar cada tarea** del backend que afecte la API (endpoints, modelos, auth o convenciones).
+**Última actualización del informe:** Tras v0.17.0 (TipoEquipo en Compra). Este documento se actualiza **al finalizar cada tarea** del backend que afecte la API (endpoints, modelos, auth o convenciones).
 
 ---
 
@@ -192,6 +192,7 @@ Base: `/api/qnt/v1/compras`
 | DELETE | `/compras/{id}` | Eliminar compra | ADMIN |
 | PUT | `/compras/{id}/imagen` | Subir imagen factura (multipart) | ADMIN, USER |
 | GET | `/compras/{id}/imagen` | Descargar imagen factura | ADMIN, USER |
+| GET | `/compras/tipos-equipo` | Array de valores del enum TipoEquipo (para dropdown) | ADMIN, USER |
 
 ### 5.5 Licencias
 
@@ -358,7 +359,9 @@ Mismos campos que CrearLicenciaMiPerfilRequest (fechaVencimientoCma, fechaEmisio
 | numeroFactura | string \| null | |
 | importe | number | BigDecimal (ej. 1234.56) |
 | moneda | string | Default "ARS" |
-| tipoCompra | string | Enum: ver sección Enums |
+| tipoCompra | string | Enum TipoCompra: ver sección Enums |
+| tipoEquipo | string \| null | Enum TipoEquipo. **Solo presente cuando `tipoCompra = "EQUIPO"`**; ver sección Enums. |
+| descripcionEquipo | string \| null | Texto libre, máx. 255 chars. Solo aplica cuando `tipoCompra = "EQUIPO"`. |
 | descripcion | string \| null | |
 | site | Site \| null | Objeto anidado |
 | observaciones | string \| null | |
@@ -400,6 +403,8 @@ No hay CRUD dedicado de Site en la API actual; se referencia por `siteId` en Cre
 | importe | number | Sí, > 0 |
 | moneda | string \| null | Default backend "ARS" |
 | tipoCompra | string | Sí (enum TipoCompra) |
+| tipoEquipo | string \| null | **Obligatorio si `tipoCompra = "EQUIPO"`** (enum TipoEquipo). Ignorado en otro caso. |
+| descripcionEquipo | string \| null | Texto libre, máx. 255 chars. Solo aplica cuando `tipoCompra = "EQUIPO"`. |
 | descripcion | string \| null | |
 | siteId | number \| null | |
 | observaciones | string \| null | |
@@ -531,6 +536,23 @@ Usar exactamente estos valores en los JSON (strings).
 - `EQUIPO`
 - `OTRO`
 
+### TipoEquipo (compras de tipo EQUIPO)
+
+Solo aplica cuando `tipoCompra = "EQUIPO"`. Se obtiene dinámicamente con `GET /compras/tipos-equipo`.
+
+- `DRON`
+- `DOCK`
+- `BATERIA`
+- `HELICE`
+- `ANTENA_RTK`
+- `ANTENA_STARLINK`
+- `OTRO`
+
+**Flujo del frontend:**
+1. El usuario selecciona `tipoCompra` en el formulario de compra.
+2. Si `tipoCompra == "EQUIPO"` → mostrar un segundo select con los valores de `GET /compras/tipos-equipo` + campo de texto para `descripcionEquipo`.
+3. Si `tipoCompra != "EQUIPO"` → ocultar `tipoEquipo` y `descripcionEquipo`.
+
 ### Estado (equipos: Dock, Dron, Batería, etc.)
 
 - `STOCK_ACTUAL`
@@ -573,4 +595,4 @@ Cuando el backend añada nuevos endpoints o cambie contratos, conviene actualiza
 
 ---
 
-*Documento generado para sincronizar backend (QNT-Gestion-Spring) con el proyecto frontend. Versión del informe: 1.5 (v0.15.0 — Separar Licencia SW de LicenciaANAC y foto de perfil).*
+*Documento generado para sincronizar backend (QNT-Gestion-Spring) con el proyecto frontend. Versión del informe: 1.6 (v0.17.0 — TipoEquipo en Compra).*

@@ -202,13 +202,16 @@ Todos los endpoints de compras requieren el header **`Authorization: Bearer <tok
     "importe": 15000.50,
     "moneda": "ARS",
     "tipoCompra": "EQUIPO",
-    "descripcion": "Notebook de trabajo",
+    "tipoEquipo": "DRON",
+    "descripcionEquipo": "DJI Matrice 350 RTK - SN: XYZ123",
+    "descripcion": "Compra de dron para operaciones",
     "siteId": 1,
     "observaciones": "Entrega en oficina"
   }
   ```
-  **Proveedor:** se puede enviar **`proveedorId`** (id de un proveedor ya existente) o **`proveedorNombre`** (nombre del proveedor). Si se envía `proveedorNombre` y no existe un proveedor con ese nombre, se crea automáticamente y se asocia a la compra. Hay que enviar al menos uno de los dos.
-  Respuesta **201 Created** con la compra creada en el body. Si se usa `proveedorId` y no existe → **404**. Si `siteId` no existe → **404**.
+  **Proveedor:** se puede enviar **`proveedorId`** (id de un proveedor ya existente) o **`proveedorNombre`** (nombre del proveedor). Si se envía `proveedorNombre` y no existe un proveedor con ese nombre, se crea automáticamente y se asocia a la compra. Hay que enviar al menos uno de los dos.  
+  **TipoEquipo:** cuando `tipoCompra = "EQUIPO"`, el campo `tipoEquipo` es **obligatorio** (valores: DRON, DOCK, BATERIA, HELICE, ANTENA_RTK, ANTENA_STARLINK, OTRO). Se pueden obtener dinámicamente con `GET /compras/tipos-equipo`. El campo `descripcionEquipo` es opcional (texto libre, máx. 255 chars).  
+  Respuesta **201 Created** con la compra creada en el body. Si se usa `proveedorId` y no existe → **404**. Si `siteId` no existe → **404**. Si `tipoCompra = EQUIPO` y no se envía `tipoEquipo` → **500** con mensaje de error.
 
 - **Editar:**  
   `PUT /api/qnt/v1/compras/{id}`  
@@ -220,6 +223,8 @@ Todos los endpoints de compras requieren el header **`Authorization: Bearer <tok
     "fechaCompra": "2025-03-01",
     "importe": 18000.00,
     "tipoCompra": "EQUIPO",
+    "tipoEquipo": "DOCK",
+    "descripcionEquipo": "DJI Dock 2",
     "moneda": "ARS"
   }
   ```

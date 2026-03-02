@@ -9,6 +9,7 @@ import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gestion.qnt.model.enums.TipoCompra;
+import com.gestion.qnt.model.enums.TipoEquipo;
 
 @Entity
 @Table(name = "compras")
@@ -42,6 +43,13 @@ public class Compra {
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_compra", nullable = false)
     private TipoCompra tipoCompra;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_equipo", nullable = true)
+    private TipoEquipo tipoEquipo;
+
+    @Column(name = "descripcion_equipo", length = 255, nullable = true)
+    private String descripcionEquipo;
 
     @Lob
     @Column

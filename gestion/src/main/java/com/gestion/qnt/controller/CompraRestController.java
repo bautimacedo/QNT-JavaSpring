@@ -3,8 +3,7 @@ package com.gestion.qnt.controller;
 import com.gestion.qnt.config.ApiConstants;
 import com.gestion.qnt.controller.dto.CreateCompraRequest;
 import com.gestion.qnt.model.Compra;
-import com.gestion.qnt.model.Proveedor;
-import com.gestion.qnt.model.Site;
+import com.gestion.qnt.model.enums.TipoEquipo;
 import com.gestion.qnt.model.business.exceptions.BusinessException;
 import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import com.gestion.qnt.model.business.interfaces.ICompraBusiness;
@@ -58,6 +57,10 @@ public class CompraRestController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<?> create(@Valid @RequestBody CreateCompraRequest request) {
+        if (!request.hasProveedor()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Se debe indicar proveedorId o proveedorNombre");
+        }
         try {
             Compra created = compraBusiness.add(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
@@ -71,6 +74,10 @@ public class CompraRestController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody CreateCompraRequest request) {
+        if (!request.hasProveedor()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Se debe indicar proveedorId o proveedorNombre");
+        }
         try {
             Compra updated = compraBusiness.update(id, request);
             return ResponseEntity.ok(updated);
@@ -79,6 +86,12 @@ public class CompraRestController {
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
+    }
+
+    @GetMapping("/tipos-equipo")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    public ResponseEntity<TipoEquipo[]> getTiposEquipo() {
+        return ResponseEntity.ok(TipoEquipo.values());
     }
 
     @DeleteMapping("/{id}")
@@ -99,6 +112,7 @@ public class CompraRestController {
      * Requiere multipart/form-data con parte "file".
      */
     @PutMapping("/{id}/imagen")
+    @Transactional
     @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<?> uploadImagen(@PathVariable Long id,
             @RequestParam("file") MultipartFile file) {
@@ -121,6 +135,7 @@ public class CompraRestController {
      * 404 si la compra no existe o no tiene imagen.
      */
     @GetMapping("/{id}/imagen")
+    @Transactional(readOnly = true)
     @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<byte[]> getImagen(@PathVariable Long id) {
         try {

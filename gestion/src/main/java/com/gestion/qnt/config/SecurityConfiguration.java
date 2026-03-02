@@ -52,7 +52,7 @@ public class SecurityConfiguration {
         config.setAllowCredentials(!allowedOrigins.trim().equals("*"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration(ApiConstants.URL_BASE + "/**", config);
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 
@@ -61,21 +61,26 @@ public class SecurityConfiguration {
         return customAuthenticationManager;
     }
 
-    @Bean
+        @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, ApiConstants.URL_LOGIN).permitAll()
-                        .requestMatchers(HttpMethod.POST, ApiConstants.URL_REGISTER).permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
-                        .requestMatchers(ApiConstants.URL_BASE + "/demo/**").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(new JWTAuthorizationFilter(authConstants), UsernamePasswordAuthenticationFilter.class);
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(auth -> auth
+                // 1. Permitimos OPTIONS para TODAS las rutas (vital para el navegador)
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                
+                // 2. Usamos comodines para asegurar que /auth/login esté permitido 
+                // sin importar el prefijo que maneje Spring internamente
+                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/api/qnt/v1/auth/**").permitAll() 
+                
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
+                .anyRequest().authenticated()
+            )
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .addFilterBefore(new JWTAuthorizationFilter(authConstants), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

@@ -3,15 +3,19 @@ package com.gestion.qnt.controller;
 import com.gestion.qnt.config.ApiConstants;
 import com.gestion.qnt.controller.dto.CreateCompraRequest;
 import com.gestion.qnt.model.Compra;
+import com.gestion.qnt.model.Usuario;
 import com.gestion.qnt.model.enums.TipoEquipo;
 import com.gestion.qnt.model.business.exceptions.BusinessException;
 import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import com.gestion.qnt.model.business.interfaces.ICompraBusiness;
+import com.gestion.qnt.model.business.interfaces.IUsuarioBusiness;
+import com.gestion.qnt.security.AuthUser;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,9 +29,11 @@ import java.util.List;
 public class CompraRestController {
 
     private final ICompraBusiness compraBusiness;
+    private final IUsuarioBusiness usuarioBusiness;
 
-    public CompraRestController(ICompraBusiness compraBusiness) {
+    public CompraRestController(ICompraBusiness compraBusiness, IUsuarioBusiness usuarioBusiness) {
         this.compraBusiness = compraBusiness;
+        this.usuarioBusiness = usuarioBusiness;
     }
 
     @GetMapping
@@ -61,18 +67,29 @@ public class CompraRestController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
-    public ResponseEntity<?> create(@Valid @RequestBody CreateCompraRequest request) {
+    public ResponseEntity<?> create(Authentication authentication, @Valid @RequestBody CreateCompraRequest request) {
         if (!request.hasProveedor()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Se debe indicar proveedorId o proveedorNombre");
         }
         try {
+            // Usuario que da de alta la compra: se obtiene siempre del contexto de seguridad.
+            if (authentication == null || !(authentication.getPrincipal() instanceof AuthUser authUser)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No se pudo determinar el usuario autenticado");
+            }
+
+            Usuario usuarioAlta = usuarioBusiness.load(authUser.getId());
+
             Compra created = compraBusiness.add(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+            created.setUsuarioAlta(usuarioAlta);
+            Compra saved = compraBusiness.update(created);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (BusinessException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            // Errores de negocio (validaciones) → 400 Bad Request
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
@@ -89,7 +106,8 @@ public class CompraRestController {
         } catch (NotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (BusinessException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            // Errores de negocio (validaciones) → 400 Bad Request
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 

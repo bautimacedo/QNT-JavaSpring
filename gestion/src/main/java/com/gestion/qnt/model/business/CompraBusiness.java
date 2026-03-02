@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.gestion.qnt.controller.dto.CreateCompraRequest;
 import com.gestion.qnt.model.Proveedor;
 import com.gestion.qnt.model.Site;
+import com.gestion.qnt.model.enums.MetodoPago;
 import com.gestion.qnt.model.enums.TipoCompra;
 import com.gestion.qnt.model.business.interfaces.IProveedorBusiness;
 import com.gestion.qnt.model.business.interfaces.ISiteBusiness;
@@ -82,10 +83,10 @@ public class CompraBusiness implements ICompraBusiness {
             compra.setProveedor(proveedor);
             compra.setFechaCompra(request.fechaCompra());
             compra.setFechaFactura(request.fechaFactura());
-            compra.setNumeroFactura(request.numeroFactura());
             compra.setImporte(request.importe());
             compra.setMoneda(request.moneda() != null && !request.moneda().isBlank() ? request.moneda() : "ARS");
             compra.setTipoCompra(request.tipoCompra());
+            applyMetodoPago(compra, request);
             compra.setDescripcion(request.descripcion());
             compra.setSite(site);
             compra.setObservaciones(request.observaciones());
@@ -141,10 +142,10 @@ public class CompraBusiness implements ICompraBusiness {
             existing.setProveedor(proveedor);
             existing.setFechaCompra(request.fechaCompra());
             existing.setFechaFactura(request.fechaFactura());
-            existing.setNumeroFactura(request.numeroFactura());
             existing.setImporte(request.importe());
             existing.setMoneda(request.moneda() != null && !request.moneda().isBlank() ? request.moneda() : "ARS");
             existing.setTipoCompra(request.tipoCompra());
+            applyMetodoPago(existing, request);
             existing.setDescripcion(request.descripcion());
             if (request.siteId() != null) {
                 existing.setSite(siteBusiness.load(request.siteId()));
@@ -186,6 +187,42 @@ public class CompraBusiness implements ICompraBusiness {
         } catch (Exception e) {
             log.error("Error al eliminar compra con id {}", id, e);
             throw new BusinessException("Error al eliminar compra", e);
+        }
+    }
+
+    /**
+     * Aplica la lógica de método de pago y datos de tarjeta sobre la entidad Compra.
+     * Regla:
+     * - metodoPago es obligatorio (se valida a nivel DTO y nuevamente aquí).
+     * - Si metodoPago == TARJETA: companiaTarjeta obligatoria (no vacía) y ultimos4Tarjeta obligatorio,
+     *   exactamente 4 dígitos. Si falla, lanza BusinessException.
+     * - Si metodoPago != TARJETA: companiaTarjeta y ultimos4Tarjeta se guardan como null, ignorando
+     *   cualquier valor enviado por el cliente.
+     */
+    private void applyMetodoPago(Compra compra, CreateCompraRequest request) throws BusinessException {
+        MetodoPago metodoPago = request.metodoPago();
+        if (metodoPago == null) {
+            throw new BusinessException("Se debe indicar el metodoPago de la compra");
+        }
+        compra.setMetodoPago(metodoPago);
+
+        if (metodoPago == MetodoPago.TARJETA) {
+            String compania = request.companiaTarjeta();
+            String ultimos4 = request.ultimos4Tarjeta();
+
+            if (compania == null || compania.isBlank()) {
+                throw new BusinessException("Cuando el metodoPago es TARJETA, companiaTarjeta es obligatorio");
+            }
+            if (ultimos4 == null || !ultimos4.matches("^[0-9]{4}$")) {
+                throw new BusinessException("Cuando el metodoPago es TARJETA, ultimos4Tarjeta debe tener exactamente 4 dígitos");
+            }
+
+            compra.setCompaniaTarjeta(compania.trim());
+            compra.setUltimos4Tarjeta(ultimos4);
+        } else {
+            // Para métodos de pago que no son tarjeta, siempre se guardan como null.
+            compra.setCompaniaTarjeta(null);
+            compra.setUltimos4Tarjeta(null);
         }
     }
 }

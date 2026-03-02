@@ -1,5 +1,6 @@
 package com.gestion.qnt.controller.dto;
 
+import com.gestion.qnt.model.enums.MetodoPago;
 import com.gestion.qnt.model.enums.TipoCompra;
 import com.gestion.qnt.model.enums.TipoEquipo;
 import jakarta.validation.constraints.DecimalMin;
@@ -12,6 +13,7 @@ import java.time.LocalDate;
  * Proveedor: indicar proveedorId (existente) o proveedorNombre (se crea si no existe).
  * Site: siteId opcional.
  * tipoEquipo y descripcionEquipo: solo aplican cuando tipoCompra = EQUIPO.
+ * metodoPago y datos de tarjeta: metodoPago obligatorio; datos de tarjeta solo válidos cuando metodoPago = TARJETA.
  */
 public record CreateCompraRequest(
         Long proveedorId,
@@ -21,7 +23,6 @@ public record CreateCompraRequest(
         LocalDate fechaCompra,
 
         LocalDate fechaFactura,
-        String numeroFactura,
 
         @NotNull(message = "importe es obligatorio")
         @DecimalMin(value = "0", inclusive = false, message = "importe debe ser mayor que 0")
@@ -31,6 +32,11 @@ public record CreateCompraRequest(
 
         @NotNull(message = "tipoCompra es obligatorio")
         TipoCompra tipoCompra,
+
+        @NotNull(message = "metodoPago es obligatorio")
+        MetodoPago metodoPago,
+        String companiaTarjeta,
+        String ultimos4Tarjeta,
 
         TipoEquipo tipoEquipo,
         String descripcionEquipo,

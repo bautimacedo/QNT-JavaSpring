@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gestion.qnt.model.enums.MetodoPago;
 import com.gestion.qnt.model.enums.TipoCompra;
 import com.gestion.qnt.model.enums.TipoEquipo;
 
@@ -31,9 +32,6 @@ public class Compra {
     @Column(name = "fecha_factura")
     private LocalDate fechaFactura;
 
-    @Column(name = "numero_factura")
-    private String numeroFactura;
-
     @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal importe;
 
@@ -43,6 +41,16 @@ public class Compra {
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_compra", nullable = false)
     private TipoCompra tipoCompra;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "metodo_pago", nullable = false)
+    private MetodoPago metodoPago;
+
+    @Column(name = "compania_tarjeta", length = 50)
+    private String companiaTarjeta;
+
+    @Column(name = "ultimos4_tarjeta", length = 4)
+    private String ultimos4Tarjeta;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_equipo", nullable = true)
@@ -62,6 +70,10 @@ public class Compra {
     @Lob
     @Column
     private String observaciones;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_alta_id")
+    private Usuario usuarioAlta;
 
     /** Imagen de la factura (opcional). No se serializa en JSON para evitar payload enorme. */
     @Lob

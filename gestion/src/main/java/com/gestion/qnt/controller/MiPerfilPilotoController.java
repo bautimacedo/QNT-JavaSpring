@@ -73,7 +73,6 @@ public class MiPerfilPilotoController {
                             m.put("id", l.getId());
                             m.put("fechaVencimientoCma", l.getFechaVencimientoCma() != null ? l.getFechaVencimientoCma().toString() : null);
                             m.put("fechaEmision", l.getFechaEmision() != null ? l.getFechaEmision().toString() : null);
-                            m.put("caducidad", l.getCaducidad() != null ? l.getCaducidad().toString() : null);
                             m.put("tieneImagenCma", l.getImagenCma() != null && l.getImagenCma().length > 0);
                             m.put("tieneImagenCertificadoIdoneidad", l.getImagenCertificadoIdoneidad() != null && l.getImagenCertificadoIdoneidad().length > 0);
                             m.put("activo", l.getActivo());
@@ -210,7 +209,6 @@ public class MiPerfilPilotoController {
             lic.setPiloto(piloto);
             lic.setFechaVencimientoCma(request.fechaVencimientoCma());
             lic.setFechaEmision(request.fechaEmision());
-            lic.setCaducidad(request.caducidad());
             lic.setActivo(request.activo() != null ? request.activo() : true);
             LicenciaANAC created = licenciaANACBusiness.add(lic);
             return ResponseEntity.status(HttpStatus.CREATED).body(licenciaToMap(created));
@@ -235,7 +233,6 @@ public class MiPerfilPilotoController {
             }
             if (request.fechaVencimientoCma() != null) lic.setFechaVencimientoCma(request.fechaVencimientoCma());
             if (request.fechaEmision() != null) lic.setFechaEmision(request.fechaEmision());
-            if (request.caducidad() != null) lic.setCaducidad(request.caducidad());
             if (request.activo() != null) lic.setActivo(request.activo());
             return ResponseEntity.ok(licenciaToMap(licenciaANACBusiness.update(lic)));
         } catch (NotFoundException e) {
@@ -373,7 +370,6 @@ public class MiPerfilPilotoController {
         m.put("id", l.getId());
         m.put("fechaVencimientoCma", l.getFechaVencimientoCma() != null ? l.getFechaVencimientoCma().toString() : null);
         m.put("fechaEmision", l.getFechaEmision() != null ? l.getFechaEmision().toString() : null);
-        m.put("caducidad", l.getCaducidad() != null ? l.getCaducidad().toString() : null);
         m.put("tieneImagenCma", l.getImagenCma() != null && l.getImagenCma().length > 0);
         m.put("tieneImagenCertificadoIdoneidad", l.getImagenCertificadoIdoneidad() != null && l.getImagenCertificadoIdoneidad().length > 0);
         m.put("activo", l.getActivo());

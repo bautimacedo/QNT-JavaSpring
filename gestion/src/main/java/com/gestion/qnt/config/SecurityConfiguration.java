@@ -52,7 +52,7 @@ public class SecurityConfiguration {
         config.setAllowCredentials(!allowedOrigins.trim().equals("*"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration(ApiConstants.URL_BASE + "/**", config);
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 

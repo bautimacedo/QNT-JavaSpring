@@ -82,7 +82,13 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
                 ? Collections.emptyList()
                 : decoded.getClaim("roles").asList(String.class);
 
-        AuthUser principal = new AuthUser(internalId != null ? internalId : 0L, email, roles);
+        // Normalizar: Spring Security hasRole('X') espera authority "ROLE_X"
+        List<String> normalizedRoles = roles.stream()
+                .filter(r -> r != null && !r.isBlank())
+                .map(r -> r.startsWith("ROLE_") ? r : "ROLE_" + r)
+                .collect(Collectors.toList());
+
+        AuthUser principal = new AuthUser(internalId != null ? internalId : 0L, email, normalizedRoles);
         return new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
     }
 }

@@ -24,6 +24,8 @@ public class AuthUser implements UserDetails {
         this.authorities = roleCodigos == null
                 ? List.of()
                 : roleCodigos.stream()
+                        .filter(c -> c != null && !c.isBlank())
+                        .map(codigo -> codigo.startsWith("ROLE_") ? codigo : "ROLE_" + codigo)
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
     }

@@ -12,6 +12,9 @@ public interface IProveedorBusiness {
 
     Proveedor load(Long id) throws NotFoundException, BusinessException;
 
+    /** Busca por nombre exacto (ignore case). Lanza NotFoundException si no existe. */
+    Proveedor loadByNombre(String nombre) throws NotFoundException, BusinessException;
+
     /**
      * Obtiene un proveedor por nombre; si no existe, lo crea con ese nombre y lo devuelve.
      * Útil al cargar una compra con un proveedor aún no registrado.

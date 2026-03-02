@@ -4,6 +4,7 @@ import com.gestion.qnt.model.Proveedor;
 import com.gestion.qnt.model.business.exceptions.BusinessException;
 import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import com.gestion.qnt.model.business.interfaces.IProveedorBusiness;
+import com.gestion.qnt.repository.CompraRepository;
 import com.gestion.qnt.repository.ProveedorRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,9 @@ public class ProveedorBusiness implements IProveedorBusiness {
 
     @Autowired
     private ProveedorRepository repository;
+
+    @Autowired
+    private CompraRepository compraRepository;
 
     @Override
     public List<Proveedor> list() throws BusinessException {
@@ -38,6 +42,22 @@ public class ProveedorBusiness implements IProveedorBusiness {
         } catch (Exception e) {
             log.error("Error al cargar proveedor con id {}", id, e);
             throw new BusinessException("Error al cargar proveedor", e);
+        }
+    }
+
+    @Override
+    public Proveedor loadByNombre(String nombre) throws NotFoundException, BusinessException {
+        if (nombre == null || nombre.isBlank()) {
+            throw new BusinessException("El nombre no puede estar vacío");
+        }
+        try {
+            return repository.findFirstByNombreIgnoreCase(nombre.trim())
+                    .orElseThrow(() -> new NotFoundException("No existe Proveedor con nombre '" + nombre + "'"));
+        } catch (NotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error al cargar proveedor por nombre '{}'", nombre, e);
+            throw new BusinessException("Error al buscar proveedor", e);
         }
     }
 
@@ -86,9 +106,18 @@ public class ProveedorBusiness implements IProveedorBusiness {
     public void delete(Long id) throws NotFoundException, BusinessException {
         try {
             load(id);
+            if (compraRepository.countByProveedorId(id) > 0) {
+                throw new BusinessException("El proveedor tiene compras asociadas y no puede eliminarse");
+            }
             repository.deleteById(id);
         } catch (NotFoundException e) {
             throw e;
+        } catch (BusinessException e) {
+            if ("El proveedor tiene compras asociadas y no puede eliminarse".equals(e.getMessage())) {
+                throw e;
+            }
+            log.error("Error al eliminar proveedor con id {}", id, e);
+            throw new BusinessException("Error al eliminar proveedor", e);
         } catch (Exception e) {
             log.error("Error al eliminar proveedor con id {}", id, e);
             throw new BusinessException("Error al eliminar proveedor", e);

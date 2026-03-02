@@ -32,9 +32,14 @@ public class CompraRestController {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
-    public ResponseEntity<List<Compra>> list() {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<Compra>> list(
+            @RequestParam(required = false) com.gestion.qnt.model.enums.TipoCompra tipoCompra,
+            @RequestParam(required = false) Long proveedorId) {
         try {
+            if (tipoCompra != null || proveedorId != null) {
+                return ResponseEntity.ok(compraBusiness.listFiltered(tipoCompra, proveedorId));
+            }
             return ResponseEntity.ok(compraBusiness.list());
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -89,7 +94,7 @@ public class CompraRestController {
     }
 
     @GetMapping("/tipos-equipo")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<TipoEquipo[]> getTiposEquipo() {
         return ResponseEntity.ok(TipoEquipo.values());
     }

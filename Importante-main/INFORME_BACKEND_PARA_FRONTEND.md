@@ -46,7 +46,9 @@ El resto de las rutas **requieren autenticación**.
 - **Query (alternativo):**  
   `?authtoken=<token>`
 
-El frontend debe guardar el token devuelto por login y enviarlo en **todas** las peticiones a la API (salvo login). Si el token falta o es inválido/expirado, el backend responde **401 Unauthorized**.
+El frontend debe guardar el token devuelto por login y enviarlo en **todas** las peticiones a la API (salvo login). Si el token falta o es inválido/expirado, el backend responde **401 Unauthorized**. Si el token es válido pero el usuario no tiene el rol requerido para ese endpoint, el backend responde **403 Forbidden**.
+
+**Importante:** Para **cada** llamada a rutas protegidas (incluidas `/compras`, `/compras/tipos-equipo`, `/proveedores`, `/mi-perfil`, etc.) el cliente debe enviar el header `Authorization: Bearer <token>`. Usar una única instancia de cliente HTTP (p. ej. axios) con un interceptor que añada este header a todas las peticiones; si alguna ruta usa otro cliente o no envía el token, el backend responderá 403.
 
 ### 3.3 Login
 
@@ -185,14 +187,27 @@ Base: `/api/qnt/v1/compras`
 
 | Método | Ruta | Descripción | Roles |
 |--------|------|-------------|--------|
-| GET | `/compras` | Listar todas | ADMIN, USER |
+| GET | `/compras` | Listar todas (opc. ?tipoCompra=&proveedorId=) | Autenticado |
 | GET | `/compras/{id}` | Obtener por ID | ADMIN, USER |
 | POST | `/compras` | Crear compra | ADMIN, USER |
 | PUT | `/compras/{id}` | Actualizar compra | ADMIN, USER |
 | DELETE | `/compras/{id}` | Eliminar compra | ADMIN |
 | PUT | `/compras/{id}/imagen` | Subir imagen factura (multipart) | ADMIN, USER |
 | GET | `/compras/{id}/imagen` | Descargar imagen factura | ADMIN, USER |
-| GET | `/compras/tipos-equipo` | Array de valores del enum TipoEquipo (para dropdown) | ADMIN, USER |
+| GET | `/compras/tipos-equipo` | Array de valores del enum TipoEquipo (para dropdown) | Autenticado |
+
+### 5.4.1 Proveedores
+
+Base: `/api/qnt/v1/proveedores`
+
+| Método | Ruta | Descripción | Roles |
+|--------|------|-------------|--------|
+| GET | `/proveedores` | Listar todos | Autenticado |
+| GET | `/proveedores/search?nombre=` | Buscar por nombre (404 si no existe) | Autenticado |
+| GET | `/proveedores/{id}` | Obtener por ID | Autenticado |
+| POST | `/proveedores` | Crear proveedor (body: objeto Proveedor) | Autenticado |
+| PUT | `/proveedores/{id}` | Actualizar proveedor | Autenticado |
+| DELETE | `/proveedores/{id}` | Eliminar (409 si tiene compras asociadas) | ADMIN |
 
 ### 5.5 Licencias
 
@@ -380,7 +395,7 @@ Mismos campos que CrearLicenciaMiPerfilRequest (fechaVencimientoCma, fechaEmisio
 | email | string \| null |
 | observaciones | string \| null |
 
-No hay CRUD dedicado de Proveedor en la API; se crea/usa desde Compras (proveedorId o proveedorNombre).
+Hay CRUD completo en `/api/qnt/v1/proveedores` (ver sección 5.4.1). También se crea/usa desde Compras (proveedorId o proveedorNombre).
 
 ### 6.14 Site (anidado en Compra)
 

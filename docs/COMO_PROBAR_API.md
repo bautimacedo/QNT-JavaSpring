@@ -458,7 +458,10 @@ Las licencias ANAC usan el modelo **LicenciaANAC** (no Licencia). Cada licencia 
 - Sin token, las peticiones a estas rutas devuelven **401**.
 - **Si el login devuelve 403:** quita el header `Authorization` (y cualquier Bearer token) de la petición de login en Postman; esa ruta es pública y no debe llevar token.
 
-## Migración: columna estado (usuarios existentes)
+## Despliegue en producción (VPS)
+
+- **CORS:** En el servidor donde corre el backend, definir la variable de entorno **`APP_CORS_ALLOWED_ORIGINS`** con el origen del frontend (ej. `https://qnt.dronefieldoperation.cloud`). Si no se define, por defecto solo está permitido `http://localhost:5173` y el navegador bloqueará las respuestas (puede verse como 403 o error CORS).
+- **Login:** El endpoint de login **solo acepta POST**. Si el frontend o el navegador hace un GET a `/api/qnt/v1/auth/login` (por ejemplo al recargar o al seguir un enlace), el servidor responderá **405 Method Not Allowed**. Asegurarse de que el formulario de login envíe **POST** con body JSON `{"username":"email","password":"clave"}` o form-urlencoded con los mismos nombres.
 
 Si la tabla `usuarios` ya tiene datos antes de usar el flujo registro/aprobación, hay que agregar la columna `estado` con valor por defecto para que los usuarios actuales sigan pudiendo hacer login (se consideran ACTIVO). Con `spring.jpa.hibernate.ddl-auto=update`, Hibernate puede crear la columna; si la BD ya existía sin esa columna, ejecutar en PostgreSQL:
 

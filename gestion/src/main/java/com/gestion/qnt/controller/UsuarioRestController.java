@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -39,6 +40,7 @@ public class UsuarioRestController {
     }
 
     @GetMapping
+    @Transactional(readOnly = true)
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Usuario>> list() {
         try {
@@ -52,6 +54,7 @@ public class UsuarioRestController {
      * Lista usuarios con estado PENDIENTE_APROBACION (solo ADMIN).
      */
     @GetMapping("/pendientes")
+    @Transactional(readOnly = true)
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Usuario>> listPendientes() {
         try {
@@ -62,9 +65,24 @@ public class UsuarioRestController {
     }
 
     /**
+     * Lista usuarios que tienen el rol ROLE_PILOTO (solo ADMIN).
+     */
+    @GetMapping("/pilotos")
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Usuario>> listPilotos() {
+        try {
+            return ResponseEntity.ok(usuarioBusiness.listPilotos());
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
      * Aprueba un usuario pendiente: asigna rol y pone estado ACTIVO (solo ADMIN).
      */
     @PutMapping("/{id}/aprobar")
+    @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> aprobar(@PathVariable Long id, @Valid @RequestBody AprobarUsuarioRequest request) {
         try {
@@ -81,6 +99,7 @@ public class UsuarioRestController {
     }
 
     @GetMapping("/search")
+    @Transactional(readOnly = true)
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Usuario> searchByEmail(@RequestParam String email) {
         try {
@@ -93,6 +112,7 @@ public class UsuarioRestController {
     }
 
     @PostMapping
+    @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> create(@RequestBody CreateUsuarioRequest request) {
         try {
@@ -129,6 +149,7 @@ public class UsuarioRestController {
     }
 
     @PutMapping("/{id}")
+    @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Usuario body) {
         try {
@@ -189,6 +210,7 @@ public class UsuarioRestController {
     }
 
     @PutMapping("/assign-role")
+    @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> assignRole(@RequestBody AssignRoleRequest request) {
         try {
@@ -204,6 +226,7 @@ public class UsuarioRestController {
     }
 
     @PutMapping("/remove-role")
+    @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> removeRole(@RequestBody AssignRoleRequest request) {
         try {

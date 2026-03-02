@@ -1,5 +1,6 @@
 package com.gestion.qnt.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,5 +25,6 @@ public class Role {
     private String nombre;
 
     @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Usuario> usuarios = new ArrayList<>();
 }

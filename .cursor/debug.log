@@ -74,3 +74,47 @@
 {"timestamp":1772378609197,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":17,"passwordPresent":true},"hypothesisId":"D"}
 {"timestamp":1772378609200,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@ejemplo.com","passwordPresent":true},"hypothesisId":"A"}
 {"timestamp":1772378609209,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
+{"timestamp":1772392885520,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":17},"hypothesisId":"D"}
+{"timestamp":1772392885526,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@example.com"},"hypothesisId":"A"}
+{"timestamp":1772392885744,"location":"CustomAuthenticationManager.java:authenticate","message":"Usuario not found by email","data":{"email":"admin@example.com"},"hypothesisId":"A"}
+{"timestamp":1772392885746,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Credenciales incorrectas"},"hypothesisId":"A"}
+{"timestamp":1772392901553,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":17},"hypothesisId":"D"}
+{"timestamp":1772392901554,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@ejemplo.com"},"hypothesisId":"A"}
+{"timestamp":1772392901565,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
+{"timestamp":1772393772461,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":17},"hypothesisId":"D"}
+{"timestamp":1772393772462,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@ejemplo.com"},"hypothesisId":"A"}
+{"timestamp":1772393772464,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
+{"timestamp":1772394339981,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":17},"hypothesisId":"D"}
+{"timestamp":1772394339981,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@ejemplo.com"},"hypothesisId":"A"}
+{"timestamp":1772394339983,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
+{"timestamp":1772396876941,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":17},"hypothesisId":"D"}
+{"timestamp":1772396876943,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@ejemplo.com"},"hypothesisId":"A"}
+{"timestamp":1772396876946,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
+{"timestamp":1772397565776,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":17},"hypothesisId":"D"}
+{"timestamp":1772397565777,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@ejemplo.com"},"hypothesisId":"A"}
+{"timestamp":1772397565779,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
+{"timestamp":1772398702608,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":17},"hypothesisId":"D"}
+{"timestamp":1772398702611,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@ejemplo.com"},"hypothesisId":"A"}
+{"timestamp":1772398702615,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
+{"timestamp":1772398797298,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":18},"hypothesisId":"D"}
+{"timestamp":1772398797299,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"bautimrf@gmail.com"},"hypothesisId":"A"}
+{"timestamp":1772398797301,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":2,"activo":true},"hypothesisId":"B"}
+{"timestamp":1772398797362,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"bautimrf@gmail.com"},"hypothesisId":"B"}
+{"timestamp":1772398797365,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
+{"timestamp":1772398798571,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":18},"hypothesisId":"D"}
+{"timestamp":1772398798572,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"bautimrf@gmail.com"},"hypothesisId":"A"}
+{"timestamp":1772398798574,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":2,"activo":true},"hypothesisId":"B"}
+{"timestamp":1772405555802,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":18},"hypothesisId":"D"}
+{"timestamp":1772405555815,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"bautimrf@gmail.com"},"hypothesisId":"A"}
+{"timestamp":1772405555938,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":2,"activo":true},"hypothesisId":"B"}
+{"timestamp":1772405776695,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":18},"hypothesisId":"D"}
+{"timestamp":1772405776696,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"bautimrf@gmail.com"},"hypothesisId":"A"}
+{"timestamp":1772405776701,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":2,"activo":true},"hypothesisId":"B"}
+{"timestamp":1772405776830,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"bautimrf@gmail.com"},"hypothesisId":"B"}
+{"timestamp":1772405776834,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
+{"timestamp":1772405779548,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":18},"hypothesisId":"D"}
+{"timestamp":1772405779550,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"bautimrf@gmail.com"},"hypothesisId":"A"}
+{"timestamp":1772405779554,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":2,"activo":true},"hypothesisId":"B"}
+{"timestamp":1772406439640,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":18},"hypothesisId":"D"}
+{"timestamp":1772406439643,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"bautimrf@gmail.com"},"hypothesisId":"A"}
+{"timestamp":1772406439652,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":2,"activo":true},"hypothesisId":"B"}

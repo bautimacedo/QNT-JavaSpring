@@ -29,7 +29,7 @@ public class UsuarioBusiness implements IUsuarioBusiness {
     @Override
     public List<Usuario> list() throws BusinessException {
         try {
-            return repository.findAll();
+            return repository.findAllWithRoles();
         } catch (Exception e) {
             log.error("Error al listar usuarios", e);
             throw new BusinessException("Error al listar usuarios", e);
@@ -39,7 +39,7 @@ public class UsuarioBusiness implements IUsuarioBusiness {
     @Override
     public Usuario load(Long id) throws NotFoundException, BusinessException {
         try {
-            return repository.findById(id)
+            return repository.findByIdWithRoles(id)
                     .orElseThrow(() -> new NotFoundException("No existe Usuario con id " + id));
         } catch (NotFoundException e) {
             throw e;
@@ -52,7 +52,7 @@ public class UsuarioBusiness implements IUsuarioBusiness {
     @Override
     public Usuario load(String email) throws NotFoundException, BusinessException {
         try {
-            return repository.findByEmail(email)
+            return repository.findByEmailWithRoles(email)
                     .orElseThrow(() -> new NotFoundException("No existe Usuario con email " + email));
         } catch (NotFoundException e) {
             throw e;
@@ -157,10 +157,21 @@ public class UsuarioBusiness implements IUsuarioBusiness {
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<Usuario> listPendientes() throws BusinessException {
         try {
-            return repository.findByEstado(EstadoUsuario.PENDIENTE_APROBACION);
+            return repository.findByEstadoWithRoles(EstadoUsuario.PENDIENTE_APROBACION);
         } catch (Exception e) {
             log.error("Error al listar usuarios pendientes", e);
             throw new BusinessException("Error al listar usuarios pendientes", e);
+        }
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public List<Usuario> listPilotos() throws BusinessException {
+        try {
+            return repository.findByRoleCodigoWithRoles("ROLE_PILOTO");
+        } catch (Exception e) {
+            log.error("Error al listar pilotos", e);
+            throw new BusinessException("Error al listar pilotos", e);
         }
     }
 

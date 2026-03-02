@@ -31,6 +31,9 @@ public interface IUsuarioBusiness {
 
     List<Usuario> listPendientes() throws BusinessException;
 
+    /** Lista usuarios que tienen el rol ROLE_PILOTO (solo ACTIVO recomendado para uso en listados). */
+    List<Usuario> listPilotos() throws BusinessException;
+
     Usuario aprobar(Long usuarioId, String roleCodigo) throws NotFoundException, BusinessException;
 
     Usuario addRole(Role role, Usuario user) throws NotFoundException, BusinessException;

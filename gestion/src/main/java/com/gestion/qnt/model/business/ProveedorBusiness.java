@@ -42,6 +42,24 @@ public class ProveedorBusiness implements IProveedorBusiness {
     }
 
     @Override
+    public Proveedor loadOrCreate(String nombre) throws BusinessException {
+        if (nombre == null || nombre.isBlank()) {
+            throw new BusinessException("El nombre del proveedor no puede estar vacío");
+        }
+        try {
+            return repository.findFirstByNombreIgnoreCase(nombre.trim())
+                    .orElseGet(() -> {
+                        Proveedor nuevo = new Proveedor();
+                        nuevo.setNombre(nombre.trim());
+                        return repository.save(nuevo);
+                    });
+        } catch (Exception e) {
+            log.error("Error en loadOrCreate proveedor con nombre '{}'", nombre, e);
+            throw new BusinessException("Error al obtener o crear proveedor", e);
+        }
+    }
+
+    @Override
     public Proveedor add(Proveedor entity) throws BusinessException {
         try {
             return repository.save(entity);

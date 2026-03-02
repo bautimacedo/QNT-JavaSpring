@@ -6,9 +6,10 @@ package com.gestion.qnt.model.enums;
 public enum TipoCompra {
     LICENCIA_SW,
     REPUESTO,
-    COMBUSTIBLE,
     VIATICO,
     SEGURO,
     EQUIPO,
+    SERVICIOS,
+    FLETES,
     OTRO
 }

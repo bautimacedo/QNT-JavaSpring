@@ -10,7 +10,10 @@ import com.gestion.qnt.model.business.exceptions.BusinessException;
 import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import com.gestion.qnt.model.business.interfaces.IEmpresaBusiness;
 import com.gestion.qnt.repository.EmpresaRepository;
+import org.springframework.stereotype.Service;
 
+
+@Service
 public class EmpresaBusiness implements IEmpresaBusiness {
 
 	@Autowired

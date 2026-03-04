@@ -8,23 +8,22 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.io.Serializable;
+
 @Entity
 @Table(name = "roles", uniqueConstraints = @UniqueConstraint(columnNames = "codigo"))
 @Getter
 @Setter
-public class Role {
+public class Role implements Serializable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String codigo;
+    private String codigo; //ROLE_ADMIN
 
     @Column
-    private String nombre;
+    private String nombre; // Descripcion
 
-    @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<Usuario> usuarios = new ArrayList<>();
 }

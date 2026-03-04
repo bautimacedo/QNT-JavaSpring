@@ -45,4 +45,7 @@ public class Instalacion {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "helice_id")
     private Helice helice;
-}
+    
+    
+    
+    }

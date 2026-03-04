@@ -54,7 +54,7 @@ public class Usuario implements UserDetails {
     )
     
     
-    private Set<Role> roles; 
+    private List<Role> roles; 
 
     @Column
     private String dni;

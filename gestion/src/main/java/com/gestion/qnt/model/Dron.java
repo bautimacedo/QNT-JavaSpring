@@ -1,5 +1,6 @@
 package com.gestion.qnt.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -63,8 +64,7 @@ public class Dron {
     @Column(name = "cantidad_minutos_volados")
     private Integer cantidadMinutosVolados;
 
-    @Lob
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String incidentes;
 
     @Column(name = "ultimo_vuelo")
@@ -74,15 +74,19 @@ public class Dron {
     @JoinColumn(name = "dock_id", unique = true)
     private Dock dock;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "dron", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Bateria> baterias = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "dron", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Helice> helices = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "dron", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MantenimientoDron> mantenimientos = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "dron", fetch = FetchType.LAZY)
     private List<Mision> misiones = new ArrayList<>();
 }

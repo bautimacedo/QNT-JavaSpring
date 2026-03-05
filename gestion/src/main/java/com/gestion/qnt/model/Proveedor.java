@@ -36,8 +36,7 @@ public class Proveedor {
     @Column
     private String email;
 
-    @Lob
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String observaciones;
 
     @OneToMany(mappedBy = "proveedor", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)

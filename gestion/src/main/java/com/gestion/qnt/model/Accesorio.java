@@ -41,8 +41,7 @@ public class Accesorio {
     @Column(name = "unidad_medida")
     private String unidadMedida; // mts, un, kg, etc.
 
-    @Lob
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String descripcion; // Aca va el detalle: "Tripolar 3 X 2,5 Mm"
 
     @Column (nullable = true)

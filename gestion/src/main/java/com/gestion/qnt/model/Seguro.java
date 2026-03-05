@@ -28,8 +28,7 @@ public class Seguro {
     @Column(name = "vigencia_hasta")
     private LocalDate vigenciaHasta;
 
-    @Lob
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String observaciones;
 
     @ManyToOne(fetch = FetchType.LAZY)

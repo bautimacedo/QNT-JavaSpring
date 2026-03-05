@@ -157,7 +157,7 @@ Base: `/api/qnt/v1/usuarios`
 |--------|------|-------------|--------|
 | GET | `/usuarios` | Listar todos | ADMIN |
 | GET | `/usuarios/pendientes` | Listar usuarios pendientes de aprobación (estado PENDIENTE_APROBACION) | ADMIN |
-| GET | `/usuarios/pilotos` | Listar usuarios con rol ROLE_PILOTO | ADMIN |
+| GET | `/usuarios/pilotos` | Listar pilotos con datos completos (PilotoResumenResponse) | ADMIN |
 | GET | `/usuarios/search?email=` | Buscar por email | ADMIN |
 | POST | `/usuarios` | Crear usuario | ADMIN |
 | PUT | `/usuarios/{id}` | Actualizar usuario | ADMIN |
@@ -167,6 +167,37 @@ Base: `/api/qnt/v1/usuarios`
 | PUT | `/usuarios/enable?email=` | Activar usuario | ADMIN |
 | PUT | `/usuarios/assign-role` | Asignar rol a usuario | ADMIN |
 | PUT | `/usuarios/remove-role` | Quitar rol a usuario | ADMIN |
+
+#### 5.2.1 Respuesta de GET /usuarios/pilotos (PilotoResumenResponse) — v0.20.0
+
+Cada objeto en el array:
+
+| Campo | Tipo | Notas |
+|-------|------|-------|
+| id | number | |
+| nombre | string | |
+| apellido | string \| null | |
+| email | string | |
+| horasVuelo | number \| null | |
+| cantidadVuelos | number \| null | |
+| cmaVencimiento | string (date) \| null | ISO-8601 (yyyy-MM-dd) |
+| estado | string | EstadoUsuario: PENDIENTE_APROBACION, ACTIVO, DESACTIVADO |
+| tieneFotoPerfil | boolean | |
+| licencias | LicenciaANACResumen[] | Licencias ANAC del piloto (vacío si no tiene) |
+
+Cada objeto en `licencias`:
+
+| Campo | Tipo |
+|-------|------|
+| id | number |
+| fechaVencimientoCma | string (date) \| null |
+| fechaEmision | string (date) \| null |
+| caducidad | string (date) \| null |
+| tieneImagenCma | boolean |
+| tieneImagenCertificadoIdoneidad | boolean |
+| activo | boolean \| null |
+
+> Sin exposición de password, imagenCma ni imagenPerfil en la respuesta.
 
 ### 5.3 Roles
 
@@ -614,4 +645,4 @@ Cuando el backend añada nuevos endpoints o cambie contratos, conviene actualiza
 
 ---
 
-*Documento generado para sincronizar backend (QNT-Gestion-Spring) con el proyecto frontend. Versión del informe: 1.7 (v0.17.0 — TipoEquipo en Compra; v0.18.0 — estado NO_LLEGO e inventario automático al comprar equipo).*
+*Documento generado para sincronizar backend (QNT-Gestion-Spring) con el proyecto frontend. Versión del informe: 1.9 (v0.17.0 — TipoEquipo en Compra; v0.18.0 — estado NO_LLEGO e inventario automático al comprar equipo; v0.19.0 — horasVuelo/cantidadVuelos en perfil piloto; v0.20.0 — GET /usuarios/pilotos con PilotoResumenResponse).*

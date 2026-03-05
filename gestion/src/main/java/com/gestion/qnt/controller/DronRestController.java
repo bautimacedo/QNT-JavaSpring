@@ -7,6 +7,8 @@ import com.gestion.qnt.model.business.interfaces.IDronBusiness;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +21,8 @@ public class DronRestController {
     private IDronBusiness dronBusiness;
 
     @GetMapping("")
+    @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Dron>> list() {
         try {
             return new ResponseEntity<>(dronBusiness.list(), HttpStatus.OK);
@@ -28,6 +32,8 @@ public class DronRestController {
     }
 
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Dron> load(@PathVariable("id") Long id) {
         try {
             return new ResponseEntity<>(dronBusiness.load(id), HttpStatus.OK);
@@ -39,6 +45,7 @@ public class DronRestController {
     }
 
     @PostMapping("")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<Dron> add(@RequestBody Dron dron) {
         try {
             return new ResponseEntity<>(dronBusiness.add(dron), HttpStatus.CREATED);
@@ -48,6 +55,7 @@ public class DronRestController {
     }
 
     @PutMapping("")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<Dron> update(@RequestBody Dron dron) {
         try {
             return new ResponseEntity<>(dronBusiness.update(dron), HttpStatus.OK);
@@ -59,6 +67,7 @@ public class DronRestController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
         try {
             dronBusiness.delete(id);

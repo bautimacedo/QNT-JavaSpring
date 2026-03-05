@@ -27,8 +27,7 @@ public class MantenimientoDock {
     @Column(name = "fecha_mantenimiento", nullable = false)
     private LocalDateTime fechaMantenimiento;
 
-    @Lob
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String observaciones;
 
     @Column

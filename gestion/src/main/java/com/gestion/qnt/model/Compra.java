@@ -59,16 +59,14 @@ public class Compra {
     @Column(name = "descripcion_equipo", length = 255, nullable = true)
     private String descripcionEquipo;
 
-    @Lob
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String descripcion;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "site_id")
     private Site site;
 
-    @Lob
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String observaciones;
 
     @ManyToOne(fetch = FetchType.LAZY)

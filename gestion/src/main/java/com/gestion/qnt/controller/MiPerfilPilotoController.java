@@ -65,20 +65,12 @@ public class MiPerfilPilotoController {
             body.put("usuario", usuario);
             body.put("roles", usuario.getRoles() != null ? usuario.getRoles() : List.of());
             body.put("tieneFotoPerfil", usuario.getImagenPerfil() != null && usuario.getImagenPerfil().length > 0);
-            if (isPilotoOrAdmin(authentication)) {
+            boolean esPiloto = authentication.getAuthorities().stream()
+                    .anyMatch(a -> "ROLE_PILOTO".equals(a.getAuthority()));
+            if (esPiloto) {
                 List<LicenciaANAC> licencias = licenciaANACBusiness.listByPiloto(auth.getId());
                 body.put("licencias", licencias.stream()
-                        .map(l -> {
-                            Map<String, Object> m = new LinkedHashMap<>();
-                            m.put("id", l.getId());
-                            m.put("fechaVencimientoCma", l.getFechaVencimientoCma() != null ? l.getFechaVencimientoCma().toString() : null);
-                            m.put("fechaEmision", l.getFechaEmision() != null ? l.getFechaEmision().toString() : null);
-                            m.put("caducidad", l.getCaducidad() != null ? l.getCaducidad().toString() : null);
-                            m.put("tieneImagenCma", l.getImagenCma() != null && l.getImagenCma().length > 0);
-                            m.put("tieneImagenCertificadoIdoneidad", l.getImagenCertificadoIdoneidad() != null && l.getImagenCertificadoIdoneidad().length > 0);
-                            m.put("activo", l.getActivo());
-                            return m;
-                        })
+                        .map(this::licenciaToMap)
                         .collect(Collectors.toList()));
             } else {
                 body.put("licencias", List.of());
@@ -195,7 +187,7 @@ public class MiPerfilPilotoController {
 
     @GetMapping("/licencias")
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('PILOTO') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('PILOTO')")
     public ResponseEntity<List<Map<String, Object>>> getMisLicencias(Authentication authentication) {
         AuthUser auth = authUser(authentication);
         try {
@@ -209,7 +201,7 @@ public class MiPerfilPilotoController {
 
     @PostMapping("/licencias")
     @Transactional
-    @PreAuthorize("hasRole('PILOTO') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('PILOTO')")
     public ResponseEntity<?> crearLicencia(Authentication authentication,
                                            @RequestBody CrearLicenciaMiPerfilRequest request) {
         AuthUser auth = authUser(authentication);
@@ -231,7 +223,7 @@ public class MiPerfilPilotoController {
 
     @PutMapping("/licencias/{id}")
     @Transactional
-    @PreAuthorize("hasRole('PILOTO') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('PILOTO')")
     public ResponseEntity<?> actualizarLicencia(Authentication authentication,
                                                 @PathVariable Long id,
                                                 @RequestBody ActualizarLicenciaMiPerfilRequest request) {
@@ -254,7 +246,7 @@ public class MiPerfilPilotoController {
 
     @DeleteMapping("/licencias/{id}")
     @Transactional
-    @PreAuthorize("hasRole('PILOTO') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('PILOTO')")
     public ResponseEntity<Void> eliminarLicencia(Authentication authentication, @PathVariable Long id) {
         AuthUser auth = authUser(authentication);
         try {
@@ -275,7 +267,7 @@ public class MiPerfilPilotoController {
 
     @PutMapping("/licencias/{id}/imagen-cma")
     @Transactional
-    @PreAuthorize("hasRole('PILOTO') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('PILOTO')")
     public ResponseEntity<?> subirImagenCmaLicencia(Authentication authentication,
                                                     @PathVariable Long id,
                                                     @RequestParam("file") MultipartFile file) {
@@ -299,7 +291,7 @@ public class MiPerfilPilotoController {
 
     @GetMapping("/licencias/{id}/imagen-cma")
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('PILOTO') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('PILOTO')")
     public ResponseEntity<byte[]> getImagenCmaLicencia(Authentication authentication, @PathVariable Long id) {
         AuthUser auth = authUser(authentication);
         try {
@@ -326,7 +318,7 @@ public class MiPerfilPilotoController {
 
     @PutMapping("/licencias/{id}/imagen-certificado-idoneidad")
     @Transactional
-    @PreAuthorize("hasRole('PILOTO') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('PILOTO')")
     public ResponseEntity<?> subirImagenIdoneidad(Authentication authentication,
                                                   @PathVariable Long id,
                                                   @RequestParam("file") MultipartFile file) {
@@ -350,7 +342,7 @@ public class MiPerfilPilotoController {
 
     @GetMapping("/licencias/{id}/imagen-certificado-idoneidad")
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('PILOTO') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('PILOTO')")
     public ResponseEntity<byte[]> getImagenIdoneidad(Authentication authentication, @PathVariable Long id) {
         AuthUser auth = authUser(authentication);
         try {

@@ -570,10 +570,12 @@ Solo aplica cuando `tipoCompra = "EQUIPO"`. Se obtiene dinámicamente con `GET /
 
 ### Estado (equipos: Dock, Dron, Batería, etc.)
 
-- `STOCK_ACTUAL`
-- `EN_PROCESO`
-- `STOCK_ACTIVO`
-- `EN_DESUSO`
+- `NO_LLEGO` — Comprado, pendiente de llegada física; el admin debe completar los datos al recibirlo. (v0.18.0)
+- `STOCK_ACTUAL` — En oficina/almacén, disponible para enviar.
+- `EN_PROCESO` — En camino al site o en reparación/servicio.
+- `STOCK_ACTIVO` — Desplegado y en uso en el site.
+- `EN_DESUSO` — Retirado definitivamente (baja).
+- `EN_MANTENIMIENTO` — Retirado temporalmente por reparación.
 
 ### EstadoMision (misiones)
 
@@ -610,4 +612,4 @@ Cuando el backend añada nuevos endpoints o cambie contratos, conviene actualiza
 
 ---
 
-*Documento generado para sincronizar backend (QNT-Gestion-Spring) con el proyecto frontend. Versión del informe: 1.6 (v0.17.0 — TipoEquipo en Compra).*
+*Documento generado para sincronizar backend (QNT-Gestion-Spring) con el proyecto frontend. Versión del informe: 1.7 (v0.17.0 — TipoEquipo en Compra; v0.18.0 — estado NO_LLEGO e inventario automático al comprar equipo).*

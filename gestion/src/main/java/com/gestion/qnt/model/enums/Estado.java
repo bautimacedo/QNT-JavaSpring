@@ -4,6 +4,8 @@ package com.gestion.qnt.model.enums;
  * Estado de equipos: Dock, Dron, Bateria, Helice, AntenaRtk, AntenaStarlink.
  */
 public enum Estado {
+    /** Comprado pero aún no recibido físicamente; el admin debe completar los datos cuando llegue. */
+    NO_LLEGO,
     /** En oficina/almacén, disponible para enviar */
     STOCK_ACTUAL,
     /** En camino al site o en reparación/servicio */

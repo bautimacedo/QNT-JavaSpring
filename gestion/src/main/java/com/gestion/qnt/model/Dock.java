@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.math.BigDecimal;
 
 import com.gestion.qnt.model.enums.Estado;
 
@@ -61,6 +62,14 @@ public class Dock {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "site_id", nullable = false)
     private Site site;
+
+    /** Coordenadas opcionales para ubicación en mapa (lat/lng obligatorios para aparecer; altitud en metros). */
+    @Column(precision = 10, scale = 7)
+    private BigDecimal latitud;
+    @Column(precision = 10, scale = 7)
+    private BigDecimal longitud;
+    @Column(precision = 10, scale = 2)
+    private BigDecimal altitud;
 
     @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "dock")

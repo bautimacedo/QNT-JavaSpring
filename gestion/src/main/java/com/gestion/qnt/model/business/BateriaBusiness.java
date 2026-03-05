@@ -44,7 +44,10 @@ public class BateriaBusiness implements IBateriaBusiness {
     @Override
     public Bateria add(Bateria entity) throws BusinessException {
         try {
+            CoordenadasValidator.validar(entity.getLatitud(), entity.getLongitud());
             return repository.save(entity);
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Error al agregar bateria", e);
             throw new BusinessException("Error al agregar bateria", e);
@@ -55,8 +58,11 @@ public class BateriaBusiness implements IBateriaBusiness {
     public Bateria update(Bateria entity) throws NotFoundException, BusinessException {
         try {
             load(entity.getId());
+            CoordenadasValidator.validar(entity.getLatitud(), entity.getLongitud());
             return repository.save(entity);
         } catch (NotFoundException e) {
+            throw e;
+        } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
             log.error("Error al actualizar bateria con id {}", entity.getId(), e);

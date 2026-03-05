@@ -44,7 +44,10 @@ public class DockBusiness implements IDockBusiness {
     @Override
     public Dock add(Dock entity) throws BusinessException {
         try {
+            CoordenadasValidator.validar(entity.getLatitud(), entity.getLongitud());
             return repository.save(entity);
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Error al agregar dock", e);
             throw new BusinessException("Error al agregar dock", e);
@@ -55,8 +58,11 @@ public class DockBusiness implements IDockBusiness {
     public Dock update(Dock entity) throws NotFoundException, BusinessException {
         try {
             load(entity.getId());
+            CoordenadasValidator.validar(entity.getLatitud(), entity.getLongitud());
             return repository.save(entity);
         } catch (NotFoundException e) {
+            throw e;
+        } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
             log.error("Error al actualizar dock con id {}", entity.getId(), e);

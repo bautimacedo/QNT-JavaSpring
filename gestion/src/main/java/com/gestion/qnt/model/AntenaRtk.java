@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.math.BigDecimal;
 
 import com.gestion.qnt.model.enums.Estado;
 
@@ -43,4 +44,12 @@ public class AntenaRtk {
 
     @Column
     private String ubicacion;
+
+    /** Coordenadas opcionales para ubicación en mapa (lat/lng obligatorios para aparecer; altitud en metros). */
+    @Column(precision = 10, scale = 7)
+    private BigDecimal latitud;
+    @Column(precision = 10, scale = 7)
+    private BigDecimal longitud;
+    @Column(precision = 10, scale = 2)
+    private BigDecimal altitud;
 }

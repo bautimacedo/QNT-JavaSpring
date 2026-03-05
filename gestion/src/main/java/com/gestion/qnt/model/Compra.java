@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -34,6 +35,14 @@ public class Compra {
 
     @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal importe;
+
+    /** Si la compra tiene IVA incluido en el total. Cuando true, ivaPorcentaje es obligatorio. */
+    @Column(name = "tiene_iva")
+    private Boolean tieneIva = false;
+
+    /** Porcentaje de IVA (ej: 21.00). Solo aplica cuando tieneIva = true. */
+    @Column(name = "iva_porcentaje", precision = 5, scale = 2)
+    private BigDecimal ivaPorcentaje;
 
     @Column(nullable = false, length = 10)
     private String moneda = "ARS";
@@ -79,4 +88,20 @@ public class Compra {
     @Basic(optional = true)
     @JsonIgnore
     private byte[] imagenFactura;
+
+    /**
+     * Subtotal (base imponible) cuando tieneIva es true: importe / (1 + ivaPorcentaje/100).
+     * No persistido; calculado para la respuesta de la API.
+     */
+    @Transient
+    public BigDecimal getSubtotal() {
+        if (!Boolean.TRUE.equals(tieneIva) || ivaPorcentaje == null || ivaPorcentaje.compareTo(BigDecimal.ZERO) <= 0) {
+            return null;
+        }
+        if (importe == null) {
+            return null;
+        }
+        BigDecimal divisor = BigDecimal.ONE.add(ivaPorcentaje.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
+        return importe.divide(divisor, 4, RoundingMode.HALF_UP);
+    }
 }

@@ -54,7 +54,20 @@ public class LicenciaANACBusiness implements ILicenciaANACBusiness {
     @Override
     public LicenciaANAC add(LicenciaANAC entity) throws BusinessException {
         try {
+            if (entity.getPiloto() == null) {
+                throw new BusinessException("La licencia ANAC debe estar asociada a un usuario piloto");
+            }
+            boolean tieneRolPiloto = entity.getPiloto().getRoles() != null &&
+                    entity.getPiloto().getRoles().stream()
+                            .anyMatch(r -> "ROLE_PILOTO".equals(r.getCodigo()));
+            if (!tieneRolPiloto) {
+                throw new BusinessException(
+                    "El usuario '" + entity.getPiloto().getEmail() +
+                    "' no tiene el rol PILOTO y no puede tener licencias ANAC");
+            }
             return repository.save(entity);
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Error al agregar licencia ANAC", e);
             throw new BusinessException("Error al agregar licencia ANAC", e);

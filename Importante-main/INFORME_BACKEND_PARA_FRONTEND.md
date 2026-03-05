@@ -321,12 +321,14 @@ El usuario debe estar en estado `PENDIENTE_APROBACION`. Tras aprobar, pasa a `AC
 
 ### 6.6 ActualizarMiPerfilRequest (PUT /mi-perfil)
 
-| Campo | Tipo | Obligatorio |
-|-------|------|-------------|
-| nombre | string \| null | No; solo los enviados se actualizan |
-| apellido | string \| null | No |
-| dni | string \| null | No |
-| passwordMission | string \| null | No; máx. 30 caracteres. Dato del piloto (clave para misiones), no es la contraseña de login. |
+| Campo | Tipo | Obligatorio | Notas |
+|-------|------|-------------|-------|
+| nombre | string \| null | No | Solo se actualiza si no es blank. |
+| apellido | string \| null | No | |
+| dni | string \| null | No | |
+| passwordMission | string \| null | No | Solo ROLE_PILOTO o ROLE_ADMIN. Máx. 30 caracteres. Ignorado para otros roles. |
+| horasVuelo | number \| null | No | Solo ROLE_PILOTO o ROLE_ADMIN. Ignorado para otros roles. (v0.19.0) |
+| cantidadVuelos | number \| null | No | Solo ROLE_PILOTO o ROLE_ADMIN. Ignorado para otros roles. (v0.19.0) |
 
 ### 6.7 CambioPasswordMiPerfilRequest (PUT /mi-perfil/cambio-password)
 

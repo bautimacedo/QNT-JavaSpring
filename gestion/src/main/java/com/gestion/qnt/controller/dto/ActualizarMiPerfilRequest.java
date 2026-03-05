@@ -7,6 +7,10 @@ public record ActualizarMiPerfilRequest(
         String nombre,
         String apellido,
         String dni,
-        /** Opcional; máx. 30 caracteres. Relevante para pilotos. */
-        String passwordMission
+        /** Opcional; máx. 30 caracteres. Solo ROLE_PILOTO o ROLE_ADMIN. */
+        String passwordMission,
+        /** Solo ROLE_PILOTO o ROLE_ADMIN. Ignorado para otros roles. */
+        Integer horasVuelo,
+        /** Solo ROLE_PILOTO o ROLE_ADMIN. Ignorado para otros roles. */
+        Integer cantidadVuelos
 ) {}

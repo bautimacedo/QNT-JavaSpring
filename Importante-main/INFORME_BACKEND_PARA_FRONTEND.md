@@ -12,7 +12,7 @@ Este documento describe el **contrato del backend** para que el proyecto fronten
 
 **Stack backend:** Spring Boot 3.x, Java 17+, Spring Security (JWT), JPA/Hibernate, PostgreSQL.
 
-**Última actualización del informe:** v0.21.0 (ROLE_PILOTO obligatorio para licencias ANAC). Cubre: v0.13.0 — método de pago y usuario de alta en Compras; v0.17.0 — TipoEquipo en Compra; v0.18.0 — estado NO_LLEGO e inventario automático al comprar equipo; v0.19.0 — horasVuelo/cantidadVuelos y restricción de campos piloto en mi-perfil; v0.20.0 — GET /usuarios/pilotos con PilotoResumenResponse. Este documento se actualiza **al finalizar cada tarea** del backend que afecte la API (endpoints, modelos, auth o convenciones).
+**Última actualización del informe:** v0.22.0 (auto-creación Licencia SW + seguridad controllers stock + fix @Lob String → TEXT + @JsonIgnore colecciones LAZY). Cubre: v0.13.0 — método de pago y usuario de alta en Compras; v0.17.0 — TipoEquipo en Compra; v0.18.0 — estado NO_LLEGO e inventario automático al comprar equipo; v0.19.0 — horasVuelo/cantidadVuelos y restricción de campos piloto en mi-perfil; v0.20.0 — GET /usuarios/pilotos con PilotoResumenResponse. Este documento se actualiza **al finalizar cada tarea** del backend que afecte la API (endpoints, modelos, auth o convenciones).
 
 ---
 
@@ -243,6 +243,8 @@ Base: `/api/qnt/v1/proveedores`
 ### 5.5 Licencias
 
 Base: `/api/qnt/v1/licencias`
+
+> **Auto-creación:** cuando se registra una compra de tipo `LICENCIA_SW`, el backend crea automáticamente una `Licencia` en stock con `nombre = descripcion de la compra`, `fechaCompra` y el vínculo `compra_id`. El admin puede luego completar `numLicencia`, `caducidad` y `version` desde `PUT /licencias/{id}`.
 
 | Método | Ruta | Descripción | Roles |
 |--------|------|-------------|--------|

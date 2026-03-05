@@ -7,6 +7,8 @@ import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +21,8 @@ public class HeliceRestController {
     private IHeliceBusiness heliceBusiness;
 
     @GetMapping("")
+    @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Helice>> list() {
         try {
             return new ResponseEntity<>(heliceBusiness.list(), HttpStatus.OK);
@@ -28,6 +32,8 @@ public class HeliceRestController {
     }
 
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Helice> load(@PathVariable("id") Long id) {
         try {
             return new ResponseEntity<>(heliceBusiness.load(id), HttpStatus.OK);
@@ -39,6 +45,7 @@ public class HeliceRestController {
     }
 
     @PostMapping("")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<Helice> add(@RequestBody Helice helice) {
         try {
             return new ResponseEntity<>(heliceBusiness.add(helice), HttpStatus.CREATED);
@@ -48,6 +55,7 @@ public class HeliceRestController {
     }
 
     @PutMapping("")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<Helice> update(@RequestBody Helice helice) {
         try {
             return new ResponseEntity<>(heliceBusiness.update(helice), HttpStatus.OK);
@@ -59,6 +67,7 @@ public class HeliceRestController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
         try {
             heliceBusiness.delete(id);

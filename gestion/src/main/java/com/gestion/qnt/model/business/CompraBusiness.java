@@ -19,8 +19,10 @@ import com.gestion.qnt.model.enums.TipoCompra;
 import com.gestion.qnt.model.business.interfaces.IBateriaBusiness;
 import com.gestion.qnt.model.business.interfaces.IDronBusiness;
 import com.gestion.qnt.model.business.interfaces.IHeliceBusiness;
+import com.gestion.qnt.model.business.interfaces.ILicenciaBusiness;
 import com.gestion.qnt.model.business.interfaces.IProveedorBusiness;
 import com.gestion.qnt.model.business.interfaces.ISiteBusiness;
+import com.gestion.qnt.model.Licencia;
 import com.gestion.qnt.model.enums.Estado;
 
 import java.util.List;
@@ -46,6 +48,9 @@ public class CompraBusiness implements ICompraBusiness {
 
     @Autowired
     private IHeliceBusiness heliceBusiness;
+
+    @Autowired
+    private ILicenciaBusiness licenciaBusiness;
 
     @Override
     public List<Compra> list() throws BusinessException {
@@ -119,7 +124,13 @@ public class CompraBusiness implements ICompraBusiness {
                 compra.setDescripcionEquipo(null);
             }
 
-            return repository.save(compra);
+            Compra savedCompra = repository.save(compra);
+
+            if (request.tipoCompra() == TipoCompra.LICENCIA_SW) {
+                crearLicenciaSWDesdeCompra(savedCompra, request);
+            }
+
+            return savedCompra;
         } catch (NotFoundException e) {
             throw e;
         } catch (Exception e) {
@@ -199,6 +210,25 @@ public class CompraBusiness implements ICompraBusiness {
             log.error("Error al eliminar compra con id {}", id, e);
             throw new BusinessException("Error al eliminar compra", e);
         }
+    }
+
+    /**
+     * Crea automáticamente una Licencia (SW) en stock al registrar una compra de tipo LICENCIA_SW.
+     * La licencia queda vinculada a la compra mediante compra_id para trazabilidad completa.
+     * El nombre inicial se toma de descripcion; si está vacío se usa "Licencia SW".
+     */
+    private void crearLicenciaSWDesdeCompra(Compra compra, CreateCompraRequest request)
+            throws BusinessException {
+        Licencia licencia = new Licencia();
+        String nombre = (request.descripcion() != null && !request.descripcion().isBlank())
+                ? request.descripcion().trim()
+                : "Licencia SW";
+        licencia.setNombre(nombre);
+        licencia.setCompra(compra);
+        licencia.setFechaCompra(compra.getFechaCompra());
+        licencia.setActivo(true);
+        licenciaBusiness.add(licencia);
+        log.info("Licencia SW '{}' creada automáticamente a partir de compra id={}", nombre, compra.getId());
     }
 
     /**

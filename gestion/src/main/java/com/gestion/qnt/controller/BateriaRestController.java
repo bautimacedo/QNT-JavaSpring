@@ -7,6 +7,8 @@ import com.gestion.qnt.model.Bateria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +21,8 @@ public class BateriaRestController {
     private IBateriaBusiness bateriaBusiness;
 
     @GetMapping("")
+    @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Bateria>> list() {
         try {
             return new ResponseEntity<>(bateriaBusiness.list(), HttpStatus.OK);
@@ -28,6 +32,8 @@ public class BateriaRestController {
     }
 
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Bateria> load(@PathVariable("id") Long id) {
         try {
             return new ResponseEntity<>(bateriaBusiness.load(id), HttpStatus.OK);
@@ -39,6 +45,7 @@ public class BateriaRestController {
     }
 
     @PostMapping("")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<Bateria> add(@RequestBody Bateria bateria) {
         try {
             return new ResponseEntity<>(bateriaBusiness.add(bateria), HttpStatus.CREATED);
@@ -48,6 +55,7 @@ public class BateriaRestController {
     }
 
     @PutMapping("")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<Bateria> update(@RequestBody Bateria bateria) {
         try {
             return new ResponseEntity<>(bateriaBusiness.update(bateria), HttpStatus.OK);
@@ -59,6 +67,7 @@ public class BateriaRestController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
         try {
             bateriaBusiness.delete(id);

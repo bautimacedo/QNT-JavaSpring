@@ -27,6 +27,9 @@ public class LicenciaANAC {
     @Column(name = "fecha_emision")
     private LocalDate fechaEmision;
 
+    @Column(name = "caducidad")
+    private LocalDate caducidad;
+
     @Lob
     @Column(name = "imagen_cma", nullable = true)
     @Basic(optional = true)

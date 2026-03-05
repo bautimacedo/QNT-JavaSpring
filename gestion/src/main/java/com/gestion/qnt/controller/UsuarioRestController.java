@@ -5,11 +5,14 @@ import com.gestion.qnt.controller.dto.AssignRoleRequest;
 import com.gestion.qnt.controller.dto.AprobarUsuarioRequest;
 import com.gestion.qnt.controller.dto.ChangePasswordRequest;
 import com.gestion.qnt.controller.dto.CreateUsuarioRequest;
+import com.gestion.qnt.controller.dto.PilotoResumenResponse;
+import com.gestion.qnt.model.LicenciaANAC;
 import com.gestion.qnt.model.Role;
 import com.gestion.qnt.model.Usuario;
 import com.gestion.qnt.model.business.exceptions.BusinessException;
 import com.gestion.qnt.model.business.exceptions.FoundException;
 import com.gestion.qnt.model.business.exceptions.NotFoundException;
+import com.gestion.qnt.model.business.interfaces.ILicenciaANACBusiness;
 import com.gestion.qnt.model.business.interfaces.IRoleBusiness;
 import com.gestion.qnt.model.business.interfaces.IUsuarioBusiness;
 import org.springframework.http.HttpStatus;
@@ -30,13 +33,16 @@ public class UsuarioRestController {
     private final IUsuarioBusiness usuarioBusiness;
     private final IRoleBusiness roleBusiness;
     private final PasswordEncoder passwordEncoder;
+    private final ILicenciaANACBusiness licenciaANACBusiness;
 
     public UsuarioRestController(IUsuarioBusiness usuarioBusiness,
                                  IRoleBusiness roleBusiness,
-                                 PasswordEncoder passwordEncoder) {
+                                 PasswordEncoder passwordEncoder,
+                                 ILicenciaANACBusiness licenciaANACBusiness) {
         this.usuarioBusiness = usuarioBusiness;
         this.roleBusiness = roleBusiness;
         this.passwordEncoder = passwordEncoder;
+        this.licenciaANACBusiness = licenciaANACBusiness;
     }
 
     @GetMapping
@@ -65,14 +71,47 @@ public class UsuarioRestController {
     }
 
     /**
-     * Lista usuarios que tienen el rol ROLE_PILOTO (solo ADMIN).
+     * Lista pilotos con datos completos para la vista de pilotos (solo ADMIN).
      */
     @GetMapping("/pilotos")
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Usuario>> listPilotos() {
+    public ResponseEntity<List<PilotoResumenResponse>> listPilotos() {
         try {
-            return ResponseEntity.ok(usuarioBusiness.listPilotos());
+            List<Usuario> pilotos = usuarioBusiness.listPilotos();
+            List<PilotoResumenResponse> response = pilotos.stream().map(p -> {
+                List<LicenciaANAC> licencias;
+                try {
+                    licencias = licenciaANACBusiness.listByPiloto(p.getId());
+                } catch (BusinessException e) {
+                    licencias = List.of();
+                }
+                List<PilotoResumenResponse.LicenciaANACResumen> licenciasDto = licencias.stream()
+                        .map(l -> new PilotoResumenResponse.LicenciaANACResumen(
+                                l.getId(),
+                                l.getFechaVencimientoCma(),
+                                l.getFechaEmision(),
+                                l.getCaducidad(),
+                                l.getImagenCma() != null && l.getImagenCma().length > 0,
+                                l.getImagenCertificadoIdoneidad() != null && l.getImagenCertificadoIdoneidad().length > 0,
+                                l.getActivo()
+                        ))
+                        .toList();
+
+                return new PilotoResumenResponse(
+                        p.getId(),
+                        p.getNombre(),
+                        p.getApellido(),
+                        p.getEmail(),
+                        p.getHorasVuelo(),
+                        p.getCantidadVuelos(),
+                        p.getCmaVencimiento(),
+                        p.getEstado(),
+                        p.getImagenPerfil() != null && p.getImagenPerfil().length > 0,
+                        licenciasDto
+                );
+            }).toList();
+            return ResponseEntity.ok(response);
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

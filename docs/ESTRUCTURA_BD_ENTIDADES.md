@@ -58,6 +58,9 @@ Tipos pensados para Java 21 + JPA (PostgreSQL). Claves primarias: `Long id` con 
 | ultimoUso             | Instant       | nullable |
 | **ultimoMantenimientoId** | Long      | FK nullable → MantenimientoDock (referencia al último mantenimiento) |
 | siteId                | Long          | FK NOT NULL → Site |
+| **latitud**           | BigDecimal    | nullable, precision 10 scale 7 (para mapa) |
+| **longitud**           | BigDecimal    | nullable, precision 10 scale 7 (para mapa) |
+| **altitud**            | BigDecimal    | nullable, precision 10 scale 2, metros (para mapa) |
 | dronId                | Long          | FK nullable, UNIQUE → Dron (1 dock ↔ 1 dron, reemplazable) |
 | licenciaId            | Long          | FK nullable → Licencia |
 | antenaRtkId           | Long          | FK nullable, UNIQUE → AntenaRtk (1 por dock) |
@@ -90,6 +93,9 @@ Tipos pensados para Java 21 + JPA (PostgreSQL). Claves primarias: `Long id` con 
 | cantidadMinutosVolados | Integer | nullable, default 0 |
 | incidentes         | String     | @Lob o texto largo, nullable |
 | ultimoVuelo        | Instant    | nullable |
+| **latitud**        | BigDecimal | nullable, precision 10 scale 7 (para mapa) |
+| **longitud**       | BigDecimal | nullable, precision 10 scale 7 (para mapa) |
+| **altitud**        | BigDecimal | nullable, precision 10 scale 2, metros (para mapa) |
 | dockId             | Long       | FK nullable, UNIQUE → Dock (1 dron ↔ 1 dock) |
 
 **Relaciones:**  
@@ -161,18 +167,24 @@ Registro de toda compra o gasto, vinculada a un **Proveedor**. Incluye: licencia
 | proveedorId   | Long        | FK NOT NULL → Proveedor |
 | fechaCompra   | LocalDate   | NOT NULL (fecha del gasto) |
 | fechaFactura  | LocalDate   | nullable (fecha de la factura si aplica) |
-| numeroFactura | String      | nullable |
-| importe       | BigDecimal  | NOT NULL |
+| importe       | BigDecimal  | NOT NULL (siempre el **total** de la compra) |
+| tieneIva      | Boolean     | default false. Si true, ivaPorcentaje es obligatorio. |
+| ivaPorcentaje | BigDecimal  | nullable. Ej: 21.00. Solo cuando tieneIva = true. |
+| subtotal      | —           | No persistido. Calculado: importe / (1 + ivaPorcentaje/100). Se expone en la API cuando tieneIva = true. |
 | moneda        | String      | NOT NULL, default "ARS" |
 | tipoCompra    | TipoCompra  | enum, NOT NULL (LICENCIA_SW, REPUESTO, COMBUSTIBLE, etc.) |
+| metodoPago    | MetodoPago  | enum, NOT NULL (EFECTIVO, TRANSFERENCIA, TARJETA, etc.). Si TARJETA: companiaTarjeta y ultimos4Tarjeta obligatorios. |
+| companiaTarjeta | String    | nullable. Solo cuando metodoPago = TARJETA. |
+| ultimos4Tarjeta | String    | 4 caracteres. Solo cuando metodoPago = TARJETA. |
 | tipoEquipo    | TipoEquipo  | enum, nullable. Solo cuando tipoCompra = EQUIPO (DRON, DOCK, BATERIA, HELICE, ANTENA_RTK, ANTENA_STARLINK, OTRO) |
 | descripcionEquipo | String  | VARCHAR(255), nullable. Texto libre para detallar el equipo comprado. Solo aplica cuando tipoCompra = EQUIPO |
 | descripcion   | String      | @Lob, nullable |
 | siteId        | Long        | FK nullable → Site (ej. combustible cargado yendo a ese site) |
+| usuarioAltaId | Long       | FK nullable → Usuario (quien dio de alta la compra) |
 | observaciones | String      | @Lob, nullable |
 
 **Relaciones:**  
-- **Many-to-One** → `Proveedor`, `Site` (opcional).  
+- **Many-to-One** → `Proveedor`, `Site` (opcional), `Usuario` (usuarioAlta, opcional).  
 - **One-to-Many** (inversa): `Licencia` (compraId), `Seguro` (compraId) y en el futuro otros ítems que se vinculen a una compra.
 
 ---
@@ -207,7 +219,7 @@ Entidad exclusiva para licencias de software. No incluye certificaciones de pilo
 | nombre        | String     | NOT NULL (ej. FlightHub 2, FlytBase) |
 | numLicencia   | String     | nullable |
 | **compraId**  | Long       | FK nullable → Compra (la compra que adquirió esta licencia; tipo LICENCIA_SW) |
-| fechaCompra   | LocalDate  | nullable (redundante con Compra; mantener si se usa en UI) |Lee Importante-main/AgenteDesigner/prompts-para-designer/v0.7.0-PROMPT-PROGRAMADOR-licencias-anac-refactor.md y ejecutá todos los pasos.
+| fechaCompra   | LocalDate  | nullable (redundante con Compra; mantener si se usa en UI) |
 | caducidad     | LocalDate  | nullable |
 | version       | String     | nullable (ej. Enterprise) |
 | activo        | Boolean    | NOT NULL, default true |
@@ -252,6 +264,9 @@ Tabla: `licencias_anac`. Certificaciones ANAC del piloto (CMA, certificado de id
 | nombre       | String    | nullable |
 | fechaCompra  | LocalDate | nullable |
 | ubicacion    | String    | nullable (coordenadas como texto o JSON) |
+| **latitud**  | BigDecimal | nullable, precision 10 scale 7 (para mapa) |
+| **longitud** | BigDecimal | nullable, precision 10 scale 7 (para mapa) |
+| **altitud**  | BigDecimal | nullable, precision 10 scale 2, metros (para mapa) |
 
 **Relaciones:**  
 - **One-to-One** con `Dock`: lado dueño en AntenaRtk (`dockId`). Dock tiene `@OneToOne(mappedBy = "dock") AntenaRtk antenaRtk` (o por FK en Dock, según diseño).
@@ -271,6 +286,9 @@ Tabla: `licencias_anac`. Certificaciones ANAC del piloto (CMA, certificado de id
 | nombre           | String     | nullable |
 | fechaCompra      | LocalDate  | nullable |
 | **fechaInstalacion** | LocalDate | nullable (cuándo se instaló en el dock) |
+| **latitud**      | BigDecimal | nullable, precision 10 scale 7 (para mapa) |
+| **longitud**     | BigDecimal | nullable, precision 10 scale 7 (para mapa) |
+| **altitud**      | BigDecimal | nullable, precision 10 scale 2, metros (para mapa) |
 
 **Relaciones:**  
 - **One-to-One** con `Dock` (igual que AntenaRtk).
@@ -293,6 +311,9 @@ Tabla: `licencias_anac`. Certificaciones ANAC del piloto (CMA, certificado de id
 | **fechaStockActivo** | LocalDateTime | nullable (cuándo pasó a Stock activo) |
 | **fechaEnDesuso**  | LocalDateTime | nullable (cuándo pasó a En desuso) |
 | dronId             | Long        | FK nullable → Dron |
+| **latitud**        | BigDecimal  | nullable, precision 10 scale 7 (para mapa) |
+| **longitud**       | BigDecimal  | nullable, precision 10 scale 7 (para mapa) |
+| **altitud**        | BigDecimal  | nullable, precision 10 scale 2, metros (para mapa) |
 
 **Relaciones:**  
 - **Many-to-One** → `Dron`.  
@@ -316,6 +337,9 @@ Tabla: `licencias_anac`. Certificaciones ANAC del piloto (CMA, certificado de id
 | **fechaStockActivo** | LocalDateTime | nullable (cuándo pasó a Stock activo) |
 | **fechaEnDesuso**  | LocalDateTime | nullable (cuándo pasó a En desuso) |
 | dronId             | Long        | FK nullable → Dron |
+| **latitud**        | BigDecimal  | nullable, precision 10 scale 7 (para mapa) |
+| **longitud**       | BigDecimal  | nullable, precision 10 scale 7 (para mapa) |
+| **altitud**        | BigDecimal  | nullable, precision 10 scale 2, metros (para mapa) |
 
 **Relaciones:**  
 - **Many-to-One** → `Dron`.  

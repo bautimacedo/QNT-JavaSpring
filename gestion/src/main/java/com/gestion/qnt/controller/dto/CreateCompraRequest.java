@@ -14,6 +14,7 @@ import java.time.LocalDate;
  * Site: siteId opcional.
  * tipoEquipo y descripcionEquipo: solo aplican cuando tipoCompra = EQUIPO.
  * metodoPago y datos de tarjeta: metodoPago obligatorio; datos de tarjeta solo válidos cuando metodoPago = TARJETA.
+ * IVA: tieneIva opcional (default false). Si true, ivaPorcentaje es obligatorio (ej: 21.00). El importe es siempre el TOTAL.
  */
 public record CreateCompraRequest(
         Long proveedorId,
@@ -27,6 +28,9 @@ public record CreateCompraRequest(
         @NotNull(message = "importe es obligatorio")
         @DecimalMin(value = "0", inclusive = false, message = "importe debe ser mayor que 0")
         BigDecimal importe,
+
+        Boolean tieneIva,
+        BigDecimal ivaPorcentaje,
 
         String moneda,
 

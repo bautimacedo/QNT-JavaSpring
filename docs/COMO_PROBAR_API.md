@@ -198,10 +198,12 @@ Todos los endpoints de compras requieren el header **`Authorization: Bearer <tok
     "proveedorId": 1,
     "fechaCompra": "2025-03-01",
     "fechaFactura": "2025-03-02",
-    "numeroFactura": "F-001",
     "importe": 15000.50,
+    "tieneIva": true,
+    "ivaPorcentaje": 21.00,
     "moneda": "ARS",
     "tipoCompra": "EQUIPO",
+    "metodoPago": "TRANSFERENCIA",
     "tipoEquipo": "DRON",
     "descripcionEquipo": "DJI Matrice 350 RTK - SN: XYZ123",
     "descripcion": "Compra de dron para operaciones",
@@ -210,6 +212,7 @@ Todos los endpoints de compras requieren el header **`Authorization: Bearer <tok
   }
   ```
   **Proveedor:** se puede enviar **`proveedorId`** (id de un proveedor ya existente) o **`proveedorNombre`** (nombre del proveedor). Si se envía `proveedorNombre` y no existe un proveedor con ese nombre, se crea automáticamente y se asocia a la compra. Hay que enviar al menos uno de los dos.  
+  **IVA:** `importe` es siempre el **total** de la compra. Si `tieneIva` es `true`, `ivaPorcentaje` es obligatorio (ej: 21.00). El backend calcula y devuelve `subtotal` (base imponible) = importe / (1 + ivaPorcentaje/100). Si `tieneIva` es `false` u omitido, no se envía `ivaPorcentaje`.  
   **TipoEquipo:** cuando `tipoCompra = "EQUIPO"`, el campo `tipoEquipo` es **obligatorio** (valores: DRON, DOCK, BATERIA, HELICE, ANTENA_RTK, ANTENA_STARLINK, OTRO). Se pueden obtener dinámicamente con `GET /compras/tipos-equipo`. El campo `descripcionEquipo` es opcional (texto libre, máx. 255 chars).  
   Respuesta **201 Created** con la compra creada en el body. Si se usa `proveedorId` y no existe → **404**. Si `siteId` no existe → **404**. Si `tipoCompra = EQUIPO` y no se envía `tipoEquipo` → **500** con mensaje de error.
 
@@ -451,9 +454,27 @@ Las licencias ANAC usan el modelo **LicenciaANAC** (no Licencia). Cada licencia 
 
 **Rol ROLE_PILOTO:** debe existir en la tabla `roles` (ej. `codigo = 'ROLE_PILOTO', nombre = 'Piloto'`) para que un usuario pueda usar los endpoints de licencias ANAC. Si no existe, crearlo vía API de roles (como ADMIN) o por SQL.
 
+## Mapa de equipos (v0.17.0)
+
+Endpoint para pintar en un mapa todos los equipos con ubicación (coordenadas).
+
+- **Equipos para el mapa:**  
+  `GET /api/qnt/v1/mapa/equipos`  
+  Header: `Authorization: Bearer <token>`  
+  Respuesta **200** con un array JSON. Cada elemento tiene: `tipoEquipo` (DOCK, DRON, BATERIA, HELICE, ANTENA_RTK, ANTENA_STARLINK), `id`, `nombre`, `latitud`, `longitud`, `altitud` (nullable), `estado`, `ultimoMantenimiento` (LocalDate; solo Dock y Dron), `siteNombre` (solo Dock), `numeroSerie`.  
+  **Solo se incluyen equipos con `latitud` y `longitud` no nulas.** Sin parámetros de query.
+
+**Coordenadas en equipos (Dock, Dron, Bateria, Helice, AntenaRtk, AntenaStarlink):**  
+En los endpoints de creación y actualización (POST/PUT) de cada equipo se pueden enviar en el body, opcionales: `latitud`, `longitud`, `altitud` (BigDecimal). Las respuestas (listado y detalle) incluyen estos campos. Validación: latitud en [-90, 90], longitud en [-180, 180]. Altitud sin rango estricto (metros).
+
 ## Rutas protegidas
 
-- `/api/qnt/v1/usuarios/**`, `/api/qnt/v1/roles/**`, `/api/qnt/v1/compras/**`, `/api/qnt/v1/seguros/**`, `/api/qnt/v1/licencias/**` y **`/api/qnt/v1/mi-perfil/**`** requieren autenticación (JWT).
+- **Mapa de equipos:**  
+  `GET /api/qnt/v1/mapa/equipos`  
+  Header: `Authorization: Bearer <token>`  
+  Requiere usuario autenticado. Devuelve un **array de marcadores** con todos los equipos que tienen **latitud y longitud** no nulas (Dock, Dron, Bateria, Helice, AntenaRtk, AntenaStarlink). Cada elemento incluye: `tipoEquipo` (DOCK, DRON, BATERIA, HELICE, ANTENA_RTK, ANTENA_STARLINK), `id`, `nombre`, `latitud`, `longitud`, `altitud`, `estado`, `ultimoMantenimiento` (fecha; solo Dock y Dron), `siteNombre` (solo Dock), `numeroSerie`. Equipos sin coordenadas no aparecen. Sin query params.
+
+- `/api/qnt/v1/usuarios/**`, `/api/qnt/v1/roles/**`, `/api/qnt/v1/compras/**`, `/api/qnt/v1/seguros/**`, `/api/qnt/v1/licencias/**`, **`/api/qnt/v1/mapa/**`** y **`/api/qnt/v1/mi-perfil/**`** requieren autenticación (JWT).
 - La mayoría de endpoints exigen rol ADMIN (`@PreAuthorize("hasRole('ADMIN')")`).
 - Sin token, las peticiones a estas rutas devuelven **401**.
 - **Si el login devuelve 403:** quita el header `Authorization` (y cualquier Bearer token) de la petición de login en Postman; esa ruta es pública y no debe llevar token.

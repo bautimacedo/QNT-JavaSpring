@@ -44,7 +44,10 @@ public class HeliceBusiness implements IHeliceBusiness {
     @Override
     public Helice add(Helice entity) throws BusinessException {
         try {
+            CoordenadasValidator.validar(entity.getLatitud(), entity.getLongitud());
             return repository.save(entity);
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Error al agregar helice", e);
             throw new BusinessException("Error al agregar helice", e);
@@ -55,8 +58,11 @@ public class HeliceBusiness implements IHeliceBusiness {
     public Helice update(Helice entity) throws NotFoundException, BusinessException {
         try {
             load(entity.getId());
+            CoordenadasValidator.validar(entity.getLatitud(), entity.getLongitud());
             return repository.save(entity);
         } catch (NotFoundException e) {
+            throw e;
+        } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
             log.error("Error al actualizar helice con id {}", entity.getId(), e);

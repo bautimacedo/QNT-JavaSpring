@@ -106,6 +106,7 @@ public class CompraBusiness implements ICompraBusiness {
             compra.setFechaFactura(request.fechaFactura());
             compra.setImporte(request.importe());
             compra.setMoneda(request.moneda() != null && !request.moneda().isBlank() ? request.moneda() : "ARS");
+            applyIva(compra, request);
             compra.setTipoCompra(request.tipoCompra());
             applyMetodoPago(compra, request);
             compra.setDescripcion(request.descripcion());
@@ -169,6 +170,7 @@ public class CompraBusiness implements ICompraBusiness {
             existing.setFechaFactura(request.fechaFactura());
             existing.setImporte(request.importe());
             existing.setMoneda(request.moneda() != null && !request.moneda().isBlank() ? request.moneda() : "ARS");
+            applyIva(existing, request);
             existing.setTipoCompra(request.tipoCompra());
             applyMetodoPago(existing, request);
             existing.setDescripcion(request.descripcion());
@@ -311,6 +313,29 @@ public class CompraBusiness implements ICompraBusiness {
             // Para métodos de pago que no son tarjeta, siempre se guardan como null.
             compra.setCompaniaTarjeta(null);
             compra.setUltimos4Tarjeta(null);
+        }
+    }
+
+    /**
+     * Aplica IVA a la compra. Regla: importe es siempre el TOTAL.
+     * Si tieneIva = true: ivaPorcentaje obligatorio, en rango (0, 100].
+     * Si tieneIva = false o null: ivaPorcentaje se guarda como null.
+     */
+    private void applyIva(Compra compra, CreateCompraRequest request) throws BusinessException {
+        Boolean tieneIva = Boolean.TRUE.equals(request.tieneIva());
+        compra.setTieneIva(tieneIva);
+
+        if (tieneIva) {
+            java.math.BigDecimal pct = request.ivaPorcentaje();
+            if (pct == null) {
+                throw new BusinessException("Cuando la compra tiene IVA, ivaPorcentaje es obligatorio");
+            }
+            if (pct.compareTo(java.math.BigDecimal.ZERO) <= 0 || pct.compareTo(java.math.BigDecimal.valueOf(100)) > 0) {
+                throw new BusinessException("ivaPorcentaje debe ser mayor que 0 y menor o igual a 100");
+            }
+            compra.setIvaPorcentaje(pct.setScale(2, java.math.RoundingMode.HALF_UP));
+        } else {
+            compra.setIvaPorcentaje(null);
         }
     }
 }

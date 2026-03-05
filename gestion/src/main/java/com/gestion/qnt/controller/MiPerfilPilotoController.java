@@ -73,6 +73,7 @@ public class MiPerfilPilotoController {
                             m.put("id", l.getId());
                             m.put("fechaVencimientoCma", l.getFechaVencimientoCma() != null ? l.getFechaVencimientoCma().toString() : null);
                             m.put("fechaEmision", l.getFechaEmision() != null ? l.getFechaEmision().toString() : null);
+                            m.put("caducidad", l.getCaducidad() != null ? l.getCaducidad().toString() : null);
                             m.put("tieneImagenCma", l.getImagenCma() != null && l.getImagenCma().length > 0);
                             m.put("tieneImagenCertificadoIdoneidad", l.getImagenCertificadoIdoneidad() != null && l.getImagenCertificadoIdoneidad().length > 0);
                             m.put("activo", l.getActivo());
@@ -379,6 +380,7 @@ public class MiPerfilPilotoController {
         m.put("id", l.getId());
         m.put("fechaVencimientoCma", l.getFechaVencimientoCma() != null ? l.getFechaVencimientoCma().toString() : null);
         m.put("fechaEmision", l.getFechaEmision() != null ? l.getFechaEmision().toString() : null);
+        m.put("caducidad", l.getCaducidad() != null ? l.getCaducidad().toString() : null);
         m.put("tieneImagenCma", l.getImagenCma() != null && l.getImagenCma().length > 0);
         m.put("tieneImagenCertificadoIdoneidad", l.getImagenCertificadoIdoneidad() != null && l.getImagenCertificadoIdoneidad().length > 0);
         m.put("activo", l.getActivo());

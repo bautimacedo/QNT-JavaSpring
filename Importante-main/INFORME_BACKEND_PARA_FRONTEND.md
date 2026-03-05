@@ -12,7 +12,7 @@ Este documento describe el **contrato del backend** para que el proyecto fronten
 
 **Stack backend:** Spring Boot 3.x, Java 17+, Spring Security (JWT), JPA/Hibernate, PostgreSQL.
 
-**Última actualización del informe:** v0.20.0 (vista pilotos con datos completos). Cubre: v0.13.0 — método de pago y usuario de alta en Compras; v0.17.0 — TipoEquipo en Compra; v0.18.0 — estado NO_LLEGO e inventario automático al comprar equipo; v0.19.0 — horasVuelo/cantidadVuelos y restricción de campos piloto en mi-perfil; v0.20.0 — GET /usuarios/pilotos con PilotoResumenResponse. Este documento se actualiza **al finalizar cada tarea** del backend que afecte la API (endpoints, modelos, auth o convenciones).
+**Última actualización del informe:** v0.21.0 (ROLE_PILOTO obligatorio para licencias ANAC). Cubre: v0.13.0 — método de pago y usuario de alta en Compras; v0.17.0 — TipoEquipo en Compra; v0.18.0 — estado NO_LLEGO e inventario automático al comprar equipo; v0.19.0 — horasVuelo/cantidadVuelos y restricción de campos piloto en mi-perfil; v0.20.0 — GET /usuarios/pilotos con PilotoResumenResponse. Este documento se actualiza **al finalizar cada tarea** del backend que afecte la API (endpoints, modelos, auth o convenciones).
 
 ---
 
@@ -266,7 +266,7 @@ Base: `/api/qnt/v1/seguros`
 
 ### 5.7 Mi perfil
 
-Base: `/api/qnt/v1/mi-perfil`. Todos los endpoints operan sobre el **usuario autenticado** (no se envía usuarioId). Configuración (perfil y cambio de contraseña) para **cualquier usuario autenticado**; licencias ANAC solo para **PILOTO** o **ADMIN**.
+Base: `/api/qnt/v1/mi-perfil`. Todos los endpoints operan sobre el **usuario autenticado** (no se envía usuarioId). Configuración (perfil y cambio de contraseña) para **cualquier usuario autenticado**; licencias ANAC solo para **PILOTO** (ADMIN sin rol PILOTO no puede gestionar licencias ANAC propias).
 
 | Método | Ruta | Descripción | Roles |
 |--------|------|-------------|--------|
@@ -275,16 +275,16 @@ Base: `/api/qnt/v1/mi-perfil`. Todos los endpoints operan sobre el **usuario aut
 | PUT | `/mi-perfil/cambio-password` | Cambiar contraseña | Autenticado |
 | PUT | `/mi-perfil/foto-perfil` | Subir foto de perfil (multipart, parte `file`) | Autenticado |
 | GET | `/mi-perfil/foto-perfil` | Obtener foto de perfil | Autenticado |
-| GET | `/mi-perfil/licencias` | Listar mis licencias ANAC | PILOTO, ADMIN |
-| POST | `/mi-perfil/licencias` | Crear licencia ANAC (piloto = usuario actual) | PILOTO, ADMIN |
-| PUT | `/mi-perfil/licencias/{id}` | Actualizar mi licencia ANAC | PILOTO, ADMIN |
-| DELETE | `/mi-perfil/licencias/{id}` | Eliminar mi licencia ANAC | PILOTO, ADMIN |
-| PUT | `/mi-perfil/licencias/{id}/imagen-cma` | Subir imagen CMA de licencia (multipart) | PILOTO, ADMIN |
-| GET | `/mi-perfil/licencias/{id}/imagen-cma` | Obtener imagen CMA de licencia | PILOTO, ADMIN |
-| PUT | `/mi-perfil/licencias/{id}/imagen-certificado-idoneidad` | Subir imagen Cert. Idoneidad (multipart) | PILOTO, ADMIN |
-| GET | `/mi-perfil/licencias/{id}/imagen-certificado-idoneidad` | Obtener imagen Cert. Idoneidad | PILOTO, ADMIN |
+| GET | `/mi-perfil/licencias` | Listar mis licencias ANAC | PILOTO (ADMIN sin rol PILOTO no puede gestionar licencias ANAC propias) |
+| POST | `/mi-perfil/licencias` | Crear licencia ANAC (piloto = usuario actual) | PILOTO (ADMIN sin rol PILOTO no puede gestionar licencias ANAC propias) |
+| PUT | `/mi-perfil/licencias/{id}` | Actualizar mi licencia ANAC | PILOTO (ADMIN sin rol PILOTO no puede gestionar licencias ANAC propias) |
+| DELETE | `/mi-perfil/licencias/{id}` | Eliminar mi licencia ANAC | PILOTO (ADMIN sin rol PILOTO no puede gestionar licencias ANAC propias) |
+| PUT | `/mi-perfil/licencias/{id}/imagen-cma` | Subir imagen CMA de licencia (multipart) | PILOTO (ADMIN sin rol PILOTO no puede gestionar licencias ANAC propias) |
+| GET | `/mi-perfil/licencias/{id}/imagen-cma` | Obtener imagen CMA de licencia | PILOTO (ADMIN sin rol PILOTO no puede gestionar licencias ANAC propias) |
+| PUT | `/mi-perfil/licencias/{id}/imagen-certificado-idoneidad` | Subir imagen Cert. Idoneidad (multipart) | PILOTO (ADMIN sin rol PILOTO no puede gestionar licencias ANAC propias) |
+| GET | `/mi-perfil/licencias/{id}/imagen-certificado-idoneidad` | Obtener imagen Cert. Idoneidad | PILOTO (ADMIN sin rol PILOTO no puede gestionar licencias ANAC propias) |
 
-**Respuesta de GET /mi-perfil:** objeto con `usuario`, `roles` (array en la raíz), `tieneFotoPerfil` (boolean) y `licencias` (array con: id, fechaVencimientoCma, fechaEmision, caducidad, tieneImagenCma, tieneImagenCertificadoIdoneidad, activo) si PILOTO/ADMIN.
+**Respuesta de GET /mi-perfil:** objeto con `usuario`, `roles` (array en la raíz), `tieneFotoPerfil` (boolean) y `licencias` (array con: id, fechaVencimientoCma, fechaEmision, caducidad, tieneImagenCma, tieneImagenCertificadoIdoneidad, activo) si PILOTO.
 
 ---
 
@@ -565,7 +565,7 @@ No hay un formato estándar único de error: a veces el cuerpo es un string (men
 
 ## 9. Roles y permisos
 
-- **ROLE_ADMIN:** acceso completo (usuarios, roles, CRUD de compras, licencias, seguros, delete donde aplique, enable/disable usuario, asignar/quitar roles, mi-perfil completo incl. CMA y licencias).
+- **ROLE_ADMIN:** acceso completo (usuarios, roles, CRUD de compras, licencias, seguros, delete donde aplique, enable/disable usuario, asignar/quitar roles, mi-perfil completo incl. CMA). No puede gestionar licencias ANAC propias a menos que también tenga ROLE_PILOTO.
 - **ROLE_PILOTO:** puede gestionar **mi-perfil** (datos, cambio de contraseña, **password_mission** —máx. 30 caracteres—, CMA y sus licencias ANAC). Debe poder editar sus datos de piloto: licencia(s) ANAC, certificado CMA y password_mission desde mi-perfil. No puede gestionar otros usuarios ni el CRUD global de licencias/seguros/compras salvo lo expuesto en la API general según configuración.
 - **ROLE_USER:** puede listar y gestionar compras, licencias y seguros (CRUD salvo delete de licencia/seguro que es solo ADMIN); puede cambiar su contraseña y ver/editar **mi-perfil** (datos y cambio de contraseña, sin CMA ni licencias propias). No puede gestionar usuarios ni roles.
 

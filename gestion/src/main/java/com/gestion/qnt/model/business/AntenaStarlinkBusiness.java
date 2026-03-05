@@ -44,7 +44,10 @@ public class AntenaStarlinkBusiness implements IAntenaStarlinkBusiness {
     @Override
     public AntenaStarlink add(AntenaStarlink entity) throws BusinessException {
         try {
+            CoordenadasValidator.validar(entity.getLatitud(), entity.getLongitud());
             return repository.save(entity);
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Error al agregar antena Starlink", e);
             throw new BusinessException("Error al agregar antena Starlink", e);
@@ -55,8 +58,11 @@ public class AntenaStarlinkBusiness implements IAntenaStarlinkBusiness {
     public AntenaStarlink update(AntenaStarlink entity) throws NotFoundException, BusinessException {
         try {
             load(entity.getId());
+            CoordenadasValidator.validar(entity.getLatitud(), entity.getLongitud());
             return repository.save(entity);
         } catch (NotFoundException e) {
+            throw e;
+        } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
             log.error("Error al actualizar antena Starlink con id {}", entity.getId(), e);

@@ -44,7 +44,10 @@ public class DronBusiness implements IDronBusiness {
     @Override
     public Dron add(Dron entity) throws BusinessException {
         try {
+            CoordenadasValidator.validar(entity.getLatitud(), entity.getLongitud());
             return repository.save(entity);
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Error al agregar dron", e);
             throw new BusinessException("Error al agregar dron", e);
@@ -55,8 +58,11 @@ public class DronBusiness implements IDronBusiness {
     public Dron update(Dron entity) throws NotFoundException, BusinessException {
         try {
             load(entity.getId());
+            CoordenadasValidator.validar(entity.getLatitud(), entity.getLongitud());
             return repository.save(entity);
         } catch (NotFoundException e) {
+            throw e;
+        } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
             log.error("Error al actualizar dron con id {}", entity.getId(), e);

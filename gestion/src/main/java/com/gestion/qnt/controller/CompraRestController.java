@@ -83,8 +83,8 @@ public class CompraRestController {
             Compra created = compraBusiness.add(request);
             created.setUsuarioAlta(usuarioAlta);
             Compra saved = compraBusiness.update(created);
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+            // Recargar con relaciones para evitar LazyInitializationException al serializar a JSON
+            return ResponseEntity.status(HttpStatus.CREATED).body(compraBusiness.load(saved.getId()));
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (BusinessException e) {
@@ -102,7 +102,8 @@ public class CompraRestController {
         }
         try {
             Compra updated = compraBusiness.update(id, request);
-            return ResponseEntity.ok(updated);
+            // Recargar con relaciones para evitar LazyInitializationException al serializar a JSON
+            return ResponseEntity.ok(compraBusiness.load(updated.getId()));
         } catch (NotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (BusinessException e) {

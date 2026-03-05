@@ -11,5 +11,7 @@ public enum Estado {
     /** Desplegado y en uso en el site */
     STOCK_ACTIVO,
     /** Retirado definitivamente (baja) */
-    EN_DESUSO
+    EN_DESUSO,
+    /** En mantenimiento se ha retirado de la operacion por ejemplo por reparaciones**/
+    EN_MANTENIMIENTO
 }

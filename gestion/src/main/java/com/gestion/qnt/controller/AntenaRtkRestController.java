@@ -7,6 +7,8 @@ import com.gestion.qnt.model.AntenaRtk;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +21,8 @@ public class AntenaRtkRestController {
     private IAntenaRtkBusiness antenaRtkBusiness;
 
     @GetMapping("")
+    @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<AntenaRtk>> list() {
         try {
             return new ResponseEntity<>(antenaRtkBusiness.list(), HttpStatus.OK);
@@ -28,6 +32,8 @@ public class AntenaRtkRestController {
     }
 
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AntenaRtk> load(@PathVariable("id") Long id) {
         try {
             return new ResponseEntity<>(antenaRtkBusiness.load(id), HttpStatus.OK);
@@ -39,6 +45,7 @@ public class AntenaRtkRestController {
     }
 
     @PostMapping("")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<AntenaRtk> add(@RequestBody AntenaRtk antenaRtk) {
         try {
             return new ResponseEntity<>(antenaRtkBusiness.add(antenaRtk), HttpStatus.CREATED);
@@ -48,6 +55,7 @@ public class AntenaRtkRestController {
     }
 
     @PutMapping("")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<AntenaRtk> update(@RequestBody AntenaRtk antenaRtk) {
         try {
             return new ResponseEntity<>(antenaRtkBusiness.update(antenaRtk), HttpStatus.OK);
@@ -59,6 +67,7 @@ public class AntenaRtkRestController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
         try {
             antenaRtkBusiness.delete(id);

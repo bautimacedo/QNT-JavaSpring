@@ -8,6 +8,8 @@ import com.gestion.qnt.model.Dock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +22,8 @@ public class DockRestController {
     private IDockBusiness dockBusiness;
 
     @GetMapping("")
+    @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Dock>> list() {
         try {
             return new ResponseEntity<>(dockBusiness.list(), HttpStatus.OK);
@@ -29,6 +33,8 @@ public class DockRestController {
     }
 
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Dock> load(@PathVariable("id") Long id) {
         try {
             return new ResponseEntity<>(dockBusiness.load(id), HttpStatus.OK);
@@ -40,6 +46,7 @@ public class DockRestController {
     }
 
     @PostMapping("")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<Dock> add(@RequestBody Dock dock) {
         try {
             return new ResponseEntity<>(dockBusiness.add(dock), HttpStatus.CREATED);
@@ -49,6 +56,7 @@ public class DockRestController {
     }
 
     @PutMapping("")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<Dock> update(@RequestBody Dock dock) {
         try {
             return new ResponseEntity<>(dockBusiness.update(dock), HttpStatus.OK);
@@ -60,6 +68,7 @@ public class DockRestController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
         try {
             dockBusiness.delete(id);

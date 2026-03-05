@@ -24,8 +24,7 @@ public class Mision {
     @Column(name = "link_rtsp")
     private String linkRtsp;
 
-    @Lob
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String descripcion;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

@@ -7,6 +7,8 @@ import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -18,6 +20,8 @@ public class AccesorioRestController {
     private IAccesorioBusiness accesorioBusiness;
 
     @GetMapping("")
+    @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Accesorio>> list() {
         try {
             return new ResponseEntity<>(accesorioBusiness.list(), HttpStatus.OK);
@@ -27,6 +31,8 @@ public class AccesorioRestController {
     }
 
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Accesorio> load(@PathVariable("id") Long id) {
         try {
             return new ResponseEntity<>(accesorioBusiness.load(id), HttpStatus.OK);
@@ -38,6 +44,7 @@ public class AccesorioRestController {
     }
 
     @PostMapping("")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<Accesorio> add(@RequestBody Accesorio accesorio) {
         try {
             return new ResponseEntity<>(accesorioBusiness.add(accesorio), HttpStatus.CREATED);
@@ -47,6 +54,7 @@ public class AccesorioRestController {
     }
 
     @PutMapping("")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<Accesorio> update(@RequestBody Accesorio accesorio) {
         try {
             return new ResponseEntity<>(accesorioBusiness.update(accesorio), HttpStatus.OK);
@@ -58,6 +66,7 @@ public class AccesorioRestController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
         try {
             accesorioBusiness.delete(id);

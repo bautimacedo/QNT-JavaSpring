@@ -1,6 +1,9 @@
 package com.gestion.qnt.model.business;
 
+import com.gestion.qnt.model.Bateria;
 import com.gestion.qnt.model.Compra;
+import com.gestion.qnt.model.Dron;
+import com.gestion.qnt.model.Helice;
 import com.gestion.qnt.model.business.exceptions.BusinessException;
 import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import com.gestion.qnt.model.business.interfaces.ICompraBusiness;
@@ -13,8 +16,12 @@ import com.gestion.qnt.model.Proveedor;
 import com.gestion.qnt.model.Site;
 import com.gestion.qnt.model.enums.MetodoPago;
 import com.gestion.qnt.model.enums.TipoCompra;
+import com.gestion.qnt.model.business.interfaces.IBateriaBusiness;
+import com.gestion.qnt.model.business.interfaces.IDronBusiness;
+import com.gestion.qnt.model.business.interfaces.IHeliceBusiness;
 import com.gestion.qnt.model.business.interfaces.IProveedorBusiness;
 import com.gestion.qnt.model.business.interfaces.ISiteBusiness;
+import com.gestion.qnt.model.enums.Estado;
 
 import java.util.List;
 
@@ -30,6 +37,15 @@ public class CompraBusiness implements ICompraBusiness {
 
     @Autowired
     private ISiteBusiness siteBusiness;
+
+    @Autowired
+    private IDronBusiness dronBusiness;
+
+    @Autowired
+    private IBateriaBusiness bateriaBusiness;
+
+    @Autowired
+    private IHeliceBusiness heliceBusiness;
 
     @Override
     public List<Compra> list() throws BusinessException {
@@ -97,9 +113,7 @@ public class CompraBusiness implements ICompraBusiness {
                 }
                 compra.setTipoEquipo(request.tipoEquipo());
                 compra.setDescripcionEquipo(request.descripcionEquipo());
-                // TODO Logica de Stock e Inventario
-                // compra.getTipoEquipo() indica qué entidad crear (DRON, DOCK, BATERIA, etc.)
-                // compra.getDescripcionEquipo() puede usarse como nombre/modelo inicial del ítem
+                crearItemEnInventario(compra);
             } else {
                 compra.setTipoEquipo(null);
                 compra.setDescripcionEquipo(null);
@@ -160,9 +174,6 @@ public class CompraBusiness implements ICompraBusiness {
                 }
                 existing.setTipoEquipo(request.tipoEquipo());
                 existing.setDescripcionEquipo(request.descripcionEquipo());
-                // TODO Logica de Stock e Inventario
-                // existing.getTipoEquipo() indica qué entidad crear (DRON, DOCK, BATERIA, etc.)
-                // existing.getDescripcionEquipo() puede usarse como nombre/modelo inicial del ítem
             } else {
                 existing.setTipoEquipo(null);
                 existing.setDescripcionEquipo(null);
@@ -187,6 +198,53 @@ public class CompraBusiness implements ICompraBusiness {
         } catch (Exception e) {
             log.error("Error al eliminar compra con id {}", id, e);
             throw new BusinessException("Error al eliminar compra", e);
+        }
+    }
+
+    /**
+     * Crea automáticamente el ítem en inventario cuando se registra una compra de tipo EQUIPO.
+     * Solo se llama desde add(); en update() no se duplica el ítem.
+     * DOCK, ANTENA_RTK y ANTENA_STARLINK requieren FKs (site_id, dock_id) que no están disponibles
+     * en la compra, por lo que solo se loguea un aviso y no se crea nada.
+     */
+    private void crearItemEnInventario(Compra compra) throws BusinessException {
+        String nombre = compra.getDescripcionEquipo();
+
+        switch (compra.getTipoEquipo()) {
+            case DRON -> {
+                Dron dron = new Dron();
+                dron.setEstado(Estado.NO_LLEGO);
+                dron.setNombre(nombre);
+                dron.setFechaCompra(compra.getFechaCompra());
+                dronBusiness.add(dron);
+            }
+            case BATERIA -> {
+                Bateria bateria = new Bateria();
+                bateria.setEstado(Estado.NO_LLEGO);
+                bateria.setNombre(nombre);
+                bateria.setFechaCompra(compra.getFechaCompra());
+                bateriaBusiness.add(bateria);
+            }
+            case HELICE -> {
+                Helice helice = new Helice();
+                helice.setEstado(Estado.NO_LLEGO);
+                helice.setNombre(nombre);
+                helice.setFechaCompra(compra.getFechaCompra());
+                heliceBusiness.add(helice);
+            }
+            case DOCK -> {
+                // Dock requiere site_id NOT NULL; no se puede crear automáticamente sin un site.
+                // El admin debe crear el Dock manualmente desde la pantalla de inventario.
+                log.info("Compra de DOCK registrada. El ítem debe crearse manualmente en inventario (requiere Site).");
+            }
+            case ANTENA_RTK, ANTENA_STARLINK -> {
+                // AntenaRtk y AntenaStarlink requieren dock_id NOT NULL.
+                // El admin las asocia a un Dock existente manualmente.
+                log.info("Compra de {} registrada. El ítem debe asociarse a un Dock existente manualmente.", compra.getTipoEquipo());
+            }
+            case OTRO -> {
+                // Sin entidad en inventario para tipo OTRO.
+            }
         }
     }
 

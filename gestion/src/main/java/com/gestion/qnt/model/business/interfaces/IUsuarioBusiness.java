@@ -12,10 +12,11 @@ import java.util.List;
 public interface IUsuarioBusiness {
 
     List<Usuario> list() throws BusinessException;
+    
+    public Usuario load(String usernameOrEmail) throws NotFoundException, BusinessException;
 
     Usuario load(Long id) throws NotFoundException, BusinessException;
 
-    Usuario load(String email) throws NotFoundException, BusinessException;
 
     Usuario add(Usuario entity) throws FoundException, BusinessException;
 

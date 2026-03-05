@@ -1,5 +1,6 @@
 package com.gestion.qnt.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -61,6 +62,7 @@ public class Dock {
     @JoinColumn(name = "site_id", nullable = false)
     private Site site;
 
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "dock")
     private Dron dron;
 
@@ -68,12 +70,15 @@ public class Dock {
     @JoinColumn(name = "licencia_id")
     private Licencia licencia;
 
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "dock", cascade = CascadeType.ALL, orphanRemoval = true)
     private AntenaRtk antenaRtk;
 
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "dock", cascade = CascadeType.ALL, orphanRemoval = true)
     private AntenaStarlink antenaStarlink;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "dock", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MantenimientoDock> mantenimientos = new ArrayList<>();
 }

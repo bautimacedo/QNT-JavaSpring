@@ -98,14 +98,23 @@ public class MiPerfilPilotoController {
         AuthUser auth = authUser(authentication);
         try {
             Usuario usuario = usuarioBusiness.load(auth.getId());
+            // Campos generales — cualquier usuario autenticado puede modificarlos
             if (request.nombre() != null && !request.nombre().isBlank()) usuario.setNombre(request.nombre());
             if (request.apellido() != null) usuario.setApellido(request.apellido().isBlank() ? null : request.apellido());
             if (request.dni() != null) usuario.setDni(request.dni().isBlank() ? null : request.dni());
-            if (request.passwordMission() != null) {
-                String pm = request.passwordMission().trim();
-                if (pm.length() > 30) pm = pm.substring(0, 30);
-                usuario.setPasswordMission(pm.isBlank() ? null : pm);
+
+            // Campos exclusivos de piloto — solo ROLE_PILOTO o ROLE_ADMIN pueden modificarlos
+            if (isPilotoOrAdmin(authentication)) {
+                if (request.passwordMission() != null) {
+                    String pm = request.passwordMission().trim();
+                    if (pm.length() > 30) pm = pm.substring(0, 30);
+                    usuario.setPasswordMission(pm.isBlank() ? null : pm);
+                }
+                if (request.horasVuelo() != null) usuario.setHorasVuelo(request.horasVuelo());
+                if (request.cantidadVuelos() != null) usuario.setCantidadVuelos(request.cantidadVuelos());
             }
+            // Si el usuario no es piloto/admin y envió campos de piloto, se ignoran silenciosamente.
+
             usuarioBusiness.update(usuario);
             return ResponseEntity.ok(usuario);
         } catch (NotFoundException e) {

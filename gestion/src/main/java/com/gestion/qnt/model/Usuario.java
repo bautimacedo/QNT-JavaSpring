@@ -66,8 +66,7 @@ public class Usuario implements UserDetails {
     private String cmaImagenes;
 
     /** Imagen del Certificado Médico Aeronáutico. No se serializa en JSON. */
-    @Lob
-    @Column(name = "imagen_cma", nullable = true)
+    @Column(name = "imagen_cma", nullable = true, columnDefinition = "bytea")
     @Basic(optional = true)
     @JsonIgnore
     private byte[] imagenCma;
@@ -89,8 +88,7 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private Boolean activo = true;
 
-    @Lob
-    @Column(name = "imagen_perfil", nullable = true)
+    @Column(name = "imagen_perfil", nullable = true, columnDefinition = "bytea")
     @Basic(optional = true)
     @JsonIgnore
     private byte[] imagenPerfil;

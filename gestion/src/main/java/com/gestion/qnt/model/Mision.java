@@ -6,7 +6,9 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+import com.gestion.qnt.model.enums.CategoriaMision;
 import com.gestion.qnt.model.enums.EstadoMision;
+import com.gestion.qnt.model.enums.PrioridadMision;
 
 @Entity
 @Table(name = "misiones")
@@ -26,6 +28,17 @@ public class Mision {
 
     @Column(columnDefinition = "TEXT")
     private String descripcion;
+
+    @Column(columnDefinition = "TEXT")
+    private String observaciones;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "categoria")
+    private CategoriaMision categoria;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "prioridad")
+    private PrioridadMision prioridad;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "piloto_id", nullable = false)
@@ -52,4 +65,17 @@ public class Mision {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoMision estado;
+
+    @PrePersist
+    protected void onCreate() {
+        if (fechaCreacion == null) {
+            fechaCreacion = LocalDateTime.now();
+        }
+        if (estado == null) {
+            estado = EstadoMision.PLANIFICADA;
+        }
+        if (prioridad == null) {
+            prioridad = PrioridadMision.MEDIA;
+        }
+    }
 }

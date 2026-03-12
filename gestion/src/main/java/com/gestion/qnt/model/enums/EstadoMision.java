@@ -6,6 +6,6 @@ package com.gestion.qnt.model.enums;
 public enum EstadoMision {
     PLANIFICADA,
     EN_CURSO,
-    EJECUTADA,
+    COMPLETADA,
     CANCELADA
 }

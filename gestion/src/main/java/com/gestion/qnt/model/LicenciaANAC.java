@@ -30,14 +30,12 @@ public class LicenciaANAC {
     @Column(name = "caducidad")
     private LocalDate caducidad;
 
-    @Lob
-    @Column(name = "imagen_cma", nullable = true)
+    @Column(name = "imagen_cma", nullable = true, columnDefinition = "bytea")
     @Basic(optional = true)
     @JsonIgnore
     private byte[] imagenCma;
 
-    @Lob
-    @Column(name = "imagen_certificado_idoneidad", nullable = true)
+    @Column(name = "imagen_certificado_idoneidad", nullable = true, columnDefinition = "bytea")
     @Basic(optional = true)
     @JsonIgnore
     private byte[] imagenCertificadoIdoneidad;

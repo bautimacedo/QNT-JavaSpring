@@ -83,8 +83,7 @@ public class Compra {
     private Usuario usuarioAlta;
 
     /** Imagen de la factura (opcional). No se serializa en JSON para evitar payload enorme. */
-    @Lob
-    @Column(name = "imagen_factura", nullable = true)
+    @Column(name = "imagen_factura", nullable = true, columnDefinition = "bytea")
     @Basic(optional = true)
     @JsonIgnore
     private byte[] imagenFactura;

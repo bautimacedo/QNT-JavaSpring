@@ -66,6 +66,7 @@ public class CompraRestController {
     }
 
     @PostMapping
+    @Transactional
     @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<?> create(Authentication authentication, @Valid @RequestBody CreateCompraRequest request) {
         if (!request.hasProveedor()) {
@@ -94,6 +95,7 @@ public class CompraRestController {
     }
 
     @PutMapping("/{id}")
+    @Transactional
     @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody CreateCompraRequest request) {
         if (!request.hasProveedor()) {
@@ -119,6 +121,7 @@ public class CompraRestController {
     }
 
     @DeleteMapping("/{id}")
+    @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         try {

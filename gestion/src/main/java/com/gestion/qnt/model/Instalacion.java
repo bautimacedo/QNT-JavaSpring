@@ -23,8 +23,7 @@ public class Instalacion {
     @Column(nullable = false)
     private LocalDateTime fecha;
 
-    @Lob
-    @Column
+    @Column(columnDefinition = "text")
     private String observaciones;
 
     @Column

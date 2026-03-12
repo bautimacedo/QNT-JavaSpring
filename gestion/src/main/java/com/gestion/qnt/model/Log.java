@@ -28,8 +28,7 @@ public class Log {
     @Column
     private String tipo;
 
-    @Lob
-    @Column
+    @Column(columnDefinition = "text")
     private String detalle;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -17,6 +17,9 @@ public class Site {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = true, unique = true, length = 10)
+    private String codigo;
+
     @Column(nullable = false)
     private String nombre;
 

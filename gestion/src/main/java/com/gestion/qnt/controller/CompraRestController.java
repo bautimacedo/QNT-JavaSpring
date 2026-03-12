@@ -169,7 +169,10 @@ public class CompraRestController {
                 return ResponseEntity.notFound().build();
             }
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            boolean isPdf = imagen.length >= 4
+                && imagen[0] == 0x25 && imagen[1] == 0x50
+                && imagen[2] == 0x44 && imagen[3] == 0x46;
+            headers.setContentType(isPdf ? MediaType.APPLICATION_PDF : MediaType.APPLICATION_OCTET_STREAM);
             headers.setContentLength(imagen.length);
             return ResponseEntity.ok().headers(headers).body(imagen);
         } catch (NotFoundException e) {

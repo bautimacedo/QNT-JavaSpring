@@ -1,6 +1,7 @@
 package com.gestion.qnt.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gestion.qnt.model.enums.CategoriaProveedor;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,6 +39,10 @@ public class Proveedor {
 
     @Column(columnDefinition = "TEXT")
     private String observaciones;
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private CategoriaProveedor categoria;
 
     @OneToMany(mappedBy = "proveedor", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore

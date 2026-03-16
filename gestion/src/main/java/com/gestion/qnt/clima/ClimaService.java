@@ -42,7 +42,7 @@ public class ClimaService {
     // ── Scheduled: cada 5 minutos ───────────────────────────────────────────────
     @Scheduled(fixedRate = 300_000, initialDelay = 5_000)
     public void fetchAll() {
-        if ("PLACEHOLDER".equals(props.getApiKey())) {
+        if (props.getApiKey() == null || props.getApiKey().isBlank()) {
             log.warn("[Clima] OWM_API_KEY no configurada, saltando fetch.");
             return;
         }

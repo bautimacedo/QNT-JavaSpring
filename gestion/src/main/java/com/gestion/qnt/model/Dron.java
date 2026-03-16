@@ -79,6 +79,19 @@ public class Dron {
     @Column(precision = 10, scale = 2)
     private BigDecimal altitud;
 
+    // Telemetría MQTT — actualizado cada 5 minutos
+    @Column(name = "bateria_porc")
+    private Integer bateriaPorc;
+
+    @Column(name = "bateria_temp_c", precision = 5, scale = 2)
+    private BigDecimal bateriaTempC;
+
+    @Column(name = "drone_en_dock")
+    private Boolean droneEnDock;
+
+    @Column(name = "ultima_telemetria")
+    private Instant ultimaTelemetria;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dock_id", unique = true)
     private Dock dock;

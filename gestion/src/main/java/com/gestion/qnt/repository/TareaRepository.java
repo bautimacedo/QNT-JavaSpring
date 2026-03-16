@@ -17,4 +17,6 @@ public interface TareaRepository extends JpaRepository<Tarea, Long> {
 
     @Query("SELECT t FROM Tarea t LEFT JOIN FETCH t.asignadoA LEFT JOIN FETCH t.creadoPor WHERE t.asignadoA.id = :userId ORDER BY CASE t.prioridad WHEN 'CRITICA' THEN 0 WHEN 'ALTA' THEN 1 WHEN 'MEDIA' THEN 2 WHEN 'BAJA' THEN 3 ELSE 4 END ASC")
     List<Tarea> findByAsignadoAId(Long userId);
+
+    boolean existsByTituloAndEstadoNot(String titulo, EstadoTarea estado);
 }

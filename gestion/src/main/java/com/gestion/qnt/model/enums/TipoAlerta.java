@@ -6,5 +6,6 @@ public enum TipoAlerta {
     MANTENIMIENTO,
     SEGURO,
     LICENCIA,
+    TELEMETRIA,
     OTRO
 }

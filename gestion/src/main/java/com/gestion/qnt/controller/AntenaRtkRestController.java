@@ -1,9 +1,9 @@
 package com.gestion.qnt.controller;
 
+import com.gestion.qnt.model.AntenaRtk;
 import com.gestion.qnt.model.business.interfaces.IAntenaRtkBusiness;
 import com.gestion.qnt.model.business.exceptions.BusinessException;
 import com.gestion.qnt.model.business.exceptions.NotFoundException;
-import com.gestion.qnt.model.AntenaRtk;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

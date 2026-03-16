@@ -141,7 +141,6 @@ public class MiPerfilPilotoController {
 
     @PutMapping("/foto-perfil")
     @Transactional
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> subirFotoPerfil(Authentication authentication,
                                              @RequestParam("file") MultipartFile file) {
         AuthUser auth = authUser(authentication);
@@ -163,7 +162,6 @@ public class MiPerfilPilotoController {
 
     @GetMapping("/foto-perfil")
     @Transactional(readOnly = true)
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<byte[]> getFotoPerfil(Authentication authentication) {
         AuthUser auth = authUser(authentication);
         try {

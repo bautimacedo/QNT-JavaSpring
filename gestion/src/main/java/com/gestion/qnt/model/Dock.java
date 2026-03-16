@@ -72,6 +72,16 @@ public class Dock {
     @Column(precision = 10, scale = 2)
     private BigDecimal altitud;
 
+    // Telemetría MQTT — actualizado cada 5 minutos
+    @Column(name = "temperatura_ambiente", precision = 5, scale = 2)
+    private BigDecimal temperaturaAmbiente;
+
+    @Column(name = "velocidad_viento", precision = 5, scale = 2)
+    private BigDecimal velocidadViento;
+
+    @Column(name = "ultima_telemetria")
+    private Instant ultimaTelemetria;
+
     @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "dock")
     private Dron dron;

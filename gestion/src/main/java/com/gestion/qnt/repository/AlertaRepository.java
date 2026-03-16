@@ -18,4 +18,6 @@ public interface AlertaRepository extends JpaRepository<Alerta, Long> {
     List<Alerta> findByEntidadTipoAndEntidadIdAndResueltaFalse(String entidadTipo, Long entidadId);
 
     List<Alerta> findByTipoAndResueltaFalse(TipoAlerta tipo);
+
+    long countByResueltaFalse();
 }

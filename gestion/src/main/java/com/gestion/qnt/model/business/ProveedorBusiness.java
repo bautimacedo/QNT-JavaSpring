@@ -92,8 +92,16 @@ public class ProveedorBusiness implements IProveedorBusiness {
     @Override
     public Proveedor update(Proveedor entity) throws NotFoundException, BusinessException {
         try {
-            load(entity.getId());
-            return repository.save(entity);
+            Proveedor existing = load(entity.getId());
+            existing.setNombre(entity.getNombre());
+            existing.setCuit(entity.getCuit());
+            existing.setContacto(entity.getContacto());
+            existing.setDireccion(entity.getDireccion());
+            existing.setTelefono(entity.getTelefono());
+            existing.setEmail(entity.getEmail());
+            existing.setObservaciones(entity.getObservaciones());
+            existing.setCategoria(entity.getCategoria());
+            return repository.save(existing);
         } catch (NotFoundException e) {
             throw e;
         } catch (Exception e) {

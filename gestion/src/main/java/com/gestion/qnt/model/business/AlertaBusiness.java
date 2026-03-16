@@ -3,22 +3,28 @@ package com.gestion.qnt.model.business;
 import com.gestion.qnt.model.Alerta;
 import com.gestion.qnt.model.Bateria;
 import com.gestion.qnt.model.LicenciaANAC;
+import com.gestion.qnt.model.Tarea;
 import com.gestion.qnt.model.Usuario;
 import com.gestion.qnt.model.business.exceptions.BusinessException;
 import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import com.gestion.qnt.model.business.interfaces.IAlertaBusiness;
 import com.gestion.qnt.model.enums.Estado;
+import com.gestion.qnt.model.enums.EstadoTarea;
 import com.gestion.qnt.model.enums.NivelAlerta;
+import com.gestion.qnt.model.enums.PrioridadTarea;
 import com.gestion.qnt.model.enums.TipoAlerta;
 import com.gestion.qnt.repository.AlertaRepository;
 import com.gestion.qnt.repository.BateriaRepository;
+import com.gestion.qnt.repository.DronRepository;
 import com.gestion.qnt.repository.LicenciaANACRepository;
+import com.gestion.qnt.repository.TareaRepository;
 import com.gestion.qnt.repository.UsuarioRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -40,6 +46,15 @@ public class AlertaBusiness implements IAlertaBusiness {
 
     @Autowired
     private BateriaRepository bateriaRepository;
+
+    @Autowired
+    private DronRepository dronRepository;
+
+    @Autowired
+    private TareaRepository tareaRepository;
+
+    private static final BigDecimal TEMP_BATERIA_MAX = new BigDecimal("50");
+    private static final int CICLOS_CARGA_MAX = 250;
 
     @Override
     public List<Alerta> listActivas() throws BusinessException {
@@ -70,6 +85,7 @@ public class AlertaBusiness implements IAlertaBusiness {
 
     @Override
     @Transactional
+    @org.springframework.scheduling.annotation.Scheduled(fixedRateString = "${alertas.check-interval-ms:300000}")
     public void generarAlertas() throws BusinessException {
         try {
             log.info("Iniciando generación de alertas...");
@@ -78,6 +94,7 @@ public class AlertaBusiness implements IAlertaBusiness {
 
             generarAlertasCma(clavesGeneradas);
             generarAlertasBaterias(clavesGeneradas);
+            generarAlertasTelemetria(clavesGeneradas);
             resolverAlertasObsoletas(clavesGeneradas);
 
             log.info("Generación de alertas completada. {} alertas activas.", clavesGeneradas.size());
@@ -153,6 +170,57 @@ public class AlertaBusiness implements IAlertaBusiness {
                     nombre + ": en desuso",
                     "Batería retirada de operación",
                     "BATERIA", b.getId(), clave
+            );
+        }
+
+        // Baterías con ciclos de carga excedidos (> 250)
+        List<Bateria> ciclasExcedidas = bateriaRepository.findByCiclosCargaGreaterThan(CICLOS_CARGA_MAX);
+        for (Bateria b : ciclasExcedidas) {
+            String clave = TipoAlerta.MANTENIMIENTO.name() + "_BATERIA_CICLOS_" + b.getId();
+            clavesGeneradas.add(clave);
+            String nombre = formatNombreBateria(b);
+            crearSiNoExiste(
+                    TipoAlerta.MANTENIMIENTO, NivelAlerta.CRITICA,
+                    nombre + ": ciclos de carga excedidos",
+                    b.getCiclosCarga() + " ciclos — límite " + CICLOS_CARGA_MAX + ". Reemplazar batería",
+                    "BATERIA", b.getId(), clave
+            );
+            // Crear tarea de cambio de batería si no existe una pendiente
+            crearTareaCambioBateriaSiNoExiste(b, nombre);
+        }
+    }
+
+    private void crearTareaCambioBateriaSiNoExiste(Bateria b, String nombreBateria) {
+        String tituloTarea = "Cambio de batería: " + nombreBateria;
+        boolean yaExiste = tareaRepository.existsByTituloAndEstadoNot(tituloTarea, EstadoTarea.COMPLETADA);
+        if (!yaExiste) {
+            Tarea tarea = new Tarea();
+            tarea.setTitulo(tituloTarea);
+            tarea.setDescripcion("Batería con " + b.getCiclosCarga() + " ciclos de carga (límite: " + CICLOS_CARGA_MAX + "). "
+                    + "Reemplazar la batería " + nombreBateria + " para mantener la seguridad operativa.");
+            tarea.setEstado(EstadoTarea.PENDIENTE);
+            tarea.setPrioridad(PrioridadTarea.ALTA);
+            tareaRepository.save(tarea);
+            log.info("Tarea de cambio de batería creada automáticamente para: {}", nombreBateria);
+        }
+    }
+
+    // ─── Telemetría MQTT ───────────────────────────────────────────────────────
+
+    private void generarAlertasTelemetria(Set<String> clavesGeneradas) {
+        // Drones con temperatura de batería > 50°C (dato de última telemetría MQTT)
+        List<com.gestion.qnt.model.Dron> dronesCalientes = dronRepository.findByBateriaTempCGreaterThan(TEMP_BATERIA_MAX);
+        for (com.gestion.qnt.model.Dron d : dronesCalientes) {
+            String nombre = (d.getNombre() != null && !d.getNombre().isBlank())
+                    ? d.getNombre()
+                    : (d.getMarca() != null ? d.getMarca() + " " : "") + (d.getModelo() != null ? d.getModelo() : "Dron #" + d.getId());
+            String clave = TipoAlerta.TELEMETRIA.name() + "_DRON_TEMP_BAT_" + d.getId();
+            clavesGeneradas.add(clave);
+            crearSiNoExiste(
+                    TipoAlerta.TELEMETRIA, NivelAlerta.CRITICA,
+                    nombre + ": temperatura de batería alta",
+                    "Temperatura actual: " + d.getBateriaTempC() + "°C — límite " + TEMP_BATERIA_MAX + "°C",
+                    "DRON", d.getId(), clave
             );
         }
     }

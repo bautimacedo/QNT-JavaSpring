@@ -4,6 +4,7 @@ import com.gestion.qnt.model.enums.Estado;
 import com.gestion.qnt.model.enums.TipoEquipoMapa;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 
 /**
@@ -18,10 +19,19 @@ public record MapEquipoMarker(
         BigDecimal longitud,
         BigDecimal altitud,
         Estado estado,
-        /** Fecha del último mantenimiento (Dock/Dron); null para el resto. */
         LocalDate ultimoMantenimiento,
-        /** Nombre del site (Dock); null para el resto. */
         String siteNombre,
-        /** Número de serie si existe. */
-        String numeroSerie
+        String numeroSerie,
+        // Telemetría MQTT — Dron
+        Integer bateriaPorc,
+        BigDecimal bateriaTempC,
+        Boolean droneEnDock,
+        // Batería instalada — Dron
+        String bateriaNombre,
+        Integer bateriaCiclos,
+        // Telemetría MQTT — Dock
+        BigDecimal temperaturaAmbiente,
+        BigDecimal velocidadViento,
+        // Común
+        Instant ultimaTelemetria
 ) {}

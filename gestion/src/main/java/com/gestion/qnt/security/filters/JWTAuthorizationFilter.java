@@ -16,8 +16,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 /**
@@ -54,7 +54,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             } catch (JWTVerificationException e) {
-                // Token inválido o expirado: no setear autenticación; las rutas protegidas devolverán 401
+                // Token inválido o expirado: no setear autenticación; las rutas protegidas devolverán 401/403 según configuración
             }
         }
 

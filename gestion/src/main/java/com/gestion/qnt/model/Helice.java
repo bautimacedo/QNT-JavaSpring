@@ -1,5 +1,6 @@
 package com.gestion.qnt.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -51,6 +52,10 @@ public class Helice {
     @Column(name = "fecha_en_desuso")
     private LocalDateTime fechaEnDesuso;
 
+    @Column(name = "dron_id", insertable = false, updatable = false)
+    private Long dronId;
+
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dron_id")
     private Dron dron;

@@ -1,7 +1,10 @@
 package com.gestion.qnt.model.business;
 
+import com.gestion.qnt.model.AntenaRtk;
+import com.gestion.qnt.model.AntenaStarlink;
 import com.gestion.qnt.model.Bateria;
 import com.gestion.qnt.model.Compra;
+import com.gestion.qnt.model.Dock;
 import com.gestion.qnt.model.Dron;
 import com.gestion.qnt.model.Helice;
 import com.gestion.qnt.model.business.exceptions.BusinessException;
@@ -16,7 +19,10 @@ import com.gestion.qnt.model.Proveedor;
 import com.gestion.qnt.model.Site;
 import com.gestion.qnt.model.enums.MetodoPago;
 import com.gestion.qnt.model.enums.TipoCompra;
+import com.gestion.qnt.model.business.interfaces.IAntenaRtkBusiness;
+import com.gestion.qnt.model.business.interfaces.IAntenaStarlinkBusiness;
 import com.gestion.qnt.model.business.interfaces.IBateriaBusiness;
+import com.gestion.qnt.model.business.interfaces.IDockBusiness;
 import com.gestion.qnt.model.business.interfaces.IDronBusiness;
 import com.gestion.qnt.model.business.interfaces.IHeliceBusiness;
 import com.gestion.qnt.model.business.interfaces.ILicenciaBusiness;
@@ -48,6 +54,15 @@ public class CompraBusiness implements ICompraBusiness {
 
     @Autowired
     private IHeliceBusiness heliceBusiness;
+
+    @Autowired
+    private IDockBusiness dockBusiness;
+
+    @Autowired
+    private IAntenaRtkBusiness antenaRtkBusiness;
+
+    @Autowired
+    private IAntenaStarlinkBusiness antenaStarlinkBusiness;
 
     @Autowired
     private ILicenciaBusiness licenciaBusiness;
@@ -265,14 +280,25 @@ public class CompraBusiness implements ICompraBusiness {
                 heliceBusiness.add(helice);
             }
             case DOCK -> {
-                // Dock requiere site_id NOT NULL; no se puede crear automáticamente sin un site.
-                // El admin debe crear el Dock manualmente desde la pantalla de inventario.
-                log.info("Compra de DOCK registrada. El ítem debe crearse manualmente en inventario (requiere Site).");
+                Dock dock = new Dock();
+                dock.setEstado(Estado.NO_LLEGO);
+                dock.setNombre(nombre);
+                dock.setFechaCompra(compra.getFechaCompra());
+                dockBusiness.add(dock);
             }
-            case ANTENA_RTK, ANTENA_STARLINK -> {
-                // AntenaRtk y AntenaStarlink requieren dock_id NOT NULL.
-                // El admin las asocia a un Dock existente manualmente.
-                log.info("Compra de {} registrada. El ítem debe asociarse a un Dock existente manualmente.", compra.getTipoEquipo());
+            case ANTENA_RTK -> {
+                AntenaRtk antenaRtk = new AntenaRtk();
+                antenaRtk.setEstado(Estado.NO_LLEGO);
+                antenaRtk.setNombre(nombre);
+                antenaRtk.setFechaCompra(compra.getFechaCompra());
+                antenaRtkBusiness.add(antenaRtk);
+            }
+            case ANTENA_STARLINK -> {
+                AntenaStarlink antenaStarlink = new AntenaStarlink();
+                antenaStarlink.setEstado(Estado.NO_LLEGO);
+                antenaStarlink.setNombre(nombre);
+                antenaStarlink.setFechaCompra(compra.getFechaCompra());
+                antenaStarlinkBusiness.add(antenaStarlink);
             }
             case OTRO -> {
                 // Sin entidad en inventario para tipo OTRO.

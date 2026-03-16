@@ -21,8 +21,8 @@ public class AntenaRtk {
     private Long id;
 
     @JsonIgnore
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "dock_id", nullable = false, unique = true)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "dock_id", unique = true)
     private Dock dock;
 
     @Column

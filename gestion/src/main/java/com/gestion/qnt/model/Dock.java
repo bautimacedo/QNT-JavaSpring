@@ -59,8 +59,8 @@ public class Dock {
     @JoinColumn(name = "ultimo_mantenimiento_id")
     private MantenimientoDock ultimoMantenimiento;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "site_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "site_id")
     @JsonIgnore
     private Site site;
 

@@ -11,5 +11,6 @@ public enum TipoCompra {
     EQUIPO,
     SERVICIOS,
     FLETES,
+    MOVILIZACION,
     OTRO
 }

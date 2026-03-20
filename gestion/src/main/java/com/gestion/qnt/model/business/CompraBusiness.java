@@ -146,6 +146,7 @@ public class CompraBusiness implements ICompraBusiness {
                     item.setTipoCompra(itemReq.tipoCompra());
                     item.setTipoEquipo(itemReq.tipoEquipo());
                     item.setDescripcion(itemReq.descripcion());
+                    item.setCantidad(itemReq.cantidad() != null && itemReq.cantidad() > 0 ? itemReq.cantidad() : 1);
                     item.setImporte(itemReq.importe());
                     compra.getItems().add(item);
                 }
@@ -305,30 +306,33 @@ public class CompraBusiness implements ICompraBusiness {
      * El resto (VIATICO, FLETES, etc.) solo registra el gasto, sin entidad adicional.
      */
     private void crearEntidadDesdeItem(Compra compra, CompraItem item) throws BusinessException {
-        switch (item.getTipoCompra()) {
-            case EQUIPO -> {
-                if (item.getTipoEquipo() != null) {
-                    crearItemEnInventarioPorTipo(item.getTipoEquipo(), item.getDescripcion(), compra.getFechaCompra());
+        int cantidad = item.getCantidad() != null && item.getCantidad() > 0 ? item.getCantidad() : 1;
+        for (int i = 0; i < cantidad; i++) {
+            switch (item.getTipoCompra()) {
+                case EQUIPO -> {
+                    if (item.getTipoEquipo() != null) {
+                        crearItemEnInventarioPorTipo(item.getTipoEquipo(), item.getDescripcion(), compra.getFechaCompra());
+                    }
                 }
-            }
-            case LICENCIA_SW -> {
-                Licencia licencia = new Licencia();
-                licencia.setNombre(item.getDescripcion());
-                licencia.setCompra(compra);
-                licencia.setFechaCompra(compra.getFechaCompra());
-                licencia.setActivo(true);
-                licenciaBusiness.add(licencia);
-                log.info("Licencia SW '{}' creada desde ítem de compra id={}", item.getDescripcion(), compra.getId());
-            }
-            case SEGURO -> {
-                Seguro seguro = new Seguro();
-                seguro.setAseguradora(item.getDescripcion());
-                seguro.setCompra(compra);
-                seguroBusiness.add(seguro);
-                log.info("Seguro '{}' creado desde ítem de compra id={}", item.getDescripcion(), compra.getId());
-            }
-            default -> {
-                // REPUESTO, VIATICO, FLETES, MOVILIZACION, SERVICIOS, OTRO: solo gasto, sin entidad.
+                case LICENCIA_SW -> {
+                    Licencia licencia = new Licencia();
+                    licencia.setNombre(item.getDescripcion());
+                    licencia.setCompra(compra);
+                    licencia.setFechaCompra(compra.getFechaCompra());
+                    licencia.setActivo(true);
+                    licenciaBusiness.add(licencia);
+                    log.info("Licencia SW '{}' creada desde ítem de compra id={}", item.getDescripcion(), compra.getId());
+                }
+                case SEGURO -> {
+                    Seguro seguro = new Seguro();
+                    seguro.setAseguradora(item.getDescripcion());
+                    seguro.setCompra(compra);
+                    seguroBusiness.add(seguro);
+                    log.info("Seguro '{}' creado desde ítem de compra id={}", item.getDescripcion(), compra.getId());
+                }
+                default -> {
+                    // REPUESTO, VIATICO, FLETES, MOVILIZACION, SERVICIOS, OTRO: solo gasto, sin entidad.
+                }
             }
         }
     }

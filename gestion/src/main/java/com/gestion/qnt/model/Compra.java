@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gestion.qnt.model.enums.MetodoPago;
 import com.gestion.qnt.model.enums.TipoCompra;
 import com.gestion.qnt.model.enums.TipoEquipo;
@@ -81,12 +80,6 @@ public class Compra {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_alta_id")
     private Usuario usuarioAlta;
-
-    /** Imagen de la factura (opcional). No se serializa en JSON para evitar payload enorme. */
-    @Column(name = "imagen_factura", nullable = true, columnDefinition = "bytea")
-    @Basic(optional = true)
-    @JsonIgnore
-    private byte[] imagenFactura;
 
     /**
      * Subtotal (base imponible) cuando tieneIva es true: importe / (1 + ivaPorcentaje/100).

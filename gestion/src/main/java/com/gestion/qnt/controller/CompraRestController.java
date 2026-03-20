@@ -10,18 +10,14 @@ import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import com.gestion.qnt.model.business.interfaces.ICompraBusiness;
 import com.gestion.qnt.model.business.interfaces.IUsuarioBusiness;
 import com.gestion.qnt.security.AuthUser;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -134,54 +130,4 @@ public class CompraRestController {
         }
     }
 
-    /**
-     * Sube la imagen de la factura para la compra indicada.
-     * Requiere multipart/form-data con parte "file".
-     */
-    @PutMapping("/{id}/imagen")
-    @Transactional
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
-    public ResponseEntity<?> uploadImagen(@PathVariable Long id,
-            @RequestParam("file") MultipartFile file) {
-        try {
-            Compra compra = compraBusiness.load(id);
-            compra.setImagenFactura(file.getBytes());
-            compraBusiness.update(compra);
-            return ResponseEntity.ok().build();
-        } catch (NotFoundException e) {
-            return ResponseEntity.notFound().build();
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al leer el archivo");
-        } catch (BusinessException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    /**
-     * Obtiene la imagen de la factura de la compra.
-     * 404 si la compra no existe o no tiene imagen.
-     */
-    @GetMapping("/{id}/imagen")
-    @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
-    public ResponseEntity<byte[]> getImagen(@PathVariable Long id) {
-        try {
-            Compra compra = compraBusiness.load(id);
-            byte[] imagen = compra.getImagenFactura();
-            if (imagen == null || imagen.length == 0) {
-                return ResponseEntity.notFound().build();
-            }
-            HttpHeaders headers = new HttpHeaders();
-            boolean isPdf = imagen.length >= 4
-                && imagen[0] == 0x25 && imagen[1] == 0x50
-                && imagen[2] == 0x44 && imagen[3] == 0x46;
-            headers.setContentType(isPdf ? MediaType.APPLICATION_PDF : MediaType.APPLICATION_OCTET_STREAM);
-            headers.setContentLength(imagen.length);
-            return ResponseEntity.ok().headers(headers).body(imagen);
-        } catch (NotFoundException e) {
-            return ResponseEntity.notFound().build();
-        } catch (BusinessException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
 }

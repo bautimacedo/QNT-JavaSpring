@@ -7,6 +7,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * DTO para crear o actualizar una Compra.
@@ -47,9 +48,20 @@ public record CreateCompraRequest(
 
         String descripcion,
         Long siteId,
-        String observaciones
+        String observaciones,
+
+        /**
+         * Ítems de la compra. Si se proveen, la lógica de tipoEquipo/descripcionEquipo
+         * a nivel de Compra se ignora y la auto-creación de entidades se realiza por ítem.
+         * Si está vacío o null, se aplica la lógica legacy (tipoCompra en cabecera).
+         */
+        List<CompraItemRequest> items
 ) {
     public boolean hasProveedor() {
         return (proveedorId != null) || (proveedorNombre != null && !proveedorNombre.isBlank());
+    }
+
+    public boolean hasItems() {
+        return items != null && !items.isEmpty();
     }
 }

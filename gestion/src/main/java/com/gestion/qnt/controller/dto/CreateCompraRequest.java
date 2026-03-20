@@ -35,7 +35,6 @@ public record CreateCompraRequest(
 
         String moneda,
 
-        @NotNull(message = "tipoCompra es obligatorio")
         TipoCompra tipoCompra,
 
         @NotNull(message = "metodoPago es obligatorio")

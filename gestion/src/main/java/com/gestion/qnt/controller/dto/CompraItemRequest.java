@@ -23,5 +23,7 @@ public record CompraItemRequest(
         @NotBlank(message = "descripcion del ítem es obligatoria")
         String descripcion,
 
+        Integer cantidad,
+
         BigDecimal importe
 ) {}

@@ -35,10 +35,16 @@ public class LicenciaANAC {
     @JsonIgnore
     private byte[] imagenCma;
 
+    @Column(name = "content_type_cma", length = 100)
+    private String contentTypeCma;
+
     @Column(name = "imagen_certificado_idoneidad", nullable = true, columnDefinition = "bytea")
     @Basic(optional = true)
     @JsonIgnore
     private byte[] imagenCertificadoIdoneidad;
+
+    @Column(name = "content_type_cert_idoneidad", length = 100)
+    private String contentTypeCertIdoneidad;
 
     @Column(nullable = false)
     private Boolean activo = true;

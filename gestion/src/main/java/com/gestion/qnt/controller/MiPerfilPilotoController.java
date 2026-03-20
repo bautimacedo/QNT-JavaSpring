@@ -276,6 +276,7 @@ public class MiPerfilPilotoController {
                 return ResponseEntity.notFound().build();
             }
             lic.setImagenCma(file.getBytes());
+            lic.setContentTypeCma(file.getContentType());
             licenciaANACBusiness.update(lic);
             return ResponseEntity.ok().build();
         } catch (NotFoundException e) {
@@ -298,11 +299,10 @@ public class MiPerfilPilotoController {
                 return ResponseEntity.notFound().build();
             }
             byte[] imagen = lic.getImagenCma();
-            if (imagen == null || imagen.length == 0) {
-                return ResponseEntity.notFound().build();
-            }
+            if (imagen == null || imagen.length == 0) return ResponseEntity.notFound().build();
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            String ct = lic.getContentTypeCma();
+            headers.setContentType(ct != null ? MediaType.parseMediaType(ct) : MediaType.APPLICATION_OCTET_STREAM);
             headers.setContentLength(imagen.length);
             return ResponseEntity.ok().headers(headers).body(imagen);
         } catch (NotFoundException e) {
@@ -327,6 +327,7 @@ public class MiPerfilPilotoController {
                 return ResponseEntity.notFound().build();
             }
             lic.setImagenCertificadoIdoneidad(file.getBytes());
+            lic.setContentTypeCertIdoneidad(file.getContentType());
             licenciaANACBusiness.update(lic);
             return ResponseEntity.ok().build();
         } catch (NotFoundException e) {
@@ -353,7 +354,8 @@ public class MiPerfilPilotoController {
                 return ResponseEntity.notFound().build();
             }
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            String ct = lic.getContentTypeCertIdoneidad();
+            headers.setContentType(ct != null ? MediaType.parseMediaType(ct) : MediaType.APPLICATION_OCTET_STREAM);
             headers.setContentLength(imagen.length);
             return ResponseEntity.ok().headers(headers).body(imagen);
         } catch (NotFoundException e) {

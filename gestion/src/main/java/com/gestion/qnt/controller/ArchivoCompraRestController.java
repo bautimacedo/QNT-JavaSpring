@@ -71,8 +71,6 @@ public class ArchivoCompraRestController {
             archivo.setContenido(file.getBytes());
 
             ArchivoCompra saved = archivoRepo.save(archivo);
-            // Limpiar contenido del objeto antes de devolver (no serializar bytes)
-            saved.setContenido(null);
             return ResponseEntity.status(HttpStatus.CREATED).body(saved);
         } catch (NotFoundException e) {
             return ResponseEntity.notFound().build();

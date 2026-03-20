@@ -15,7 +15,9 @@ import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import com.gestion.qnt.model.business.interfaces.ILicenciaANACBusiness;
 import com.gestion.qnt.model.business.interfaces.IRoleBusiness;
 import com.gestion.qnt.model.business.interfaces.IUsuarioBusiness;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -277,6 +279,50 @@ public class UsuarioRestController {
             return ResponseEntity.notFound().build();
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/{pilotoId}/licencias-anac/{licenciaId}/imagen-cma")
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<byte[]> getImagenCmaLicencia(@PathVariable Long pilotoId, @PathVariable Long licenciaId) {
+        try {
+            LicenciaANAC lic = licenciaANACBusiness.load(licenciaId);
+            if (lic.getPiloto() == null || !lic.getPiloto().getId().equals(pilotoId)) {
+                return ResponseEntity.notFound().build();
+            }
+            byte[] imagen = lic.getImagenCma();
+            if (imagen == null || imagen.length == 0) return ResponseEntity.notFound().build();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentLength(imagen.length);
+            return ResponseEntity.ok().headers(headers).body(imagen);
+        } catch (NotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/{pilotoId}/licencias-anac/{licenciaId}/imagen-certificado-idoneidad")
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<byte[]> getImagenCertIdoneidadLicencia(@PathVariable Long pilotoId, @PathVariable Long licenciaId) {
+        try {
+            LicenciaANAC lic = licenciaANACBusiness.load(licenciaId);
+            if (lic.getPiloto() == null || !lic.getPiloto().getId().equals(pilotoId)) {
+                return ResponseEntity.notFound().build();
+            }
+            byte[] imagen = lic.getImagenCertificadoIdoneidad();
+            if (imagen == null || imagen.length == 0) return ResponseEntity.notFound().build();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentLength(imagen.length);
+            return ResponseEntity.ok().headers(headers).body(imagen);
+        } catch (NotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

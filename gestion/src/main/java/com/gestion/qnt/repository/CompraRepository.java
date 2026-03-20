@@ -15,8 +15,8 @@ public interface CompraRepository extends JpaRepository<Compra, Long> {
     @Query("SELECT c FROM Compra c JOIN FETCH c.proveedor p LEFT JOIN FETCH c.site s LEFT JOIN FETCH c.usuarioAlta u")
     List<Compra> findAllWithProveedorAndSite();
 
-    /** Evita LazyInitializationException al serializar (proveedor, site, usuarioAlta). */
-    @Query("SELECT c FROM Compra c JOIN FETCH c.proveedor p LEFT JOIN FETCH c.site s LEFT JOIN FETCH c.usuarioAlta u WHERE c.id = :id")
+    /** Evita LazyInitializationException al serializar (proveedor, site, usuarioAlta, items). */
+    @Query("SELECT DISTINCT c FROM Compra c JOIN FETCH c.proveedor p LEFT JOIN FETCH c.site s LEFT JOIN FETCH c.usuarioAlta u LEFT JOIN FETCH c.items WHERE c.id = :id")
     Optional<Compra> findByIdWithProveedorAndSite(@Param("id") Long id);
 
     /** Filtra por tipoCompra y proveedorId (cualquiera puede ser null). */

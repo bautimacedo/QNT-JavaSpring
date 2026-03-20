@@ -1,12 +1,15 @@
 package com.gestion.qnt.model.business;
 
+import com.gestion.qnt.controller.dto.CompraItemRequest;
 import com.gestion.qnt.model.AntenaRtk;
 import com.gestion.qnt.model.AntenaStarlink;
 import com.gestion.qnt.model.Bateria;
 import com.gestion.qnt.model.Compra;
+import com.gestion.qnt.model.CompraItem;
 import com.gestion.qnt.model.Dock;
 import com.gestion.qnt.model.Dron;
 import com.gestion.qnt.model.Helice;
+import com.gestion.qnt.model.Seguro;
 import com.gestion.qnt.model.business.exceptions.BusinessException;
 import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import com.gestion.qnt.model.business.interfaces.ICompraBusiness;
@@ -27,6 +30,7 @@ import com.gestion.qnt.model.business.interfaces.IDronBusiness;
 import com.gestion.qnt.model.business.interfaces.IHeliceBusiness;
 import com.gestion.qnt.model.business.interfaces.ILicenciaBusiness;
 import com.gestion.qnt.model.business.interfaces.IProveedorBusiness;
+import com.gestion.qnt.model.business.interfaces.ISeguroBusiness;
 import com.gestion.qnt.model.business.interfaces.ISiteBusiness;
 import com.gestion.qnt.model.Licencia;
 import com.gestion.qnt.model.enums.Estado;
@@ -66,6 +70,9 @@ public class CompraBusiness implements ICompraBusiness {
 
     @Autowired
     private ILicenciaBusiness licenciaBusiness;
+
+    @Autowired
+    private ISeguroBusiness seguroBusiness;
 
     @Override
     public List<Compra> list() throws BusinessException {
@@ -122,31 +129,55 @@ public class CompraBusiness implements ICompraBusiness {
             compra.setImporte(request.importe());
             compra.setMoneda(request.moneda() != null && !request.moneda().isBlank() ? request.moneda() : "ARS");
             applyIva(compra, request);
-            compra.setTipoCompra(request.tipoCompra());
             applyMetodoPago(compra, request);
             compra.setDescripcion(request.descripcion());
             compra.setSite(site);
             compra.setObservaciones(request.observaciones());
 
-            if (request.tipoCompra() == TipoCompra.EQUIPO) {
-                if (request.tipoEquipo() == null) {
-                    throw new BusinessException("Se debe indicar el tipoEquipo cuando el tipo de compra es EQUIPO");
-                }
-                compra.setTipoEquipo(request.tipoEquipo());
-                compra.setDescripcionEquipo(request.descripcionEquipo());
-                crearItemEnInventario(compra);
-            } else {
+            if (request.hasItems()) {
+                // Nuevo flujo: múltiples ítems
+                derivarTipoCompraDesdeItems(compra, request.items());
                 compra.setTipoEquipo(null);
                 compra.setDescripcionEquipo(null);
+                for (CompraItemRequest itemReq : request.items()) {
+                    validarItem(itemReq);
+                    CompraItem item = new CompraItem();
+                    item.setCompra(compra);
+                    item.setTipoCompra(itemReq.tipoCompra());
+                    item.setTipoEquipo(itemReq.tipoEquipo());
+                    item.setDescripcion(itemReq.descripcion());
+                    item.setImporte(itemReq.importe());
+                    compra.getItems().add(item);
+                }
+                Compra savedCompra = repository.save(compra);
+                // Auto-crear entidades por ítem
+                for (CompraItem item : savedCompra.getItems()) {
+                    crearEntidadDesdeItem(savedCompra, item);
+                }
+                return savedCompra;
+            } else {
+                // Flujo legacy: un solo tipo en cabecera
+                if (request.tipoCompra() == null) {
+                    throw new BusinessException("Se debe indicar tipoCompra o al menos un ítem");
+                }
+                compra.setTipoCompra(request.tipoCompra());
+                if (request.tipoCompra() == TipoCompra.EQUIPO) {
+                    if (request.tipoEquipo() == null) {
+                        throw new BusinessException("Se debe indicar el tipoEquipo cuando el tipo de compra es EQUIPO");
+                    }
+                    compra.setTipoEquipo(request.tipoEquipo());
+                    compra.setDescripcionEquipo(request.descripcionEquipo());
+                    crearItemEnInventario(compra);
+                } else {
+                    compra.setTipoEquipo(null);
+                    compra.setDescripcionEquipo(null);
+                }
+                Compra savedCompra = repository.save(compra);
+                if (request.tipoCompra() == TipoCompra.LICENCIA_SW) {
+                    crearLicenciaSWDesdeCompra(savedCompra, request);
+                }
+                return savedCompra;
             }
-
-            Compra savedCompra = repository.save(compra);
-
-            if (request.tipoCompra() == TipoCompra.LICENCIA_SW) {
-                crearLicenciaSWDesdeCompra(savedCompra, request);
-            }
-
-            return savedCompra;
         } catch (NotFoundException e) {
             throw e;
         } catch (Exception e) {
@@ -186,7 +217,6 @@ public class CompraBusiness implements ICompraBusiness {
             existing.setImporte(request.importe());
             existing.setMoneda(request.moneda() != null && !request.moneda().isBlank() ? request.moneda() : "ARS");
             applyIva(existing, request);
-            existing.setTipoCompra(request.tipoCompra());
             applyMetodoPago(existing, request);
             existing.setDescripcion(request.descripcion());
             if (request.siteId() != null) {
@@ -196,13 +226,31 @@ public class CompraBusiness implements ICompraBusiness {
             }
             existing.setObservaciones(request.observaciones());
 
-            if (request.tipoCompra() == TipoCompra.EQUIPO) {
+            if (request.hasItems()) {
+                // Actualizar ítems: orphanRemoval elimina los anteriores, se reemplazan
+                existing.getItems().clear();
+                derivarTipoCompraDesdeItems(existing, request.items());
+                existing.setTipoEquipo(null);
+                existing.setDescripcionEquipo(null);
+                for (CompraItemRequest itemReq : request.items()) {
+                    validarItem(itemReq);
+                    CompraItem item = new CompraItem();
+                    item.setCompra(existing);
+                    item.setTipoCompra(itemReq.tipoCompra());
+                    item.setTipoEquipo(itemReq.tipoEquipo());
+                    item.setDescripcion(itemReq.descripcion());
+                    item.setImporte(itemReq.importe());
+                    existing.getItems().add(item);
+                }
+            } else if (request.tipoCompra() == TipoCompra.EQUIPO) {
                 if (request.tipoEquipo() == null) {
                     throw new BusinessException("Se debe indicar el tipoEquipo cuando el tipo de compra es EQUIPO");
                 }
+                existing.setTipoCompra(request.tipoCompra());
                 existing.setTipoEquipo(request.tipoEquipo());
                 existing.setDescripcionEquipo(request.descripcionEquipo());
             } else {
+                if (request.tipoCompra() != null) existing.setTipoCompra(request.tipoCompra());
                 existing.setTipoEquipo(null);
                 existing.setDescripcionEquipo(null);
             }
@@ -230,6 +278,62 @@ public class CompraBusiness implements ICompraBusiness {
     }
 
     /**
+     * Valida que un CompraItemRequest tenga los campos necesarios según su tipo.
+     */
+    private void validarItem(CompraItemRequest item) throws BusinessException {
+        if (item.descripcion() == null || item.descripcion().isBlank()) {
+            throw new BusinessException("La descripción de cada ítem es obligatoria");
+        }
+        if (item.tipoCompra() == TipoCompra.EQUIPO && item.tipoEquipo() == null) {
+            throw new BusinessException("Se debe indicar tipoEquipo para ítems de tipo EQUIPO");
+        }
+    }
+
+    /**
+     * Deriva el tipoCompra de la cabecera Compra a partir de los ítems.
+     * Si todos los ítems son del mismo tipo → ese tipo. Si hay mezcla → OTRO.
+     */
+    private void derivarTipoCompraDesdeItems(Compra compra, java.util.List<CompraItemRequest> items) {
+        TipoCompra primero = items.get(0).tipoCompra();
+        boolean todosMismo = items.stream().allMatch(i -> i.tipoCompra() == primero);
+        compra.setTipoCompra(todosMismo ? primero : TipoCompra.OTRO);
+    }
+
+    /**
+     * Auto-crea la entidad en el sistema según el tipo de ítem.
+     * EQUIPO → inventario, LICENCIA_SW → Licencia, SEGURO → Seguro.
+     * El resto (VIATICO, FLETES, etc.) solo registra el gasto, sin entidad adicional.
+     */
+    private void crearEntidadDesdeItem(Compra compra, CompraItem item) throws BusinessException {
+        switch (item.getTipoCompra()) {
+            case EQUIPO -> {
+                if (item.getTipoEquipo() != null) {
+                    crearItemEnInventarioPorTipo(item.getTipoEquipo(), item.getDescripcion(), compra.getFechaCompra());
+                }
+            }
+            case LICENCIA_SW -> {
+                Licencia licencia = new Licencia();
+                licencia.setNombre(item.getDescripcion());
+                licencia.setCompra(compra);
+                licencia.setFechaCompra(compra.getFechaCompra());
+                licencia.setActivo(true);
+                licenciaBusiness.add(licencia);
+                log.info("Licencia SW '{}' creada desde ítem de compra id={}", item.getDescripcion(), compra.getId());
+            }
+            case SEGURO -> {
+                Seguro seguro = new Seguro();
+                seguro.setAseguradora(item.getDescripcion());
+                seguro.setCompra(compra);
+                seguroBusiness.add(seguro);
+                log.info("Seguro '{}' creado desde ítem de compra id={}", item.getDescripcion(), compra.getId());
+            }
+            default -> {
+                // REPUESTO, VIATICO, FLETES, MOVILIZACION, SERVICIOS, OTRO: solo gasto, sin entidad.
+            }
+        }
+    }
+
+    /**
      * Crea automáticamente una Licencia (SW) en stock al registrar una compra de tipo LICENCIA_SW.
      * La licencia queda vinculada a la compra mediante compra_id para trazabilidad completa.
      * El nombre inicial se toma de descripcion; si está vacío se usa "Licencia SW".
@@ -249,55 +353,59 @@ public class CompraBusiness implements ICompraBusiness {
     }
 
     /**
-     * Crea automáticamente el ítem en inventario cuando se registra una compra de tipo EQUIPO.
-     * Solo se llama desde add(); en update() no se duplica el ítem.
-     * DOCK, ANTENA_RTK y ANTENA_STARLINK requieren FKs (site_id, dock_id) que no están disponibles
-     * en la compra, por lo que solo se loguea un aviso y no se crea nada.
+     * Crea automáticamente el ítem en inventario cuando se registra una compra de tipo EQUIPO (flujo legacy).
      */
     private void crearItemEnInventario(Compra compra) throws BusinessException {
-        String nombre = compra.getDescripcionEquipo();
+        crearItemEnInventarioPorTipo(compra.getTipoEquipo(), compra.getDescripcionEquipo(), compra.getFechaCompra());
+    }
 
-        switch (compra.getTipoEquipo()) {
+    /**
+     * Crea la entidad de inventario correspondiente al tipo de equipo dado.
+     */
+    private void crearItemEnInventarioPorTipo(com.gestion.qnt.model.enums.TipoEquipo tipoEquipo,
+                                               String nombre,
+                                               java.time.LocalDate fechaCompra) throws BusinessException {
+        switch (tipoEquipo) {
             case DRON -> {
                 Dron dron = new Dron();
                 dron.setEstado(Estado.NO_LLEGO);
                 dron.setNombre(nombre);
-                dron.setFechaCompra(compra.getFechaCompra());
+                dron.setFechaCompra(fechaCompra);
                 dronBusiness.add(dron);
             }
             case BATERIA -> {
                 Bateria bateria = new Bateria();
                 bateria.setEstado(Estado.NO_LLEGO);
                 bateria.setNombre(nombre);
-                bateria.setFechaCompra(compra.getFechaCompra());
+                bateria.setFechaCompra(fechaCompra);
                 bateriaBusiness.add(bateria);
             }
             case HELICE -> {
                 Helice helice = new Helice();
                 helice.setEstado(Estado.NO_LLEGO);
                 helice.setNombre(nombre);
-                helice.setFechaCompra(compra.getFechaCompra());
+                helice.setFechaCompra(fechaCompra);
                 heliceBusiness.add(helice);
             }
             case DOCK -> {
                 Dock dock = new Dock();
                 dock.setEstado(Estado.NO_LLEGO);
                 dock.setNombre(nombre);
-                dock.setFechaCompra(compra.getFechaCompra());
+                dock.setFechaCompra(fechaCompra);
                 dockBusiness.add(dock);
             }
             case ANTENA_RTK -> {
                 AntenaRtk antenaRtk = new AntenaRtk();
                 antenaRtk.setEstado(Estado.NO_LLEGO);
                 antenaRtk.setNombre(nombre);
-                antenaRtk.setFechaCompra(compra.getFechaCompra());
+                antenaRtk.setFechaCompra(fechaCompra);
                 antenaRtkBusiness.add(antenaRtk);
             }
             case ANTENA_STARLINK -> {
                 AntenaStarlink antenaStarlink = new AntenaStarlink();
                 antenaStarlink.setEstado(Estado.NO_LLEGO);
                 antenaStarlink.setNombre(nombre);
-                antenaStarlink.setFechaCompra(compra.getFechaCompra());
+                antenaStarlink.setFechaCompra(fechaCompra);
                 antenaStarlinkBusiness.add(antenaStarlink);
             }
             case OTRO -> {

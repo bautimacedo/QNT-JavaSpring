@@ -294,7 +294,8 @@ public class UsuarioRestController {
             byte[] imagen = lic.getImagenCma();
             if (imagen == null || imagen.length == 0) return ResponseEntity.notFound().build();
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            String ct = lic.getContentTypeCma();
+            headers.setContentType(ct != null ? MediaType.parseMediaType(ct) : MediaType.APPLICATION_OCTET_STREAM);
             headers.setContentLength(imagen.length);
             return ResponseEntity.ok().headers(headers).body(imagen);
         } catch (NotFoundException e) {
@@ -316,7 +317,8 @@ public class UsuarioRestController {
             byte[] imagen = lic.getImagenCertificadoIdoneidad();
             if (imagen == null || imagen.length == 0) return ResponseEntity.notFound().build();
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            String ct = lic.getContentTypeCertIdoneidad();
+            headers.setContentType(ct != null ? MediaType.parseMediaType(ct) : MediaType.APPLICATION_OCTET_STREAM);
             headers.setContentLength(imagen.length);
             return ResponseEntity.ok().headers(headers).body(imagen);
         } catch (NotFoundException e) {

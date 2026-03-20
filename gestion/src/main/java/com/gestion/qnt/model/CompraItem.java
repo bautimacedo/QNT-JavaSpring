@@ -35,6 +35,9 @@ public class CompraItem {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String descripcion;
 
+    @Column(nullable = false)
+    private Integer cantidad = 1;
+
     @Column(precision = 19, scale = 4)
     private BigDecimal importe;
 }

@@ -7,6 +7,8 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.gestion.qnt.model.enums.MetodoPago;
 import com.gestion.qnt.model.enums.TipoCompra;
@@ -80,6 +82,9 @@ public class Compra {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_alta_id")
     private Usuario usuarioAlta;
+
+    @OneToMany(mappedBy = "compra", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<CompraItem> items = new ArrayList<>();
 
     /**
      * Subtotal (base imponible) cuando tieneIva es true: importe / (1 + ivaPorcentaje/100).

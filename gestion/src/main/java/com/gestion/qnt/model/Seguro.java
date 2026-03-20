@@ -1,5 +1,6 @@
 package com.gestion.qnt.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,7 +32,16 @@ public class Seguro {
     @Column(columnDefinition = "TEXT")
     private String observaciones;
 
+    @Column(name = "imagen_poliza", nullable = true, columnDefinition = "bytea")
+    @Basic(optional = true)
+    @JsonIgnore
+    private byte[] imagenPoliza;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "compra_id")
     private Compra compra;
+
+    public boolean isTieneImagen() {
+        return imagenPoliza != null && imagenPoliza.length > 0;
+    }
 }

@@ -8,11 +8,14 @@ import com.gestion.qnt.model.business.exceptions.BusinessException;
 import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import com.gestion.qnt.model.business.interfaces.ICompraBusiness;
 import com.gestion.qnt.model.business.interfaces.ISeguroBusiness;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
 import java.util.List;
@@ -102,6 +105,44 @@ public class SeguroRestController {
             return ResponseEntity.notFound().build();
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}/imagen")
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    public ResponseEntity<?> subirImagen(@PathVariable Long id,
+                                         @RequestParam("file") MultipartFile file) {
+        try {
+            Seguro seguro = seguroBusiness.load(id);
+            seguro.setImagenPoliza(file.getBytes());
+            seguroBusiness.update(seguro);
+            return ResponseEntity.ok().build();
+        } catch (NotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}/imagen")
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    public ResponseEntity<byte[]> getImagen(@PathVariable Long id) {
+        try {
+            Seguro seguro = seguroBusiness.load(id);
+            byte[] imagen = seguro.getImagenPoliza();
+            if (imagen == null || imagen.length == 0) {
+                return ResponseEntity.notFound().build();
+            }
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentLength(imagen.length);
+            return ResponseEntity.ok().headers(headers).body(imagen);
+        } catch (NotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 

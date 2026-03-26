@@ -62,6 +62,12 @@ public class Mision {
     @Column(name = "ultima_ejecucion")
     private LocalDateTime ultimaEjecucion;
 
+    @Column(name = "fecha_inicio")
+    private LocalDateTime fechaInicio;
+
+    @Column(name = "fecha_fin")
+    private LocalDateTime fechaFin;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoMision estado;

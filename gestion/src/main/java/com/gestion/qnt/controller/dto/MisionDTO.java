@@ -22,6 +22,9 @@ public class MisionDTO {
     public EstadoMision estado;
     public LocalDateTime fechaCreacion;
     public LocalDateTime ultimaEjecucion;
+    public LocalDateTime fechaInicio;
+    public LocalDateTime fechaFin;
+    public Long duracionMinutos;
 
     // Piloto
     public Long pilotoId;

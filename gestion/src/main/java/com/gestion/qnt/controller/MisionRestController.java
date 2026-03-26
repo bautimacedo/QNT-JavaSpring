@@ -10,6 +10,7 @@ import com.gestion.qnt.model.business.interfaces.IMisionBusiness;
 import com.gestion.qnt.model.enums.EstadoMision;
 import com.gestion.qnt.repository.DockRepository;
 import com.gestion.qnt.repository.DronRepository;
+import com.gestion.qnt.repository.LogRepository;
 import com.gestion.qnt.repository.MisionRepository;
 import com.gestion.qnt.repository.PozoRepository;
 import com.gestion.qnt.repository.UsuarioRepository;
@@ -17,10 +18,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -46,6 +50,9 @@ public class MisionRestController {
 
     @Autowired
     private PozoRepository pozoRepository;
+
+    @Autowired
+    private LogRepository logRepository;
 
     // ─────────────────────────────────────────────
     // GET /misiones — lista con detalles
@@ -144,11 +151,44 @@ public class MisionRestController {
         try {
             EstadoMision nuevoEstado = EstadoMision.valueOf(body.get("estado"));
             Mision m = misionBusiness.load(id);
+            EstadoMision estadoAnterior = m.getEstado();
+            LocalDateTime ahora = LocalDateTime.now();
+
             m.setEstado(nuevoEstado);
-            if (nuevoEstado == EstadoMision.EN_CURSO && m.getUltimaEjecucion() == null) {
-                m.setUltimaEjecucion(LocalDateTime.now());
+
+            if (nuevoEstado == EstadoMision.EN_CURSO) {
+                if (m.getUltimaEjecucion() == null) m.setUltimaEjecucion(ahora);
+                if (m.getFechaInicio() == null) m.setFechaInicio(ahora);
             }
+
+            if (nuevoEstado == EstadoMision.COMPLETADA) {
+                m.setFechaFin(ahora);
+
+                // Calcular duración en minutos
+                LocalDateTime inicio = m.getFechaInicio() != null ? m.getFechaInicio() : m.getUltimaEjecucion();
+                if (inicio != null) {
+                    long minutos = ChronoUnit.MINUTES.between(inicio, ahora);
+
+                    // Actualizar drone
+                    if (m.getDron() != null) {
+                        Dron dron = m.getDron();
+                        dron.setCantidadMinutosVolados((dron.getCantidadMinutosVolados() != null ? dron.getCantidadMinutosVolados() : 0) + (int) minutos);
+                        dron.setCantidadVuelos((dron.getCantidadVuelos() != null ? dron.getCantidadVuelos() : 0) + 1);
+                        dron.setUltimoVuelo(Instant.now());
+                    }
+
+                    // Actualizar piloto
+                    Usuario piloto = m.getPiloto();
+                    piloto.setHorasVuelo((piloto.getHorasVuelo() != null ? piloto.getHorasVuelo() : 0) + (int)(minutos / 60));
+                    piloto.setCantidadVuelos((piloto.getCantidadVuelos() != null ? piloto.getCantidadVuelos() : 0) + 1);
+                }
+            }
+
             Mision updated = misionBusiness.update(m);
+
+            // Log automático del cambio de estado
+            registrarLog(updated, estadoAnterior, nuevoEstado);
+
             return ResponseEntity.ok(toDTO(updated));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
@@ -157,6 +197,25 @@ public class MisionRestController {
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    private void registrarLog(Mision m, EstadoMision estadoAnterior, EstadoMision estadoNuevo) {
+        try {
+            Usuario usuarioActual = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            Log log = new Log();
+            log.setEntidadTipo("MISION");
+            log.setEntidadId(m.getId());
+            log.setTimestamp(Instant.now());
+            log.setTipo("CAMBIO_ESTADO");
+            log.setDetalle(String.format("Misión '%s' cambió de %s → %s. Piloto: %s %s. Drone: %s",
+                    m.getNombre(),
+                    estadoAnterior,
+                    estadoNuevo,
+                    m.getPiloto().getNombre(), m.getPiloto().getApellido(),
+                    m.getDron() != null ? m.getDron().getNombre() : "sin drone"));
+            log.setUsuario(usuarioActual);
+            logRepository.save(log);
+        } catch (Exception ignored) {}
     }
 
     // ─────────────────────────────────────────────
@@ -190,6 +249,11 @@ public class MisionRestController {
         dto.estado          = m.getEstado();
         dto.fechaCreacion   = m.getFechaCreacion();
         dto.ultimaEjecucion = m.getUltimaEjecucion();
+        dto.fechaInicio     = m.getFechaInicio();
+        dto.fechaFin        = m.getFechaFin();
+        if (m.getFechaInicio() != null && m.getFechaFin() != null) {
+            dto.duracionMinutos = ChronoUnit.MINUTES.between(m.getFechaInicio(), m.getFechaFin());
+        }
 
         if (m.getPiloto() != null) {
             dto.pilotoId     = m.getPiloto().getId();

@@ -57,9 +57,21 @@ public class DockBusiness implements IDockBusiness {
     @Override
     public Dock update(Dock entity) throws NotFoundException, BusinessException {
         try {
-            load(entity.getId());
+            Dock existing = load(entity.getId());
             CoordenadasValidator.validar(entity.getLatitud(), entity.getLongitud());
-            return repository.save(entity);
+            // Actualizar solo los campos editables; preservar relaciones ignoradas por Jackson (site, dron, etc.)
+            existing.setNombre(entity.getNombre());
+            existing.setMarca(entity.getMarca());
+            existing.setModelo(entity.getModelo());
+            existing.setNumeroSerie(entity.getNumeroSerie());
+            existing.setGarantia(entity.getGarantia());
+            existing.setEstado(entity.getEstado());
+            existing.setLatitud(entity.getLatitud());
+            existing.setLongitud(entity.getLongitud());
+            existing.setAltitud(entity.getAltitud());
+            existing.setHorasUso(entity.getHorasUso());
+            existing.setFechaCompra(entity.getFechaCompra());
+            return repository.save(existing);
         } catch (NotFoundException e) {
             throw e;
         } catch (BusinessException e) {

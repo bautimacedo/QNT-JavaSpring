@@ -106,6 +106,10 @@ public class TelemetriaScheduler {
         if (snap.droneBateriaPorc != null) dron.setBateriaPorc(snap.droneBateriaPorc);
         if (snap.droneBateriaTempC != null) dron.setBateriaTempC(snap.droneBateriaTempC);
         dron.setDroneEnDock(snap.droneEnDock != null ? snap.droneEnDock : true);
+        // Cuando el drone está en dock, usa las coordenadas del dock para que aparezca en el mapa
+        if (snap.latitud != null) dron.setLatitud(snap.latitud);
+        if (snap.longitud != null) dron.setLongitud(snap.longitud);
+        if (snap.altitud != null) dron.setAltitud(snap.altitud);
         dron.setUltimaTelemetria(Instant.now());
     }
 

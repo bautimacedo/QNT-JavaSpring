@@ -238,7 +238,7 @@ public class AuthRestController {
             Usuario user = prt.getUsuario();
             user.setPassword(passwordEncoder.encode(req.newPassword()));
             tokenRepository.delete(prt);
-            // Guardamos directamente en el repo para no pasar por validaciones de FoundException
+            usuarioBusiness.update(user);
             return ResponseEntity.ok("Contraseña actualizada correctamente.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

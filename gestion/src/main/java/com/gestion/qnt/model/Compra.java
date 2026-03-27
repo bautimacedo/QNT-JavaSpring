@@ -86,6 +86,9 @@ public class Compra {
     @OneToMany(mappedBy = "compra", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<CompraItem> items = new ArrayList<>();
 
+    @OneToMany(mappedBy = "compra", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<ArchivoCompra> archivos = new ArrayList<>();
+
     /**
      * Subtotal (base imponible) cuando tieneIva es true: importe / (1 + ivaPorcentaje/100).
      * No persistido; calculado para la respuesta de la API.

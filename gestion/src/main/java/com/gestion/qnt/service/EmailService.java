@@ -65,11 +65,13 @@ public class EmailService {
         "<table cellpadding=\"0\" cellspacing=\"0\" style=\"display:inline-table;\">" +
         "<tr>" +
         "<td style=\"vertical-align:middle;padding-right:12px;\">" +
-        "<div style=\"width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#113e4c 0%,#2b555b 100%);" +
-             "display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;\">" +
-        "<span style=\"font-size:11px;font-weight:800;color:#fff;line-height:1;letter-spacing:.5px;\">QNT</span>" +
-        "<span style=\"font-size:5px;color:rgba(255,255,255,.7);letter-spacing:.5px;\">DRONES</span>" +
-        "</div>" +
+        "<table cellpadding=\"0\" cellspacing=\"0\">" +
+        "<tr><td style=\"width:44px;height:44px;border-radius:10px;" +
+             "background:linear-gradient(135deg,#113e4c 0%,#2b555b 100%);" +
+             "text-align:center;vertical-align:middle;padding:6px 0 4px;\">" +
+        "<span style=\"font-size:11px;font-weight:800;color:#fff;line-height:1;letter-spacing:.5px;display:block;\">QNT</span>" +
+        "<span style=\"font-size:5px;color:rgba(255,255,255,.7);letter-spacing:.5px;display:block;\">DRONES</span>" +
+        "</td></tr></table>" +
         "</td>" +
         "<td style=\"vertical-align:middle;text-align:left;\">" +
         "<div style=\"font-size:17px;font-weight:700;color:#113e4c;letter-spacing:.06em;\">QNT DRONES</div>" +
@@ -87,15 +89,16 @@ public class EmailService {
         "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\">" +
         "<tr><td style=\"padding:40px 40px 32px;\">" +
 
-        // Lock icon circle
-        "<div style=\"width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#113e4c 0%,#2b555b 100%);" +
-             "display:flex;align-items:center;justify-content:center;margin-bottom:24px;" +
-             "box-shadow:0 8px 24px rgba(17,62,76,.28);\">" +
+        // Lock icon circle (table para centrado compatible con email clients)
+        "<table cellpadding=\"0\" cellspacing=\"0\" style=\"margin-bottom:24px;\">" +
+        "<tr><td style=\"width:64px;height:64px;border-radius:16px;" +
+             "background:linear-gradient(135deg,#113e4c 0%,#2b555b 100%);" +
+             "box-shadow:0 8px 24px rgba(17,62,76,.28);text-align:center;vertical-align:middle;\">" +
         "<svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">" +
         "<rect x=\"3\" y=\"11\" width=\"18\" height=\"11\" rx=\"2\" ry=\"2\"/>" +
         "<path d=\"M7 11V7a5 5 0 0 1 10 0v4\"/>" +
         "</svg>" +
-        "</div>" +
+        "</td></tr></table>" +
 
         // Title
         "<h1 style=\"margin:0 0 8px;font-size:26px;font-weight:700;color:#113e4c;line-height:1.2;\">Recuperar contraseña</h1>" +

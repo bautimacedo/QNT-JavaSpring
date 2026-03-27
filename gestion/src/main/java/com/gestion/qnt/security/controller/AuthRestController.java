@@ -5,6 +5,8 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.gestion.qnt.config.ApiConstants;
 import com.gestion.qnt.controller.dto.AuthMeResponse;
 import com.gestion.qnt.debug.DebugLog;
+import com.gestion.qnt.model.PasswordResetToken;
+import com.gestion.qnt.repository.PasswordResetTokenRepository;
 import com.gestion.qnt.security.AuthConstants;
 import com.gestion.qnt.security.AuthUser;
 import com.gestion.qnt.security.custom.CustomAuthenticationManager;
@@ -14,6 +16,8 @@ import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import com.gestion.qnt.model.business.interfaces.IUsuarioBusiness;
 import com.gestion.qnt.model.business.exceptions.BusinessException;
 import com.gestion.qnt.model.business.exceptions.FoundException;
+import com.gestion.qnt.service.EmailService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +27,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,28 +36,41 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(ApiConstants.URL_BASE)
+@lombok.extern.slf4j.Slf4j
 public class AuthRestController {
 
     private final CustomAuthenticationManager customAuthenticationManager;
     private final AuthConstants authConstants;
     private final PasswordEncoder passwordEncoder;
     private final IUsuarioBusiness usuarioBusiness;
+    private final PasswordResetTokenRepository tokenRepository;
+    private final EmailService emailService;
+
+    @Value("${app.password-reset.expiration-minutes:60}")
+    private long expirationMinutes;
 
     public AuthRestController(CustomAuthenticationManager customAuthenticationManager,
                               AuthConstants authConstants,
                               PasswordEncoder passwordEncoder,
-                              IUsuarioBusiness usuarioBusiness) {
+                              IUsuarioBusiness usuarioBusiness,
+                              PasswordResetTokenRepository tokenRepository,
+                              EmailService emailService) {
         this.customAuthenticationManager = customAuthenticationManager;
         this.authConstants = authConstants;
         this.passwordEncoder = passwordEncoder;
         this.usuarioBusiness = usuarioBusiness;
+        this.tokenRepository = tokenRepository;
+        this.emailService = emailService;
     }
 
     @PostMapping(value = "/auth/login", produces = MediaType.TEXT_PLAIN_VALUE)
@@ -170,6 +188,69 @@ public class AuthRestController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\":\"" + e.getMessage().replace("\"", "\\\"") + "\"}");
         }
     }
+
+    /**
+     * Solicita recuperación de contraseña. Siempre responde 200 aunque el email no exista
+     * (evita enumerar usuarios). Envía un email con link de un solo uso válido por 1 hora.
+     */
+    @PostMapping(value = "/auth/forgot-password", produces = MediaType.TEXT_PLAIN_VALUE)
+    @Transactional
+    public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordRequest req) {
+        try {
+            Usuario user = usuarioBusiness.load(req.email());
+            // Eliminar tokens anteriores del mismo usuario
+            tokenRepository.deleteByUsuarioId(user.getId());
+
+            PasswordResetToken prt = new PasswordResetToken();
+            prt.setToken(UUID.randomUUID().toString());
+            prt.setUsuario(user);
+            prt.setExpiresAt(Instant.now().plus(expirationMinutes, ChronoUnit.MINUTES));
+            tokenRepository.save(prt);
+
+            emailService.sendPasswordResetEmail(user.getEmail(), prt.getToken());
+        } catch (NotFoundException e) {
+            // No revelar si el email existe o no
+            log.info("forgot-password: email no encontrado, respuesta genérica");
+        } catch (Exception e) {
+            log.error("forgot-password: error inesperado", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al procesar la solicitud. Intentá de nuevo.");
+        }
+        return ResponseEntity.ok("Si el email está registrado, recibirás un enlace en tu bandeja de entrada.");
+    }
+
+    /**
+     * Restablece la contraseña usando el token recibido por email.
+     */
+    @PostMapping(value = "/auth/reset-password", produces = MediaType.TEXT_PLAIN_VALUE)
+    @Transactional
+    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest req) {
+        if (req.newPassword() == null || req.newPassword().length() < 6) {
+            return ResponseEntity.badRequest().body("La contraseña debe tener al menos 6 caracteres.");
+        }
+        try {
+            PasswordResetToken prt = tokenRepository.findByToken(req.token())
+                    .orElseThrow(() -> new IllegalArgumentException("Token inválido o inexistente."));
+            if (prt.isExpired()) {
+                tokenRepository.delete(prt);
+                return ResponseEntity.badRequest().body("El enlace expiró. Solicitá uno nuevo.");
+            }
+            Usuario user = prt.getUsuario();
+            user.setPassword(passwordEncoder.encode(req.newPassword()));
+            tokenRepository.delete(prt);
+            // Guardamos directamente en el repo para no pasar por validaciones de FoundException
+            return ResponseEntity.ok("Contraseña actualizada correctamente.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            log.error("reset-password: error inesperado", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al restablecer la contraseña. Intentá de nuevo.");
+        }
+    }
+
+    record ForgotPasswordRequest(String email) {}
+    record ResetPasswordRequest(String token, String newPassword) {}
 
     private String buildToken(Authentication auth) {
         AuthUser user = (AuthUser) auth.getPrincipal();

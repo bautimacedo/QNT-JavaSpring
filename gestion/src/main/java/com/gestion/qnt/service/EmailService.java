@@ -62,22 +62,10 @@ public class EmailService {
 
         // Logo header
         "<tr><td style=\"padding-bottom:28px;text-align:center;\">" +
-        "<table cellpadding=\"0\" cellspacing=\"0\" style=\"display:inline-table;\">" +
-        "<tr>" +
-        "<td style=\"vertical-align:middle;padding-right:12px;\">" +
-        "<table cellpadding=\"0\" cellspacing=\"0\">" +
-        "<tr><td style=\"width:44px;height:44px;border-radius:10px;" +
-             "background:linear-gradient(135deg,#113e4c 0%,#2b555b 100%);" +
-             "text-align:center;vertical-align:middle;padding:6px 0 4px;\">" +
-        "<span style=\"font-size:11px;font-weight:800;color:#fff;line-height:1;letter-spacing:.5px;display:block;\">QNT</span>" +
-        "<span style=\"font-size:5px;color:rgba(255,255,255,.7);letter-spacing:.5px;display:block;\">DRONES</span>" +
-        "</td></tr></table>" +
-        "</td>" +
-        "<td style=\"vertical-align:middle;text-align:left;\">" +
+        "<img src=\"https://qntdrones.com/Qnt_Logo.png\" alt=\"QNT Drones\" width=\"72\" height=\"72\"" +
+             " style=\"display:block;margin:0 auto 10px;border-radius:50%;\">" +
         "<div style=\"font-size:17px;font-weight:700;color:#113e4c;letter-spacing:.06em;\">QNT DRONES</div>" +
         "<div style=\"font-size:11px;color:#658582;letter-spacing:.03em;\">Sistema de Gestión de Flota</div>" +
-        "</td>" +
-        "</tr></table>" +
         "</td></tr>" +
 
         // Main card

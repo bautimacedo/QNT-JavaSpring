@@ -77,17 +77,6 @@ public class EmailService {
         "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\">" +
         "<tr><td style=\"padding:40px 40px 32px;\">" +
 
-        // Lock icon circle (table para centrado compatible con email clients)
-        "<table cellpadding=\"0\" cellspacing=\"0\" style=\"margin-bottom:24px;\">" +
-        "<tr><td style=\"width:64px;height:64px;border-radius:16px;" +
-             "background:linear-gradient(135deg,#113e4c 0%,#2b555b 100%);" +
-             "box-shadow:0 8px 24px rgba(17,62,76,.28);text-align:center;vertical-align:middle;\">" +
-        "<svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">" +
-        "<rect x=\"3\" y=\"11\" width=\"18\" height=\"11\" rx=\"2\" ry=\"2\"/>" +
-        "<path d=\"M7 11V7a5 5 0 0 1 10 0v4\"/>" +
-        "</svg>" +
-        "</td></tr></table>" +
-
         // Title
         "<h1 style=\"margin:0 0 8px;font-size:26px;font-weight:700;color:#113e4c;line-height:1.2;\">Recuperar contraseña</h1>" +
         "<p style=\"margin:0 0 28px;font-size:15px;color:#536c6b;line-height:1.6;\">" +

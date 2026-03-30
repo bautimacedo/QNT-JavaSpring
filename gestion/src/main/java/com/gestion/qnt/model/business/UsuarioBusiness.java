@@ -199,8 +199,7 @@ public class UsuarioBusiness implements IUsuarioBusiness {
         try {
             load(user.getId());
             if (user.getRoles() == null) {
-            	user.getRoles().add(role);
-    			return update(user);
+                user.setRoles(new java.util.ArrayList<>());
             }
             if (user.getRoles().stream().noneMatch(r -> r.getId().equals(role.getId()))) {
                 user.getRoles().add(role);

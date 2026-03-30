@@ -50,7 +50,7 @@ public class CompraRestController {
 
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USUARIO')")
     public ResponseEntity<Compra> getById(@PathVariable Long id) {
         try {
             return ResponseEntity.ok(compraBusiness.load(id));
@@ -63,7 +63,7 @@ public class CompraRestController {
 
     @PostMapping
     @Transactional
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USUARIO')")
     public ResponseEntity<?> create(Authentication authentication, @Valid @RequestBody CreateCompraRequest request) {
         if (!request.hasProveedor()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -92,7 +92,7 @@ public class CompraRestController {
 
     @PutMapping("/{id}")
     @Transactional
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USUARIO')")
     public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody CreateCompraRequest request) {
         if (!request.hasProveedor()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

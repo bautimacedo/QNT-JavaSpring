@@ -54,7 +54,7 @@ public class ArchivoCompraRestController {
     /** Sube un archivo adjunto a la compra. */
     @PostMapping
     @Transactional
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USUARIO')")
     public ResponseEntity<?> upload(@PathVariable Long compraId,
                                     @RequestParam("file") MultipartFile file,
                                     @RequestParam("tipo") TipoDocumentoCompra tipo) {
@@ -110,10 +110,31 @@ public class ArchivoCompraRestController {
         }
     }
 
+    /** Actualiza el tipo de documento de un archivo adjunto. */
+    @PatchMapping("/{archivoId}/tipo")
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USUARIO')")
+    public ResponseEntity<?> updateTipo(@PathVariable Long compraId,
+                                        @PathVariable Long archivoId,
+                                        @RequestParam TipoDocumentoCompra tipo) {
+        try {
+            compraBusiness.load(compraId);
+            ArchivoCompra archivo = archivoRepo.findByIdAndCompraId(archivoId, compraId)
+                    .orElseThrow(() -> new NotFoundException("Archivo no encontrado"));
+            archivo.setTipoDocumento(tipo);
+            ArchivoCompra saved = archivoRepo.save(archivo);
+            return ResponseEntity.ok(saved);
+        } catch (NotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
     /** Elimina un archivo adjunto. */
     @DeleteMapping("/{archivoId}")
     @Transactional
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USUARIO')")
     public ResponseEntity<Void> delete(@PathVariable Long compraId,
                                        @PathVariable Long archivoId) {
         try {

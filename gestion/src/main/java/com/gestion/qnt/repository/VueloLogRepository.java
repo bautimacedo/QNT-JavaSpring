@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.List;
 
 public interface VueloLogRepository extends JpaRepository<VueloLog, Long> {
@@ -24,8 +24,8 @@ public interface VueloLogRepository extends JpaRepository<VueloLog, Long> {
             @Param("dron")   String dron,
             @Param("site")   String site,
             @Param("evento") TipoEventoVuelo evento,
-            @Param("desde")  OffsetDateTime desde,
-            @Param("hasta")  OffsetDateTime hasta);
+            @Param("desde")  Instant desde,
+            @Param("hasta")  Instant hasta);
 
     /** Distinct drones que tienen registros. */
     @Query("SELECT DISTINCT v.nombreDron FROM VueloLog v WHERE v.nombreDron IS NOT NULL ORDER BY v.nombreDron")

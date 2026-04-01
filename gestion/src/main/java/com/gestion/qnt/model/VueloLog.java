@@ -6,8 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 
 /**
  * Registro de eventos de vuelo provenientes de FlytBase vía n8n.
@@ -69,7 +69,7 @@ public class VueloLog {
 
     /** Timestamp original del evento según FlytBase (GMT). */
     @Column(name = "timestamp_flytbase")
-    private OffsetDateTime timestampFlytbase;
+    private Instant timestampFlytbase;
 
     /**
      * true si n8n detectó que este aterrizaje ocurrió menos de 1 minuto después

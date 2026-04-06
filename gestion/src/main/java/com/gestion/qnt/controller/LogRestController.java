@@ -87,7 +87,20 @@ public class LogRestController {
     public ResponseEntity<LogDTO> add(@RequestBody LogRequest req) {
         try {
             Log log = fromRequest(req, new Log());
-            return ResponseEntity.status(HttpStatus.CREATED).body(toDTO(logBusiness.add(log)));
+            Log saved = logBusiness.add(log);
+
+            // Si es un vuelo con minutos registrados, sumar al piloto
+            if ("VUELO".equalsIgnoreCase(req.tipo)
+                    && req.minutosVuelo != null && req.minutosVuelo > 0
+                    && saved.getUsuario() != null) {
+                var usuario = saved.getUsuario();
+                int horasActuales = usuario.getHorasVuelo() != null ? usuario.getHorasVuelo() : 0;
+                int minutosAcumulados = horasActuales * 60 + req.minutosVuelo;
+                usuario.setHorasVuelo(minutosAcumulados / 60);
+                usuarioRepository.save(usuario);
+            }
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(toDTO(saved));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         } catch (NotFoundException e) {
@@ -124,6 +137,7 @@ public class LogRestController {
         dto.timestamp = l.getTimestamp();
         dto.tipo = l.getTipo();
         dto.detalle = l.getDetalle();
+        dto.minutosVuelo = l.getMinutosVuelo();
 
         if (l.getUsuario() != null) {
             dto.usuarioId = l.getUsuario().getId();
@@ -146,6 +160,7 @@ public class LogRestController {
         l.setTimestamp(req.timestamp != null ? req.timestamp : Instant.now());
         l.setTipo(req.tipo);
         l.setDetalle(req.detalle);
+        l.setMinutosVuelo(req.minutosVuelo);
 
         if (req.usuarioId != null) {
             l.setUsuario(usuarioRepository.findById(req.usuarioId)

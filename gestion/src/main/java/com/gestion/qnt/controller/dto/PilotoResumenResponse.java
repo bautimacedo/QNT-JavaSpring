@@ -10,7 +10,7 @@ public record PilotoResumenResponse(
         String nombre,
         String apellido,
         String email,
-        Integer horasVuelo,
+        Double horasVuelo,
         Integer cantidadVuelos,
         LocalDate cmaVencimiento,
         EstadoUsuario estado,

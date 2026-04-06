@@ -29,6 +29,12 @@ public class MantenimientoDron {
     @Column(name = "fecha_mantenimiento", nullable = false)
     private LocalDateTime fechaMantenimiento;
 
+    @Column(name = "tipo_mantenimiento")
+    private String tipoMantenimiento;
+
+    @Column(columnDefinition = "TEXT")
+    private String checklist;
+
     @Column(columnDefinition = "TEXT")
     private String observaciones;
 

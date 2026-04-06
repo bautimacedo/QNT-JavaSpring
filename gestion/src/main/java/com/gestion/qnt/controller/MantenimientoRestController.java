@@ -218,6 +218,8 @@ public class MantenimientoRestController {
         MantenimientoDronDTO dto = new MantenimientoDronDTO();
         dto.id = m.getId();
         dto.fechaMantenimiento = m.getFechaMantenimiento();
+        dto.tipoMantenimiento = m.getTipoMantenimiento();
+        dto.checklist = m.getChecklist();
         dto.observaciones = m.getObservaciones();
         dto.fotos = m.getFotos();
 
@@ -249,6 +251,8 @@ public class MantenimientoRestController {
         MantenimientoDockDTO dto = new MantenimientoDockDTO();
         dto.id = m.getId();
         dto.fechaMantenimiento = m.getFechaMantenimiento();
+        dto.tipoMantenimiento = m.getTipoMantenimiento();
+        dto.checklist = m.getChecklist();
         dto.observaciones = m.getObservaciones();
         dto.fotos = m.getFotos();
 
@@ -279,6 +283,8 @@ public class MantenimientoRestController {
         m.setUsuario(usuarioRepository.findById(req.usuarioId)
                 .orElseThrow(() -> new NotFoundException("Usuario no encontrado: " + req.usuarioId)));
         m.setFechaMantenimiento(req.fechaMantenimiento);
+        m.setTipoMantenimiento(req.tipoMantenimiento);
+        m.setChecklist(req.checklist);
         m.setObservaciones(req.observaciones);
         m.setFotos(req.fotos);
 
@@ -315,6 +321,8 @@ public class MantenimientoRestController {
         m.setUsuario(usuarioRepository.findById(req.usuarioId)
                 .orElseThrow(() -> new NotFoundException("Usuario no encontrado: " + req.usuarioId)));
         m.setFechaMantenimiento(req.fechaMantenimiento);
+        m.setTipoMantenimiento(req.tipoMantenimiento);
+        m.setChecklist(req.checklist);
         m.setObservaciones(req.observaciones);
         m.setFotos(req.fotos);
 

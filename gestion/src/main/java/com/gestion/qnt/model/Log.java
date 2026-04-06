@@ -31,6 +31,10 @@ public class Log {
     @Column(columnDefinition = "text")
     private String detalle;
 
+    /** Minutos de vuelo registrados manualmente en este log. */
+    @Column(name = "minutos_vuelo")
+    private Integer minutosVuelo;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;

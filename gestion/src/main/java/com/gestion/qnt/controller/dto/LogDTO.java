@@ -14,4 +14,5 @@ public class LogDTO {
     // Usuario que realizó la acción
     public Long usuarioId;
     public String usuarioNombre;
+    public Integer minutosVuelo;
 }

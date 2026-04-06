@@ -10,4 +10,5 @@ public class LogRequest {
     public String tipo;          // ej: "VUELO", "INCIDENTE", "MANTENIMIENTO"
     public String detalle;
     public Long usuarioId;
+    public Integer minutosVuelo;
 }

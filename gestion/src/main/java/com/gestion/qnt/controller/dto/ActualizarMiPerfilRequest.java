@@ -10,7 +10,7 @@ public record ActualizarMiPerfilRequest(
         /** Opcional; máx. 30 caracteres. Solo ROLE_PILOTO o ROLE_ADMIN. */
         String passwordMission,
         /** Solo ROLE_PILOTO o ROLE_ADMIN. Ignorado para otros roles. */
-        Integer horasVuelo,
+        Double horasVuelo,
         /** Solo ROLE_PILOTO o ROLE_ADMIN. Ignorado para otros roles. */
         Integer cantidadVuelos
 ) {}

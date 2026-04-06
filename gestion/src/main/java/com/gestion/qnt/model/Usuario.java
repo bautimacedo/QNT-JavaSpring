@@ -72,7 +72,7 @@ public class Usuario implements UserDetails {
     private byte[] imagenCma;
 
     @Column(name = "horas_vuelo")
-    private Integer horasVuelo;
+    private Double horasVuelo;
 
     @Column(name = "cantidad_vuelos")
     private Integer cantidadVuelos;

@@ -179,7 +179,8 @@ public class MisionRestController {
 
                     // Actualizar piloto
                     Usuario piloto = m.getPiloto();
-                    piloto.setHorasVuelo((piloto.getHorasVuelo() != null ? piloto.getHorasVuelo() : 0) + (int)(minutos / 60));
+                    double horasActualesPiloto = piloto.getHorasVuelo() != null ? piloto.getHorasVuelo() : 0.0;
+                    piloto.setHorasVuelo(Math.round((horasActualesPiloto + minutos / 60.0) * 100.0) / 100.0);
                     piloto.setCantidadVuelos((piloto.getCantidadVuelos() != null ? piloto.getCantidadVuelos() : 0) + 1);
                 }
             }

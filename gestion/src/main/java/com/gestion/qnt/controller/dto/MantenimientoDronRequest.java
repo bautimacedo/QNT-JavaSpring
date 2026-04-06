@@ -8,6 +8,8 @@ public class MantenimientoDronRequest {
     public Long dronId;                    // requerido
     public Long usuarioId;                 // requerido
     public LocalDateTime fechaMantenimiento; // requerido
+    public String tipoMantenimiento;
+    public String checklist;
     public String observaciones;
     public String fotos;
     public Long bateriaViejaId;

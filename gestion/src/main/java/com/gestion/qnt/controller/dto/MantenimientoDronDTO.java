@@ -18,6 +18,10 @@ public class MantenimientoDronDTO {
 
     public LocalDateTime fechaMantenimiento;
 
+    public String tipoMantenimiento;
+
+    public String checklist;
+
     public String observaciones;
 
     public String fotos;

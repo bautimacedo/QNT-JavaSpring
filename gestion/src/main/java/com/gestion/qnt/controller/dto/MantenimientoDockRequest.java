@@ -7,6 +7,8 @@ public class MantenimientoDockRequest {
     public Long dockId;                    // requerido
     public Long usuarioId;                 // requerido
     public LocalDateTime fechaMantenimiento; // requerido
+    public String tipoMantenimiento;
+    public String checklist;
     public String observaciones;
     public String fotos;
 }

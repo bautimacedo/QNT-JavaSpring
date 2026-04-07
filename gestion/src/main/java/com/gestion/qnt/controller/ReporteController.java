@@ -3,7 +3,6 @@ package com.gestion.qnt.controller;
 import com.gestion.qnt.config.ApiConstants;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,31 +19,32 @@ import java.util.Map;
 @RequestMapping(ApiConstants.URL_BASE + "/reportes")
 public class ReporteController {
 
-    private static final String REPORTS_CLASSPATH = "classpath:static/reports/";
+    // Archivos de ejemplo embebidos en el JAR
+    private static final List<String> EJEMPLO_FILES = List.of(
+            "Informe_Termografico_20260327_140630.pdf",
+            "Mantenimiento_Predictivo-informe_termografico_CAm-194-72.pdf"
+    );
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Map<String, Object>>> listar() {
-        try {
-            PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-            Resource[] resources = resolver.getResources(REPORTS_CLASSPATH + "*.pdf");
-            List<Map<String, Object>> result = new ArrayList<>();
-            for (Resource r : resources) {
-                result.add(Map.of(
-                        "nombre", r.getFilename(),
-                        "tamanio", r.contentLength()
-                ));
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (String nombre : EJEMPLO_FILES) {
+            Resource r = new ClassPathResource("static/reports/" + nombre);
+            if (r.exists()) {
+                try {
+                    result.add(Map.of("nombre", nombre, "tamanio", r.contentLength()));
+                } catch (IOException e) {
+                    result.add(Map.of("nombre", nombre, "tamanio", 0L));
+                }
             }
-            return ResponseEntity.ok(result);
-        } catch (IOException e) {
-            return ResponseEntity.ok(List.of());
         }
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/descargar/{nombre}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Resource> descargar(@PathVariable String nombre) {
-        // Sanitizar para evitar path traversal
         String sanitized = Paths.get(nombre).getFileName().toString();
         if (!sanitized.toLowerCase().endsWith(".pdf")) {
             return ResponseEntity.badRequest().build();

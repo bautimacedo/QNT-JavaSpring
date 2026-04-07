@@ -77,6 +77,7 @@ public class SecurityConfiguration {
                 
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/qnt/v1/clima", "/api/qnt/v1/clima/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/qnt/v1/reportes/descargar/**").permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session

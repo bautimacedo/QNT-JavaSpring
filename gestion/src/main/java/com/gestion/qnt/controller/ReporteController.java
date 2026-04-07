@@ -43,7 +43,6 @@ public class ReporteController {
     }
 
     @GetMapping("/descargar/{nombre}")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Resource> descargar(@PathVariable String nombre) {
         String sanitized = Paths.get(nombre).getFileName().toString();
         if (!sanitized.toLowerCase().endsWith(".pdf")) {

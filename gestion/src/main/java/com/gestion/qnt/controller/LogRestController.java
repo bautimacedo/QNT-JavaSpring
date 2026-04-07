@@ -97,6 +97,7 @@ public class LogRestController {
                 double horasActuales = usuario.getHorasVuelo() != null ? usuario.getHorasVuelo() : 0.0;
                 double horasNuevas = Math.round((horasActuales + req.minutosVuelo / 60.0) * 100.0) / 100.0;
                 usuario.setHorasVuelo(horasNuevas);
+                usuario.setCantidadVuelos((usuario.getCantidadVuelos() != null ? usuario.getCantidadVuelos() : 0) + 1);
                 usuarioRepository.save(usuario);
             }
 

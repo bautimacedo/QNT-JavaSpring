@@ -31,7 +31,7 @@ public class LicenciaRestController {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Licencia>> list() {
         try {
             return ResponseEntity.ok(licenciaBusiness.list());
@@ -42,7 +42,7 @@ public class LicenciaRestController {
 
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Licencia> getById(@PathVariable Long id) {
         try {
             return ResponseEntity.ok(licenciaBusiness.load(id));

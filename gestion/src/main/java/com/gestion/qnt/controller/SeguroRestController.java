@@ -34,7 +34,7 @@ public class SeguroRestController {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Seguro>> list() {
         try {
             return ResponseEntity.ok(seguroBusiness.list());
@@ -45,7 +45,7 @@ public class SeguroRestController {
 
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Seguro> getById(@PathVariable Long id) {
         try {
             return ResponseEntity.ok(seguroBusiness.load(id));

@@ -4,5 +4,6 @@ public enum TipoDocumentoCompra {
     ORDEN_COMPRA,
     COMPROBANTE_PAGO,
     FACTURA,
-    SOLICITUD_PRESUPUESTO
+    SOLICITUD_PRESUPUESTO,
+    OTROS
 }

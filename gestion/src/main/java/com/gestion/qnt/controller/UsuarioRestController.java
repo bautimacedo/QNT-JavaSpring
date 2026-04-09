@@ -266,6 +266,20 @@ public class UsuarioRestController {
         }
     }
 
+    @DeleteMapping("/{id}")
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        try {
+            usuarioBusiness.delete(id);
+            return ResponseEntity.noContent().build();
+        } catch (NotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
     @PutMapping("/remove-role")
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")

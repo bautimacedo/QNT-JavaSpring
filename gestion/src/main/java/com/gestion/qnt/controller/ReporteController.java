@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,14 +29,7 @@ public class ReporteController {
     public ResponseEntity<List<Map<String, Object>>> listar() {
         List<Map<String, Object>> result = new ArrayList<>();
         for (String nombre : EJEMPLO_FILES) {
-            Resource r = new ClassPathResource("static/reports/" + nombre);
-            if (r.exists()) {
-                try {
-                    result.add(Map.of("nombre", nombre, "tamanio", r.contentLength()));
-                } catch (IOException e) {
-                    result.add(Map.of("nombre", nombre, "tamanio", 0L));
-                }
-            }
+            result.add(Map.of("nombre", nombre, "tamanio", 0L));
         }
         return ResponseEntity.ok(result);
     }

@@ -49,6 +49,14 @@ public class Compra {
     @Column(nullable = false, length = 10)
     private String moneda = "ARS";
 
+    /** Cotización dólar oficial venta al momento de guardar la compra (solo cuando moneda=USD). */
+    @Column(name = "cotizacion_dolar", precision = 10, scale = 2)
+    private BigDecimal cotizacionDolar;
+
+    /** Importe convertido a pesos al tipo de cambio oficial venta (solo cuando moneda=USD). */
+    @Column(name = "importe_ars", precision = 19, scale = 4)
+    private BigDecimal importeArs;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_compra", nullable = false)
     private TipoCompra tipoCompra;

@@ -14,6 +14,8 @@ import com.gestion.qnt.model.business.exceptions.BusinessException;
 import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import com.gestion.qnt.model.business.interfaces.ICompraBusiness;
 import com.gestion.qnt.repository.CompraRepository;
+import com.gestion.qnt.repository.LicenciaRepository;
+import com.gestion.qnt.repository.SeguroRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -73,6 +75,12 @@ public class CompraBusiness implements ICompraBusiness {
 
     @Autowired
     private ISeguroBusiness seguroBusiness;
+
+    @Autowired
+    private LicenciaRepository licenciaRepository;
+
+    @Autowired
+    private SeguroRepository seguroRepository;
 
     @Override
     public List<Compra> list() throws BusinessException {
@@ -269,8 +277,22 @@ public class CompraBusiness implements ICompraBusiness {
     public void delete(Long id) throws NotFoundException, BusinessException {
         try {
             load(id);
+            long licencias = licenciaRepository.countByCompraId(id);
+            if (licencias > 0) {
+                throw new BusinessException(
+                    "No se puede eliminar la compra porque tiene " + licencias +
+                    " licencia(s) asociada(s). Eliminá las licencias primero.");
+            }
+            long seguros = seguroRepository.countByCompraId(id);
+            if (seguros > 0) {
+                throw new BusinessException(
+                    "No se puede eliminar la compra porque tiene " + seguros +
+                    " seguro(s) asociado(s). Eliminá los seguros primero.");
+            }
             repository.deleteById(id);
         } catch (NotFoundException e) {
+            throw e;
+        } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
             log.error("Error al eliminar compra con id {}", id, e);

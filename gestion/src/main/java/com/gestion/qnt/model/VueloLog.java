@@ -79,6 +79,10 @@ public class VueloLog {
     @Column(name = "despegue_fallido")
     private Boolean despegueFallido = false;
 
+    /** Duración del vuelo en minutos (calculada al insertar ATERRIZAJE: landed - takeoff). */
+    @Column(name = "duracion_minutos")
+    private Integer duracionMinutos;
+
     /** Fecha en que n8n insertó el registro. */
     @Column(name = "fecha_registro", nullable = false)
     private LocalDateTime fechaRegistro;

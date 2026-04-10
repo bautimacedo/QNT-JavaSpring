@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.math.BigDecimal;
 
 import com.gestion.qnt.model.enums.Estado;
+import com.gestion.qnt.model.enums.Yacimiento;
 
 @Entity
 @Table(name = "antenas_rtk", uniqueConstraints = @UniqueConstraint(columnNames = "dock_id"))
@@ -46,6 +47,10 @@ public class AntenaRtk {
 
     @Column
     private String ubicacion;
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private Yacimiento yacimiento;
 
     /** Coordenadas opcionales para ubicación en mapa (lat/lng obligatorios para aparecer; altitud en metros). */
     @Column(precision = 10, scale = 7)

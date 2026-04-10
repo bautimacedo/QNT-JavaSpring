@@ -12,6 +12,7 @@ import java.util.List;
 import java.math.BigDecimal;
 
 import com.gestion.qnt.model.enums.Estado;
+import com.gestion.qnt.model.enums.Yacimiento;
 
 @Entity
 @Table(name = "docks")
@@ -51,6 +52,10 @@ public class Dock {
 
     @Column
     private String garantia;
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private Yacimiento yacimiento;
 
     @Column(name = "ultimo_uso")
     private Instant ultimoUso;

@@ -10,6 +10,7 @@ import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import com.gestion.qnt.model.business.interfaces.ICompraBusiness;
 import com.gestion.qnt.model.business.interfaces.IUsuarioBusiness;
 import com.gestion.qnt.security.AuthUser;
+import com.gestion.qnt.service.DolarService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -26,10 +28,12 @@ public class CompraRestController {
 
     private final ICompraBusiness compraBusiness;
     private final IUsuarioBusiness usuarioBusiness;
+    private final DolarService dolarService;
 
-    public CompraRestController(ICompraBusiness compraBusiness, IUsuarioBusiness usuarioBusiness) {
+    public CompraRestController(ICompraBusiness compraBusiness, IUsuarioBusiness usuarioBusiness, DolarService dolarService) {
         this.compraBusiness = compraBusiness;
         this.usuarioBusiness = usuarioBusiness;
+        this.dolarService = dolarService;
     }
 
     @GetMapping
@@ -79,6 +83,13 @@ public class CompraRestController {
 
             Compra created = compraBusiness.add(request);
             created.setUsuarioAlta(usuarioAlta);
+            if ("USD".equals(created.getMoneda()) && created.getImporte() != null) {
+                BigDecimal cotizacion = dolarService.getCotizacionOficialVenta();
+                if (cotizacion != null) {
+                    created.setCotizacionDolar(cotizacion);
+                    created.setImporteArs(created.getImporte().multiply(cotizacion));
+                }
+            }
             Compra saved = compraBusiness.update(created);
             // Recargar con relaciones para evitar LazyInitializationException al serializar a JSON
             return ResponseEntity.status(HttpStatus.CREATED).body(compraBusiness.load(saved.getId()));
@@ -100,6 +111,14 @@ public class CompraRestController {
         }
         try {
             Compra updated = compraBusiness.update(id, request);
+            if ("USD".equals(updated.getMoneda()) && updated.getImporte() != null) {
+                BigDecimal cotizacion = dolarService.getCotizacionOficialVenta();
+                if (cotizacion != null) {
+                    updated.setCotizacionDolar(cotizacion);
+                    updated.setImporteArs(updated.getImporte().multiply(cotizacion));
+                    compraBusiness.update(updated);
+                }
+            }
             // Recargar con relaciones para evitar LazyInitializationException al serializar a JSON
             return ResponseEntity.ok(compraBusiness.load(updated.getId()));
         } catch (NotFoundException e) {

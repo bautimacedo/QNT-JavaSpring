@@ -12,6 +12,7 @@ import java.util.List;
 import java.math.BigDecimal;
 
 import com.gestion.qnt.model.enums.Estado;
+import com.gestion.qnt.model.enums.Yacimiento;
 
 @Entity
 @Table(name = "drones")
@@ -55,6 +56,10 @@ public class Dron {
 
     @Column
     private String garantia;
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private Yacimiento yacimiento;
 
     @Column(name = "licencia_anac")
     private String licenciaAnac;

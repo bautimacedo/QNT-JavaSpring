@@ -258,10 +258,10 @@ public class MisionRestController {
                     .body(Map.of("error", e.getMessage()));
         }
 
-        // Estado debe ser PLANIFICADA
-        if (m.getEstado() != EstadoMision.PLANIFICADA) {
+        // Estado debe ser PLANIFICADA o COMPLETADA (misiones reutilizables)
+        if (m.getEstado() != EstadoMision.PLANIFICADA && m.getEstado() != EstadoMision.COMPLETADA) {
             return ResponseEntity.badRequest()
-                    .body(Map.of("error", "La misión debe estar en estado PLANIFICADA para lanzarse."));
+                    .body(Map.of("error", "La misión debe estar en estado PLANIFICADA o COMPLETADA para lanzarse."));
         }
 
         // Debe tener dron asignado con yacimiento EFO
@@ -316,9 +316,11 @@ public class MisionRestController {
         );
 
         // Cambiar estado de la misión a EN_CURSO
+        EstadoMision estadoAnteriorLanzar = m.getEstado();
         m.setEstado(EstadoMision.EN_CURSO);
         m.setUltimaEjecucion(LocalDateTime.now());
         m.setFechaInicio(LocalDateTime.now());
+        m.setFechaFin(null);  // limpiar fechaFin de ejecuciones previas
         try {
             misionBusiness.update(m);
         } catch (Exception e) {
@@ -326,7 +328,7 @@ public class MisionRestController {
                     .body(Map.of("error", "Misión lanzada en FlytBase pero error al actualizar estado: " + e.getMessage()));
         }
 
-        registrarLog(m, EstadoMision.PLANIFICADA, EstadoMision.EN_CURSO);
+        registrarLog(m, estadoAnteriorLanzar, EstadoMision.EN_CURSO);
 
         return ResponseEntity.ok(Map.of("message", "Misión '" + m.getNombre() + "' lanzada exitosamente en FlytBase."));
     }

@@ -8,15 +8,20 @@ import com.gestion.qnt.model.business.exceptions.BusinessException;
 import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import com.gestion.qnt.model.business.interfaces.IMisionBusiness;
 import com.gestion.qnt.model.enums.EstadoMision;
+import com.gestion.qnt.model.enums.Yacimiento;
 import com.gestion.qnt.repository.DockRepository;
 import com.gestion.qnt.repository.DronRepository;
 import com.gestion.qnt.repository.LogRepository;
 import com.gestion.qnt.repository.MisionRepository;
 import com.gestion.qnt.repository.PozoRepository;
 import com.gestion.qnt.repository.UsuarioRepository;
+import com.gestion.qnt.repository.VueloLogRepository;
+import com.gestion.qnt.security.AuthUser;
+import com.gestion.qnt.service.FlytbaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,6 +58,15 @@ public class MisionRestController {
 
     @Autowired
     private LogRepository logRepository;
+
+    @Autowired
+    private VueloLogRepository vueloLogRepository;
+
+    @Autowired
+    private FlytbaseService flytbaseService;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     // ─────────────────────────────────────────────
     // GET /misiones — lista con detalles
@@ -177,11 +191,13 @@ public class MisionRestController {
                         dron.setUltimoVuelo(Instant.now());
                     }
 
-                    // Actualizar piloto
+                    // Actualizar piloto (puede ser null si la misión nunca fue lanzada)
                     Usuario piloto = m.getPiloto();
-                    double horasActualesPiloto = piloto.getHorasVuelo() != null ? piloto.getHorasVuelo() : 0.0;
-                    piloto.setHorasVuelo(Math.round((horasActualesPiloto + minutos / 60.0) * 100.0) / 100.0);
-                    piloto.setCantidadVuelos((piloto.getCantidadVuelos() != null ? piloto.getCantidadVuelos() : 0) + 1);
+                    if (piloto != null) {
+                        double horasActualesPiloto = piloto.getHorasVuelo() != null ? piloto.getHorasVuelo() : 0.0;
+                        piloto.setHorasVuelo(Math.round((horasActualesPiloto + minutos / 60.0) * 100.0) / 100.0);
+                        piloto.setCantidadVuelos((piloto.getCantidadVuelos() != null ? piloto.getCantidadVuelos() : 0) + 1);
+                    }
                 }
             }
 
@@ -202,21 +218,117 @@ public class MisionRestController {
 
     private void registrarLog(Mision m, EstadoMision estadoAnterior, EstadoMision estadoNuevo) {
         try {
-            Usuario usuarioActual = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            AuthUser authUser = (AuthUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            Usuario usuarioActual = usuarioRepository.findById(authUser.getId()).orElse(null);
+            if (usuarioActual == null) return;
             Log log = new Log();
             log.setEntidadTipo("MISION");
             log.setEntidadId(m.getId());
             log.setTimestamp(Instant.now());
             log.setTipo("CAMBIO_ESTADO");
-            log.setDetalle(String.format("Misión '%s' cambió de %s → %s. Piloto: %s %s. Drone: %s",
+            String pilotoStr = m.getPiloto() != null
+                    ? m.getPiloto().getNombre() + " " + (m.getPiloto().getApellido() != null ? m.getPiloto().getApellido() : "")
+                    : "sin piloto";
+            log.setDetalle(String.format("Misión '%s' cambió de %s → %s. Piloto: %s. Drone: %s",
                     m.getNombre(),
                     estadoAnterior,
                     estadoNuevo,
-                    m.getPiloto().getNombre(), m.getPiloto().getApellido(),
+                    pilotoStr.trim(),
                     m.getDron() != null ? m.getDron().getNombre() : "sin drone"));
             log.setUsuario(usuarioActual);
             logRepository.save(log);
         } catch (Exception ignored) {}
+    }
+
+    // ─────────────────────────────────────────────
+    // POST /misiones/{id}/lanzar — lanza la misión vía FlytBase (EFO)
+    // Solo PILOTO y ADMIN. Valida que el drone no esté volando.
+    // ─────────────────────────────────────────────
+    @PostMapping("/{id}/lanzar")
+    @Transactional
+    @PreAuthorize("hasRole('PILOTO') or hasRole('ADMIN')")
+    public ResponseEntity<Map<String, String>> lanzar(@PathVariable Long id) {
+        Mision m;
+        try {
+            m = misionBusiness.load(id);
+        } catch (NotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
+
+        // Estado debe ser PLANIFICADA
+        if (m.getEstado() != EstadoMision.PLANIFICADA) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "La misión debe estar en estado PLANIFICADA para lanzarse."));
+        }
+
+        // Debe tener dron asignado con yacimiento EFO
+        Dron dron = m.getDron();
+        if (dron == null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "La misión no tiene un drone asignado."));
+        }
+        if (dron.getYacimiento() != Yacimiento.EFO) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Solo se pueden lanzar misiones con drones del yacimiento EFO."));
+        }
+
+        // Debe tener webhook configurado
+        if (m.getWebhookUrl() == null || m.getWebhookUrl().isBlank()
+                || m.getWebhookBearer() == null || m.getWebhookBearer().isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "La misión no tiene configurado el webhook de FlytBase. Pedile a un administrador que lo configure."));
+        }
+
+        // Verificar que no haya un vuelo activo para este drone en vuelos_log
+        if (vueloLogRepository.hayVueloActivo(dron.getNombre())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "El drone '" + dron.getNombre() + "' ya tiene un vuelo activo en curso. Esperá a que aterrice antes de lanzar otra misión."));
+        }
+
+        // Llamar webhook FlytBase
+        try {
+            flytbaseService.lanzarMision(
+                    m.getWebhookUrl(),
+                    m.getWebhookBearer(),
+                    m.getNombre(),
+                    m.getDock() != null ? m.getDock().getLatitud() : null,
+                    m.getDock() != null ? m.getDock().getLongitud() : null
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .body(Map.of("error", "No se pudo contactar a FlytBase: " + e.getMessage()));
+        }
+
+        // Asignar piloto al usuario que ejecuta la misión (no al creador)
+        AuthUser authUser = (AuthUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario usuarioActual = usuarioRepository.findById(authUser.getId())
+                .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
+        m.setPiloto(usuarioActual);
+
+        // Registrar en mision_pendiente para atribución de piloto en n8n
+        String pilotoNombre = usuarioActual.getNombre() + " " + (usuarioActual.getApellido() != null ? usuarioActual.getApellido() : "");
+        jdbcTemplate.update(
+                "INSERT INTO mision_pendiente (drone_nombre, piloto_nombre, usuario_id, mision_id) VALUES (?, ?, ?, ?)",
+                dron.getNombre(), pilotoNombre.trim(), usuarioActual.getId(), m.getId()
+        );
+
+        // Cambiar estado de la misión a EN_CURSO
+        m.setEstado(EstadoMision.EN_CURSO);
+        m.setUltimaEjecucion(LocalDateTime.now());
+        m.setFechaInicio(LocalDateTime.now());
+        try {
+            misionBusiness.update(m);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Misión lanzada en FlytBase pero error al actualizar estado: " + e.getMessage()));
+        }
+
+        registrarLog(m, EstadoMision.PLANIFICADA, EstadoMision.EN_CURSO);
+
+        return ResponseEntity.ok(Map.of("message", "Misión '" + m.getNombre() + "' lanzada exitosamente en FlytBase."));
     }
 
     // ─────────────────────────────────────────────
@@ -255,6 +367,7 @@ public class MisionRestController {
         if (m.getFechaInicio() != null && m.getFechaFin() != null) {
             dto.duracionMinutos = ChronoUnit.MINUTES.between(m.getFechaInicio(), m.getFechaFin());
         }
+        dto.webhookUrl = m.getWebhookUrl();
 
         if (m.getPiloto() != null) {
             dto.pilotoId     = m.getPiloto().getId();
@@ -285,26 +398,23 @@ public class MisionRestController {
             m.setEstado(req.estado);
         }
 
-        if (req.pilotoId == null) {
-            throw new NotFoundException("pilotoId es obligatorio");
+        if (req.pilotoId != null) {
+            Usuario piloto = usuarioRepository.findById(req.pilotoId)
+                    .orElseThrow(() -> new NotFoundException("Piloto no encontrado: " + req.pilotoId));
+            m.setPiloto(piloto);
+        } else {
+            // El piloto se asigna al momento de lanzar la misión
+            m.setPiloto(null);
         }
-        Usuario piloto = usuarioRepository.findById(req.pilotoId)
-                .orElseThrow(() -> new NotFoundException("Piloto no encontrado: " + req.pilotoId));
-        m.setPiloto(piloto);
 
         if (req.dronId != null) {
             Dron dron = dronRepository.findById(req.dronId)
                     .orElseThrow(() -> new NotFoundException("Dron no encontrado: " + req.dronId));
             m.setDron(dron);
+            // El dock se obtiene automáticamente del dron asignado
+            m.setDock(dron.getDock());
         } else {
             m.setDron(null);
-        }
-
-        if (req.dockId != null) {
-            Dock dock = dockRepository.findById(req.dockId)
-                    .orElseThrow(() -> new NotFoundException("Dock no encontrado: " + req.dockId));
-            m.setDock(dock);
-        } else {
             m.setDock(null);
         }
 
@@ -315,6 +425,9 @@ public class MisionRestController {
         } else {
             m.setPozo(null);
         }
+
+        m.setWebhookUrl(req.webhookUrl);
+        m.setWebhookBearer(req.webhookBearer);
 
         return m;
     }

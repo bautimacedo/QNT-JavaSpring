@@ -46,6 +46,12 @@ public class Helice {
     @Column(name = "dias_uso")
     private Integer diasUso;
 
+    @Column(name = "cantidad_vuelos")
+    private Integer cantidadVuelos;
+
+    @Column(name = "cantidad_minutos_volados")
+    private Integer cantidadMinutosVolados;
+
     @Column(name = "fecha_stock_activo")
     private LocalDateTime fechaStockActivo;
 

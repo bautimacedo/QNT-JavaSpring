@@ -78,6 +78,8 @@ public class SecurityConfiguration {
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/qnt/v1/clima", "/api/qnt/v1/clima/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/qnt/v1/reportes/descargar/**").permitAll()
+                // Endpoints internos para n8n (protegidos por X-Internal-Secret header, no por JWT)
+                .requestMatchers("/api/qnt/v1/internal/**").permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session

@@ -52,6 +52,12 @@ public class Bateria {
     @Column(name = "fecha_en_desuso")
     private LocalDateTime fechaEnDesuso;
 
+    @Column(name = "cantidad_vuelos")
+    private Integer cantidadVuelos;
+
+    @Column(name = "cantidad_minutos_volados")
+    private Integer cantidadMinutosVolados;
+
     @Column(name = "dron_id", insertable = false, updatable = false)
     private Long dronId;
 

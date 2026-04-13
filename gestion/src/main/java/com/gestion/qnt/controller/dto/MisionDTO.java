@@ -37,4 +37,7 @@ public class MisionDTO {
     // Dock (nullable)
     public Long dockId;
     public String dockNombre;
+
+    // FlytBase webhook (EFO) — bearer nunca se expone en la respuesta
+    public String webhookUrl;
 }

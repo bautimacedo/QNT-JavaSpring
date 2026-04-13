@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface VueloLogRepository extends JpaRepository<VueloLog, Long> {
 
@@ -32,4 +33,22 @@ public interface VueloLogRepository extends JpaRepository<VueloLog, Long> {
     /** Distinct sites que tienen registros. */
     @Query("SELECT DISTINCT v.site FROM VueloLog v WHERE v.site IS NOT NULL ORDER BY v.site")
     List<String> findDistinctSites();
+
+    /**
+     * Retorna true si existe un DESPEGUE real (despegueFallido=false) para el drone
+     * que NO tiene un ATERRIZAJE posterior — indica que el drone está actualmente volando.
+     */
+    @Query("""
+            SELECT COUNT(v) > 0 FROM VueloLog v
+            WHERE v.nombreDron = :nombreDron
+              AND v.evento = com.gestion.qnt.model.enums.TipoEventoVuelo.DESPEGUE
+              AND v.despegueFallido = false
+              AND NOT EXISTS (
+                SELECT 1 FROM VueloLog v2
+                WHERE v2.nombreDron = :nombreDron
+                  AND v2.evento = com.gestion.qnt.model.enums.TipoEventoVuelo.ATERRIZAJE
+                  AND v2.timestampFlytbase > v.timestampFlytbase
+              )
+            """)
+    boolean hayVueloActivo(@Param("nombreDron") String nombreDron);
 }

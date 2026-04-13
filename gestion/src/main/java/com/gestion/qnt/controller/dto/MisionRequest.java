@@ -22,4 +22,8 @@ public class MisionRequest {
     public Long dronId;    // nullable
     public Long dockId;    // nullable
     public Long pozoId;    // nullable
+
+    // FlytBase webhook (EFO)
+    public String webhookUrl;
+    public String webhookBearer;
 }

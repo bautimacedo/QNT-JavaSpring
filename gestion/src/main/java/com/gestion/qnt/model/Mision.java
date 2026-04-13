@@ -40,8 +40,8 @@ public class Mision {
     @Column(name = "prioridad")
     private PrioridadMision prioridad;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "piloto_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "piloto_id", nullable = true)
     private Usuario piloto;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -67,6 +67,14 @@ public class Mision {
 
     @Column(name = "fecha_fin")
     private LocalDateTime fechaFin;
+
+    /** URL del webhook FlytBase para lanzar esta misión. Ej: https://api.flytbase.com/v2/integrations/webhook/{token} */
+    @Column(name = "webhook_url", length = 500)
+    private String webhookUrl;
+
+    /** Bearer token (JWT) de autorización para el webhook FlytBase. Usamos TEXT porque los JWT son largos. */
+    @Column(name = "webhook_bearer", columnDefinition = "TEXT")
+    private String webhookBearer;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

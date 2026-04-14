@@ -27,8 +27,6 @@ public class MapaEquiposService {
     @Autowired
     private IDronBusiness dronBusiness;
     @Autowired
-    private IBateriaBusiness bateriaBusiness;
-    @Autowired
     private IHeliceBusiness heliceBusiness;
     @Autowired
     private IAntenaRtkBusiness antenaRtkBusiness;
@@ -49,9 +47,7 @@ public class MapaEquiposService {
             Stream<MapEquipoMarker> drones = dronBusiness.list().stream()
                     .filter(d -> d.getLatitud() != null && d.getLongitud() != null)
                     .map(this::dronToMarker);
-            Stream<MapEquipoMarker> baterias = bateriaBusiness.list().stream()
-                    .filter(b -> b.getLatitud() != null && b.getLongitud() != null)
-                    .map(this::bateriaToMarker);
+
             Stream<MapEquipoMarker> helices = heliceBusiness.list().stream()
                     .filter(h -> h.getLatitud() != null && h.getLongitud() != null)
                     .map(this::heliceToMarker);
@@ -62,7 +58,7 @@ public class MapaEquiposService {
                     .filter(a -> a.getLatitud() != null && a.getLongitud() != null)
                     .map(this::antenaStarlinkToMarker);
 
-            Stream.of(docks, drones, baterias, helices, antenasRtk, antenasStarlink)
+            Stream.of(docks, drones, helices, antenasRtk, antenasStarlink)
                     .flatMap(s -> s)
                     .forEach(out::add);
         } catch (Exception e) {
@@ -110,16 +106,6 @@ public class MapaEquiposService {
                 d.getBateriaPorc(), d.getBateriaTempC(), d.getDroneEnDock(),
                 bateriaNombre, bateriaCiclos,
                 null, null, d.getUltimaTelemetria()
-        );
-    }
-
-    private MapEquipoMarker bateriaToMarker(Bateria b) {
-        return new MapEquipoMarker(
-                TipoEquipoMapa.BATERIA, b.getId(),
-                nombreODerivado(b.getNombre(), b.getMarca(), b.getModelo(), b.getId(), "Batería"),
-                b.getLatitud(), b.getLongitud(), b.getAltitud(), b.getEstado(),
-                null, null, b.getNumeroSerie(),
-                null, null, null, null, null, null, null, null
         );
     }
 

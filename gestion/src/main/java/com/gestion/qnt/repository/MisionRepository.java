@@ -18,4 +18,7 @@ public interface MisionRepository extends JpaRepository<Mision, Long> {
 
     @Query("SELECT m FROM Mision m LEFT JOIN FETCH m.piloto LEFT JOIN FETCH m.dron LEFT JOIN FETCH m.dock WHERE m.estado = :estado ORDER BY m.fechaCreacion DESC")
     List<Mision> findByEstadoWithDetails(EstadoMision estado);
+
+    @Query("SELECT m FROM Mision m LEFT JOIN FETCH m.piloto LEFT JOIN FETCH m.dron LEFT JOIN FETCH m.dock WHERE m.piloto.id = :pilotoId ORDER BY m.fechaInicio DESC NULLS LAST")
+    List<Mision> findByPilotoIdWithDetails(@org.springframework.data.repository.query.Param("pilotoId") Long pilotoId);
 }

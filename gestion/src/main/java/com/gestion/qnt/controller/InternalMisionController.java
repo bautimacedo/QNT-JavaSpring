@@ -121,13 +121,13 @@ public class InternalMisionController {
                 }
             }
 
-            // ── 4. Hélices — dejar listo para después ─────────────
-            // for (Helice helice : dron.getHelices()) {
-            //     if (helice.getEstado() == Estado.STOCK_ACTIVO) {
-            //         helice.setCantidadVuelos((helice.getCantidadVuelos() != null ? helice.getCantidadVuelos() : 0) + 1);
-            //         helice.setCantidadMinutosVolados(...);
-            //     }
-            // }
+            // ── 4. Hélices ─────────────────────────────────────────
+            for (Helice helice : dron.getHelices()) {
+                if (helice.getEstado() == Estado.STOCK_ACTIVO) {
+                    helice.setCantidadVuelos((helice.getCantidadVuelos() != null ? helice.getCantidadVuelos() : 0) + 1);
+                    helice.setCantidadMinutosVolados((helice.getCantidadMinutosVolados() != null ? helice.getCantidadMinutosVolados() : 0) + duracionMinutos);
+                }
+            }
         }
 
         // ── 5. Stats del piloto ─────────────────────────────────

@@ -27,8 +27,6 @@ public class MapaEquiposService {
     @Autowired
     private IDronBusiness dronBusiness;
     @Autowired
-    private IHeliceBusiness heliceBusiness;
-    @Autowired
     private IAntenaRtkBusiness antenaRtkBusiness;
     @Autowired
     private IAntenaStarlinkBusiness antenaStarlinkBusiness;
@@ -48,9 +46,6 @@ public class MapaEquiposService {
                     .filter(d -> d.getLatitud() != null && d.getLongitud() != null)
                     .map(this::dronToMarker);
 
-            Stream<MapEquipoMarker> helices = heliceBusiness.list().stream()
-                    .filter(h -> h.getLatitud() != null && h.getLongitud() != null)
-                    .map(this::heliceToMarker);
             Stream<MapEquipoMarker> antenasRtk = antenaRtkBusiness.list().stream()
                     .filter(a -> a.getLatitud() != null && a.getLongitud() != null)
                     .map(this::antenaRtkToMarker);
@@ -58,7 +53,7 @@ public class MapaEquiposService {
                     .filter(a -> a.getLatitud() != null && a.getLongitud() != null)
                     .map(this::antenaStarlinkToMarker);
 
-            Stream.of(docks, drones, helices, antenasRtk, antenasStarlink)
+            Stream.of(docks, drones, antenasRtk, antenasStarlink)
                     .flatMap(s -> s)
                     .forEach(out::add);
         } catch (Exception e) {
@@ -106,16 +101,6 @@ public class MapaEquiposService {
                 d.getBateriaPorc(), d.getBateriaTempC(), d.getDroneEnDock(),
                 bateriaNombre, bateriaCiclos,
                 null, null, d.getUltimaTelemetria()
-        );
-    }
-
-    private MapEquipoMarker heliceToMarker(Helice h) {
-        return new MapEquipoMarker(
-                TipoEquipoMapa.HELICE, h.getId(),
-                nombreODerivado(h.getNombre(), h.getMarca(), h.getModelo(), h.getId(), "Hélice"),
-                h.getLatitud(), h.getLongitud(), h.getAltitud(), h.getEstado(),
-                null, null, h.getNumeroSerie(),
-                null, null, null, null, null, null, null, null
         );
     }
 

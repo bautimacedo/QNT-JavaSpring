@@ -4,11 +4,13 @@ import com.gestion.qnt.model.Bateria;
 import com.gestion.qnt.model.business.exceptions.BusinessException;
 import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import com.gestion.qnt.model.business.interfaces.IBateriaBusiness;
+import com.gestion.qnt.model.enums.Estado;
 import com.gestion.qnt.repository.BateriaRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -44,7 +46,7 @@ public class BateriaBusiness implements IBateriaBusiness {
     @Override
     public Bateria add(Bateria entity) throws BusinessException {
         try {
-            CoordenadasValidator.validar(entity.getLatitud(), entity.getLongitud());
+            aplicarFechasEstado(entity, null);
             return repository.save(entity);
         } catch (BusinessException e) {
             throw e;
@@ -57,8 +59,8 @@ public class BateriaBusiness implements IBateriaBusiness {
     @Override
     public Bateria update(Bateria entity) throws NotFoundException, BusinessException {
         try {
-            load(entity.getId());
-            CoordenadasValidator.validar(entity.getLatitud(), entity.getLongitud());
+            Bateria anterior = load(entity.getId());
+            aplicarFechasEstado(entity, anterior);
             return repository.save(entity);
         } catch (NotFoundException e) {
             throw e;
@@ -67,6 +69,25 @@ public class BateriaBusiness implements IBateriaBusiness {
         } catch (Exception e) {
             log.error("Error al actualizar bateria con id {}", entity.getId(), e);
             throw new BusinessException("Error al actualizar bateria", e);
+        }
+    }
+
+    private void aplicarFechasEstado(Bateria entity, Bateria anterior) {
+        Estado estadoAnterior = anterior != null ? anterior.getEstado() : null;
+        Estado estadoNuevo = entity.getEstado();
+        if (estadoNuevo == null) return;
+
+        if (estadoNuevo == Estado.STOCK_ACTIVO && estadoAnterior != Estado.STOCK_ACTIVO) {
+            entity.setFechaStockActivo(LocalDateTime.now());
+        }
+        if (estadoNuevo == Estado.EN_DESUSO && estadoAnterior != Estado.EN_DESUSO) {
+            entity.setFechaEnDesuso(LocalDateTime.now());
+            if (entity.getFechaStockActivo() != null) {
+                long dias = java.time.temporal.ChronoUnit.DAYS.between(
+                        entity.getFechaStockActivo().toLocalDate(),
+                        LocalDateTime.now().toLocalDate());
+                entity.setDiasUso((int) dias);
+            }
         }
     }
 

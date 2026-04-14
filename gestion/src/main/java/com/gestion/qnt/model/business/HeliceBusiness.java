@@ -4,11 +4,13 @@ import com.gestion.qnt.model.Helice;
 import com.gestion.qnt.model.business.exceptions.BusinessException;
 import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import com.gestion.qnt.model.business.interfaces.IHeliceBusiness;
+import com.gestion.qnt.model.enums.Estado;
 import com.gestion.qnt.repository.HeliceRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -44,10 +46,8 @@ public class HeliceBusiness implements IHeliceBusiness {
     @Override
     public Helice add(Helice entity) throws BusinessException {
         try {
-            CoordenadasValidator.validar(entity.getLatitud(), entity.getLongitud());
+            aplicarFechasEstado(entity, null);
             return repository.save(entity);
-        } catch (BusinessException e) {
-            throw e;
         } catch (Exception e) {
             log.error("Error al agregar helice", e);
             throw new BusinessException("Error al agregar helice", e);
@@ -57,12 +57,10 @@ public class HeliceBusiness implements IHeliceBusiness {
     @Override
     public Helice update(Helice entity) throws NotFoundException, BusinessException {
         try {
-            load(entity.getId());
-            CoordenadasValidator.validar(entity.getLatitud(), entity.getLongitud());
+            Helice anterior = load(entity.getId());
+            aplicarFechasEstado(entity, anterior);
             return repository.save(entity);
         } catch (NotFoundException e) {
-            throw e;
-        } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
             log.error("Error al actualizar helice con id {}", entity.getId(), e);
@@ -80,6 +78,25 @@ public class HeliceBusiness implements IHeliceBusiness {
         } catch (Exception e) {
             log.error("Error al eliminar helice con id {}", id, e);
             throw new BusinessException("Error al eliminar helice", e);
+        }
+    }
+
+    private void aplicarFechasEstado(Helice entity, Helice anterior) {
+        Estado estadoAnterior = anterior != null ? anterior.getEstado() : null;
+        Estado estadoNuevo = entity.getEstado();
+        if (estadoNuevo == null) return;
+
+        if (estadoNuevo == Estado.STOCK_ACTIVO && estadoAnterior != Estado.STOCK_ACTIVO) {
+            entity.setFechaStockActivo(LocalDateTime.now());
+        }
+        if (estadoNuevo == Estado.EN_DESUSO && estadoAnterior != Estado.EN_DESUSO) {
+            entity.setFechaEnDesuso(LocalDateTime.now());
+            if (entity.getFechaStockActivo() != null) {
+                long dias = java.time.temporal.ChronoUnit.DAYS.between(
+                        entity.getFechaStockActivo().toLocalDate(),
+                        LocalDateTime.now().toLocalDate());
+                entity.setDiasUso((int) dias);
+            }
         }
     }
 }

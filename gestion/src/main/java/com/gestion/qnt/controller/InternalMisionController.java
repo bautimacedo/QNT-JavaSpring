@@ -116,6 +116,7 @@ public class InternalMisionController {
                 if (bateria.getEstado() == Estado.STOCK_ACTIVO) {
                     bateria.setCantidadVuelos((bateria.getCantidadVuelos() != null ? bateria.getCantidadVuelos() : 0) + 1);
                     bateria.setCantidadMinutosVolados((bateria.getCantidadMinutosVolados() != null ? bateria.getCantidadMinutosVolados() : 0) + duracionMinutos);
+                    bateria.setCiclosCarga((bateria.getCiclosCarga() != null ? bateria.getCiclosCarga() : 0) + 1);
                     // bateriaRepository.save() no hace falta: cascade ALL desde Dron
                 }
             }

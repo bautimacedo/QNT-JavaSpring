@@ -48,8 +48,6 @@ public class BateriaBusiness implements IBateriaBusiness {
         try {
             aplicarFechasEstado(entity, null);
             return repository.save(entity);
-        } catch (BusinessException e) {
-            throw e;
         } catch (Exception e) {
             log.error("Error al agregar bateria", e);
             throw new BusinessException("Error al agregar bateria", e);

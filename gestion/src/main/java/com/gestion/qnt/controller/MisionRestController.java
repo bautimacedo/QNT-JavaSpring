@@ -101,6 +101,21 @@ public class MisionRestController {
     }
 
     // ─────────────────────────────────────────────
+    // GET /misiones/piloto/{pilotoId} — historial de vuelos del piloto
+    // ─────────────────────────────────────────────
+    @GetMapping("/piloto/{pilotoId}")
+    @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<MisionDTO>> listByPiloto(@PathVariable Long pilotoId) {
+        try {
+            List<Mision> misiones = misionRepository.findByPilotoIdWithDetails(pilotoId);
+            return ResponseEntity.ok(misiones.stream().map(this::toDTO).collect(Collectors.toList()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // ─────────────────────────────────────────────
     // GET /misiones?estado=PLANIFICADA
     // ─────────────────────────────────────────────
     @GetMapping(params = "estado")

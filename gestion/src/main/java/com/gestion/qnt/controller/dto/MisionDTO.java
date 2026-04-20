@@ -40,4 +40,7 @@ public class MisionDTO {
 
     // FlytBase webhook (EFO) — bearer nunca se expone en la respuesta
     public String webhookUrl;
+
+    public LocalDateTime fechaProgramada;
+    public Long programacionId;
 }

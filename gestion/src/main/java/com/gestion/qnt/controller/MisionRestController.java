@@ -385,6 +385,8 @@ public class MisionRestController {
             dto.duracionMinutos = ChronoUnit.MINUTES.between(m.getFechaInicio(), m.getFechaFin());
         }
         dto.webhookUrl = m.getWebhookUrl();
+        dto.fechaProgramada = m.getFechaProgramada();
+        dto.programacionId = m.getProgramacion() != null ? m.getProgramacion().getId() : null;
 
         if (m.getPiloto() != null) {
             dto.pilotoId     = m.getPiloto().getId();

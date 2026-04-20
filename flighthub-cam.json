@@ -1,0 +1,105 @@
+{
+  "name": "FlightHub CAM - Vuelos",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "minutes", "minutesInterval": 15 }]
+        }
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000001",
+      "name": "Cada 15 minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = Math.floor(Date.now() / 1000);\nconst desde = now - 30 * 60;\n\nreturn [{\n  json: {\n    begin_at: desde,\n    end_at: now,\n    request_id: $execution.id + '-' + now\n  }\n}];"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000002",
+      "name": "Calcular timestamps",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [420, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://es-flight-api-us.djigate.com/task/api/v2/workspaces/4c2dd8b7-85dc-4cfa-8957-06d92555cd64/flight-tasks",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Auth-Token",    "value": "={{ $vars.FLIGHTHUB_AUTH_TOKEN }}" },
+            { "name": "X-Request-Id",    "value": "={{ $json.request_id }}" },
+            { "name": "X-Language-Code", "value": "en" },
+            { "name": "Accept",          "value": "application/json" }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "source",             "value": "0" },
+            { "name": "sn[]",              "value": "8UUXN3D00A02RM" },
+            { "name": "begin_at",           "value": "={{ $json.begin_at }}" },
+            { "name": "end_at",             "value": "={{ $json.end_at }}" },
+            { "name": "page",               "value": "1" },
+            { "name": "page_size",          "value": "50" },
+            { "name": "flight_task_status", "value": "2" },
+            { "name": "list_type",          "value": "0" }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000003",
+      "name": "GET FlightHub Tasks",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [640, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// task_status numérico (v2 API)\n// 2 = success, 3 = failed/starting_failure, 4 = terminated, 5 = timeout\nconst EVENT_MAP = {\n  2: 'ATERRIZAJE',\n  3: 'FALLA_DESPEGUE',\n  4: 'DESPEGUE_FALLIDO',\n  5: 'DESPEGUE_FALLIDO'\n};\n\nconst FALLA_STATUS = [3, 4, 5];\n\nconst esc = s => s ? String(s).replace(/'/g, \"''\") : null;\nconst str = s => (s !== null && s !== undefined && s !== '') ? `'${esc(s)}'` : 'NULL';\nconst bool = b => b ? 'true' : 'false';\n\nconst tasks = $json.data?.list || [];\n\nif (!Array.isArray(tasks) || tasks.length === 0) return [];\n\nreturn tasks\n  .filter(t => EVENT_MAP[t.task_status] && t.completed_at)\n  .map(t => ({\n    json: {\n      sql: `INSERT INTO vuelos_log\n        (event_id, evento, nombre_dron, nombre_dock, site, piloto, detalle_vuelo, timestamp_flytbase, despegue_fallido)\n      VALUES (\n        ${str(t.flight_task_id || t.uuid)},\n        ${str(EVENT_MAP[t.task_status])},\n        ${str(t.drone_sn || t.sn)},\n        ${str(t.take_off_airport_sn || t.sn)},\n        'CAM',\n        ${str(t.user_name)},\n        ${str(t.task_name || t.name)},\n        ${str(t.completed_at || t.run_at)}::timestamptz,\n        ${bool(FALLA_STATUS.includes(t.task_status))}\n      )\n      ON CONFLICT (event_id) DO NOTHING`\n    }\n  }));"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000004",
+      "name": "Transformar tareas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [860, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ $json.sql }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000005",
+      "name": "INSERT vuelos_log",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1080, 300],
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "QNT Postgres"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cada 15 minutos": {
+      "main": [[{ "node": "Calcular timestamps", "type": "main", "index": 0 }]]
+    },
+    "Calcular timestamps": {
+      "main": [[{ "node": "GET FlightHub Tasks", "type": "main", "index": 0 }]]
+    },
+    "GET FlightHub Tasks": {
+      "main": [[{ "node": "Transformar tareas", "type": "main", "index": 0 }]]
+    },
+    "Transformar tareas": {
+      "main": [[{ "node": "INSERT vuelos_log", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

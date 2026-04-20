@@ -76,6 +76,13 @@ public class Mision {
     @Column(name = "webhook_bearer", columnDefinition = "TEXT")
     private String webhookBearer;
 
+    @Column(name = "fecha_programada")
+    private LocalDateTime fechaProgramada;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "programacion_id")
+    private ProgramacionMision programacion;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoMision estado;

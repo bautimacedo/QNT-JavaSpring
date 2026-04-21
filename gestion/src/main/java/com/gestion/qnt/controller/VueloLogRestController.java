@@ -67,8 +67,14 @@ public class VueloLogRestController {
             String hastaStr = hasta != null ? hasta.toString() : null;
             List<VueloLog> registros = repository.findFiltered(dron, site, null, desdeStr, hastaStr);
 
-            long totalDespegues       = registros.stream().filter(v -> v.getEvento() == TipoEventoVuelo.DESPEGUE || v.getEvento() == TipoEventoVuelo.VUELO).count();
-            long totalAterrizajes     = registros.stream().filter(v -> v.getEvento() == TipoEventoVuelo.ATERRIZAJE || v.getEvento() == TipoEventoVuelo.VUELO).count();
+            long totalDespegues       = registros.stream().filter(v ->
+                    v.getEvento() == TipoEventoVuelo.DESPEGUE ||
+                    v.getEvento() == TipoEventoVuelo.VUELO ||
+                    v.getEvento() == TipoEventoVuelo.FALLA_DESPEGUE ||
+                    v.getEvento() == TipoEventoVuelo.DESPEGUE_FALLIDO).count();
+            long totalAterrizajes     = registros.stream().filter(v ->
+                    v.getEvento() == TipoEventoVuelo.ATERRIZAJE ||
+                    v.getEvento() == TipoEventoVuelo.VUELO).count();
             long totalFallas          = registros.stream().filter(v ->
                     v.getEvento() == TipoEventoVuelo.FALLA_DESPEGUE ||
                     v.getEvento() == TipoEventoVuelo.DESPEGUE_FALLIDO ||

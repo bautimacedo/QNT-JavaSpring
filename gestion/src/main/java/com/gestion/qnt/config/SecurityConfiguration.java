@@ -80,6 +80,8 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.GET, "/api/qnt/v1/reportes/descargar/**").permitAll()
                 // Endpoints internos para n8n (protegidos por X-Internal-Secret header, no por JWT)
                 .requestMatchers("/api/qnt/v1/internal/**").permitAll()
+                // Endpoint de inspecciones AIB (protegido por X-API-Key header, no por JWT)
+                .requestMatchers(HttpMethod.POST, "/api/qnt/v1/inspecciones/aib").permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session

@@ -67,26 +67,18 @@ public class VueloLogRestController {
             String hastaStr = hasta != null ? hasta.toString() : null;
             List<VueloLog> registros = repository.findFiltered(dron, site, null, desdeStr, hastaStr);
 
-            long totalDespegues       = registros.stream().filter(v ->
-                    v.getEvento() == TipoEventoVuelo.DESPEGUE ||
-                    v.getEvento() == TipoEventoVuelo.VUELO ||
-                    v.getEvento() == TipoEventoVuelo.FALLA_DESPEGUE ||
-                    v.getEvento() == TipoEventoVuelo.DESPEGUE_FALLIDO).count();
-            long totalAterrizajes     = registros.stream().filter(v ->
-                    v.getEvento() == TipoEventoVuelo.ATERRIZAJE ||
-                    v.getEvento() == TipoEventoVuelo.VUELO).count();
-            long totalFallas          = registros.stream().filter(v ->
+            long totalVuelos    = registros.stream().filter(v -> v.getEvento() == TipoEventoVuelo.VUELO).count();
+            long totalFallas    = registros.stream().filter(v ->
                     v.getEvento() == TipoEventoVuelo.FALLA_DESPEGUE ||
                     v.getEvento() == TipoEventoVuelo.DESPEGUE_FALLIDO ||
                     Boolean.TRUE.equals(v.getDespegueFallido())).count();
-            long totalMalTiempo       = registros.stream().filter(v -> v.getEvento() == TipoEventoVuelo.MAL_TIEMPO).count();
+            long totalMalTiempo = registros.stream().filter(v -> v.getEvento() == TipoEventoVuelo.MAL_TIEMPO).count();
 
             Map<String, Object> stats = new HashMap<>();
-            stats.put("totalRegistros",   registros.size());
-            stats.put("totalDespegues",   totalDespegues);
-            stats.put("totalAterrizajes", totalAterrizajes);
-            stats.put("totalFallas",      totalFallas);
-            stats.put("totalMalTiempo",   totalMalTiempo);
+            stats.put("totalRegistros", registros.size());
+            stats.put("totalVuelos",    totalVuelos);
+            stats.put("totalFallas",    totalFallas);
+            stats.put("totalMalTiempo", totalMalTiempo);
             return ResponseEntity.ok(stats);
         } catch (Exception e) {
             log.error("Error en GET /vuelos-log/stats", e);

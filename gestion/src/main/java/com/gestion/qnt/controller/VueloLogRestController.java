@@ -17,6 +17,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Endpoints de solo lectura para el registro de vuelos FlytBase.
@@ -48,7 +49,11 @@ public class VueloLogRestController {
             String eventoStr = evento != null ? evento.name() : null;
             String desdeStr  = desde  != null ? desde.toString()  : null;
             String hastaStr  = hasta  != null ? hasta.toString()  : null;
-            return ResponseEntity.ok(repository.findFiltered(dron, site, eventoStr, desdeStr, hastaStr));
+            List<VueloLog> regs = repository.findFiltered(dron, site, eventoStr, desdeStr, hastaStr)
+                    .stream().filter(r -> r.getEvento() != TipoEventoVuelo.DESPEGUE
+                                      && r.getEvento() != TipoEventoVuelo.ATERRIZAJE)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(fillMissingDrones(regs));
         } catch (Exception e) {
             log.error("Error en GET /vuelos-log", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -65,7 +70,10 @@ public class VueloLogRestController {
         try {
             String desdeStr = desde != null ? desde.toString() : null;
             String hastaStr = hasta != null ? hasta.toString() : null;
-            List<VueloLog> registros = repository.findFiltered(dron, site, null, desdeStr, hastaStr);
+            List<VueloLog> registros = repository.findFiltered(dron, site, null, desdeStr, hastaStr)
+                    .stream().filter(v -> v.getEvento() != TipoEventoVuelo.DESPEGUE
+                                      && v.getEvento() != TipoEventoVuelo.ATERRIZAJE)
+                    .collect(Collectors.toList());
 
             long totalVuelos    = registros.stream().filter(v -> v.getEvento() == TipoEventoVuelo.VUELO).count();
             long totalFallas    = registros.stream().filter(v ->
@@ -95,6 +103,29 @@ public class VueloLogRestController {
             log.error("Error en GET /vuelos-log/drones", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    /**
+     * FlightHub (CAM) emite ATERRIZAJE sin nombreDron. Para esos registros, buscamos
+     * el drone más reciente conocido del mismo site y lo propagamos.
+     */
+    private List<VueloLog> fillMissingDrones(List<VueloLog> registros) {
+        // Construir mapa site→drone recorriendo de más antiguo a más reciente
+        Map<String, String> dronPorSite = new HashMap<>();
+        for (int i = registros.size() - 1; i >= 0; i--) {
+            VueloLog r = registros.get(i);
+            if (r.getNombreDron() != null && r.getSite() != null) {
+                dronPorSite.put(r.getSite(), r.getNombreDron());
+            }
+        }
+        // Rellenar nulls
+        for (VueloLog r : registros) {
+            if (r.getNombreDron() == null && r.getSite() != null) {
+                String fallback = dronPorSite.get(r.getSite());
+                if (fallback != null) r.setNombreDron(fallback);
+            }
+        }
+        return registros;
     }
 
     @GetMapping("/sites")

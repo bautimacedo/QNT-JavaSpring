@@ -59,6 +59,9 @@ public class InspeccionAib {
     @Column(name = "derivada_in_vel_rms_in_s") private Double derivadaInVelRmsInS;
     @Column(name = "derivada_in_acel_max_in_s2") private Double derivadaInAcelMaxInS2;
 
+    @Column(name = "video_url", length = 2048)
+    private String videoUrl;
+
     // Imágenes (paths relativos al upload-dir)
     @Column(name = "captura_anotada_path") private String capturaAnotadaPath;
     @Column(name = "grafico_posicion_in_path") private String graficoPosicionInPath;

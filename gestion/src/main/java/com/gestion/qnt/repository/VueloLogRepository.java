@@ -34,6 +34,28 @@ public interface VueloLogRepository extends JpaRepository<VueloLog, Long> {
     @Query("SELECT DISTINCT v.site FROM VueloLog v WHERE v.site IS NOT NULL ORDER BY v.site")
     List<String> findDistinctSites();
 
+    /** DESPEGUE más reciente (< 12 h) para un drone específico. */
+    @Query(value = """
+            SELECT * FROM vuelos_log
+            WHERE nombre_dron = :nombreDron
+              AND evento = 'DESPEGUE'
+              AND (despegue_fallido IS NULL OR despegue_fallido = false)
+              AND timestamp_flytbase > NOW() - INTERVAL '12 hours'
+            ORDER BY timestamp_flytbase DESC LIMIT 1
+            """, nativeQuery = true)
+    Optional<VueloLog> findLastDespegueByDron(@Param("nombreDron") String nombreDron);
+
+    /** DESPEGUE más reciente (< 12 h) para un site cuando no se conoce el drone. */
+    @Query(value = """
+            SELECT * FROM vuelos_log
+            WHERE site = :site
+              AND evento = 'DESPEGUE'
+              AND (despegue_fallido IS NULL OR despegue_fallido = false)
+              AND timestamp_flytbase > NOW() - INTERVAL '12 hours'
+            ORDER BY timestamp_flytbase DESC LIMIT 1
+            """, nativeQuery = true)
+    Optional<VueloLog> findLastDespegueBySite(@Param("site") String site);
+
     /**
      * Retorna true si existe un DESPEGUE real (despegueFallido=false) para el drone
      * que NO tiene un ATERRIZAJE posterior — indica que el drone está actualmente volando.

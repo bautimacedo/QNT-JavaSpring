@@ -206,6 +206,7 @@ public class InspeccionAibRestController {
         dto.derivadaInVelMaxInS = i.getDerivadaInVelMaxInS();
         dto.derivadaInVelRmsInS = i.getDerivadaInVelRmsInS();
         dto.derivadaInAcelMaxInS2 = i.getDerivadaInAcelMaxInS2();
+        dto.videoUrl = i.getVideoUrl();
         dto.capturaAnotadaUrl = toUrl(i.getCapturaAnotadaPath(), i.getId());
         dto.graficoPosicionInUrl = toUrl(i.getGraficoPosicionInPath(), i.getId());
         dto.graficoProcesadaUrl = toUrl(i.getGraficoProcesadaPath(), i.getId());

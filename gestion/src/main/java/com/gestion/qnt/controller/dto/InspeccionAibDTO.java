@@ -39,6 +39,8 @@ public class InspeccionAibDTO {
     public Double derivadaInVelRmsInS;
     public Double derivadaInAcelMaxInS2;
 
+    public String videoUrl;
+
     // Imágenes (URLs relativas)
     public String capturaAnotadaUrl;
     public String graficoPosicionInUrl;

@@ -115,6 +115,9 @@ public class InspeccionAibBusiness implements IInspeccionAibBusiness {
             inspeccion.setDerivadaInVelRmsInS(nodeToDouble(dIn, "vel_rms_in_s"));
             inspeccion.setDerivadaInAcelMaxInS2(nodeToDouble(dIn, "acel_max_in_s2"));
 
+            String videoUrl = root.path("video_url").asText(null);
+            if (videoUrl != null && !videoUrl.isBlank()) inspeccion.setVideoUrl(videoUrl);
+
             InspeccionAib saved = repository.save(inspeccion);
 
             if (graficos != null && !graficos.isEmpty()) {

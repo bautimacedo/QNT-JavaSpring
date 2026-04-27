@@ -75,8 +75,13 @@ public class ProgramacionMisionRestController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         if (!repo.existsById(id)) return ResponseEntity.notFound().build();
+        // Borrar primero las misiones generadas automáticamente por esta programación
+        // (FK constraint: misiones.programacion_id apunta a programacion_misiones.id).
+        // La misionPlantilla no se toca: su FK va de programación → misión, no al revés.
+        misionRepository.deleteByProgramacionId(id);
         repo.deleteById(id);
         return ResponseEntity.noContent().build();
     }

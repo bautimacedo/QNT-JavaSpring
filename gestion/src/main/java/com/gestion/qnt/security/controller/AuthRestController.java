@@ -137,6 +137,14 @@ public class AuthRestController {
         }
     }
 
+    @PostMapping(value = "/auth/refresh", produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> refresh(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token inválido o sesión expirada");
+        }
+        return ResponseEntity.ok(buildToken(authentication));
+    }
+
     @GetMapping("/auth/me")
     public ResponseEntity<Object> me(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {

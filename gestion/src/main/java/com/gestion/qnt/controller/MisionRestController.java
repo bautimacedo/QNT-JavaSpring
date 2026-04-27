@@ -76,7 +76,9 @@ public class MisionRestController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<MisionDTO>> list() {
         try {
-            List<Mision> misiones = misionRepository.findAllWithDetails();
+            List<Mision> misiones = misionRepository.findAllWithDetails().stream()
+                    .filter(m -> m.getProgramacion() == null)
+                    .collect(Collectors.toList());
             return ResponseEntity.ok(misiones.stream().map(this::toDTO).collect(Collectors.toList()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -123,7 +125,9 @@ public class MisionRestController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<MisionDTO>> listByEstado(@RequestParam EstadoMision estado) {
         try {
-            List<Mision> misiones = misionRepository.findByEstadoWithDetails(estado);
+            List<Mision> misiones = misionRepository.findByEstadoWithDetails(estado).stream()
+                    .filter(m -> m.getProgramacion() == null)
+                    .collect(Collectors.toList());
             return ResponseEntity.ok(misiones.stream().map(this::toDTO).collect(Collectors.toList()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

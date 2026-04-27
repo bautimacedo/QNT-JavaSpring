@@ -14,9 +14,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -46,14 +50,18 @@ public class VueloLogRestController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant desde,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant hasta) {
         try {
-            String eventoStr = evento != null ? evento.name() : null;
             String desdeStr  = desde  != null ? desde.toString()  : null;
             String hastaStr  = hasta  != null ? hasta.toString()  : null;
-            List<VueloLog> regs = repository.findFiltered(dron, site, eventoStr, desdeStr, hastaStr)
-                    .stream().filter(r -> r.getEvento() != TipoEventoVuelo.DESPEGUE
-                                      && r.getEvento() != TipoEventoVuelo.ATERRIZAJE)
-                    .collect(Collectors.toList());
-            return ResponseEntity.ok(fillMissingDrones(regs));
+            // No filtramos por evento en SQL: aplicamos el filtro después del pairing,
+            // ya que un DESPEGUE pareado se transforma en VUELO.
+            List<VueloLog> regs = new ArrayList<>(repository.findFiltered(dron, site, null, desdeStr, hastaStr));
+            regs = fillMissingDrones(regs);
+            regs = pairTakeoffsAndLandings(regs);
+            if (evento != null) {
+                final TipoEventoVuelo target = evento;
+                regs = regs.stream().filter(r -> r.getEvento() == target).collect(Collectors.toList());
+            }
+            return ResponseEntity.ok(regs);
         } catch (Exception e) {
             log.error("Error en GET /vuelos-log", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -70,10 +78,9 @@ public class VueloLogRestController {
         try {
             String desdeStr = desde != null ? desde.toString() : null;
             String hastaStr = hasta != null ? hasta.toString() : null;
-            List<VueloLog> registros = repository.findFiltered(dron, site, null, desdeStr, hastaStr)
-                    .stream().filter(v -> v.getEvento() != TipoEventoVuelo.DESPEGUE
-                                      && v.getEvento() != TipoEventoVuelo.ATERRIZAJE)
-                    .collect(Collectors.toList());
+            List<VueloLog> registros = new ArrayList<>(repository.findFiltered(dron, site, null, desdeStr, hastaStr));
+            registros = fillMissingDrones(registros);
+            registros = pairTakeoffsAndLandings(registros);
 
             long totalVuelos    = registros.stream().filter(v -> v.getEvento() == TipoEventoVuelo.VUELO).count();
             long totalFallas    = registros.stream().filter(v ->
@@ -103,6 +110,63 @@ public class VueloLogRestController {
             log.error("Error en GET /vuelos-log/drones", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    /**
+     * Normaliza eventos DESPEGUE/ATERRIZAJE → VUELO.
+     * - EFO (FlytBase): se emparejan DESPEGUE+ATERRIZAJE del mismo dron. El DESPEGUE pareado
+     *   se transforma en VUELO; el ATERRIZAJE se descarta. DESPEGUE huérfano → queda como
+     *   DESPEGUE (vuelo en curso). ATERRIZAJE huérfano → se descarta.
+     * - CAM (FlightHub) y otros: cada DESPEGUE/ATERRIZAJE se considera un VUELO independiente
+     *   (FlightHub emite emails separados, cada uno representa un vuelo).
+     */
+    private List<VueloLog> pairTakeoffsAndLandings(List<VueloLog> registros) {
+        if (registros == null || registros.isEmpty()) return registros;
+
+        // Sites != EFO: cada DESPEGUE/ATERRIZAJE es un VUELO independiente
+        for (VueloLog r : registros) {
+            if (!"EFO".equalsIgnoreCase(r.getSite())) {
+                if (r.getEvento() == TipoEventoVuelo.DESPEGUE
+                        || r.getEvento() == TipoEventoVuelo.ATERRIZAJE) {
+                    r.setEvento(TipoEventoVuelo.VUELO);
+                }
+            }
+        }
+
+        // EFO: pairing real DESPEGUE ↔ ATERRIZAJE
+        List<VueloLog> efoSorted = registros.stream()
+                .filter(r -> "EFO".equalsIgnoreCase(r.getSite()))
+                .sorted(Comparator.comparing(VueloLog::getTimestampFlytbase,
+                        Comparator.nullsLast(Comparator.naturalOrder())))
+                .collect(Collectors.toList());
+
+        Map<String, VueloLog> openTakeoffs = new HashMap<>();
+        Set<Long> aterrizajesPareados = new HashSet<>();
+        Set<Long> aterrizajesHuerfanos = new HashSet<>();
+
+        for (VueloLog r : efoSorted) {
+            if (r.getEvento() == null) continue;
+            if (r.getNombreDron() == null && r.getSite() == null) continue;
+            String key = (r.getNombreDron() != null ? r.getNombreDron() : "")
+                    + "|" + (r.getSite() != null ? r.getSite() : "");
+
+            if (r.getEvento() == TipoEventoVuelo.DESPEGUE) {
+                openTakeoffs.put(key, r);
+            } else if (r.getEvento() == TipoEventoVuelo.ATERRIZAJE) {
+                VueloLog despegue = openTakeoffs.remove(key);
+                if (despegue != null) {
+                    despegue.setEvento(TipoEventoVuelo.VUELO);
+                    aterrizajesPareados.add(r.getId());
+                } else {
+                    aterrizajesHuerfanos.add(r.getId());
+                }
+            }
+        }
+
+        return registros.stream()
+                .filter(r -> !aterrizajesPareados.contains(r.getId())
+                          && !aterrizajesHuerfanos.contains(r.getId()))
+                .collect(Collectors.toList());
     }
 
     /**

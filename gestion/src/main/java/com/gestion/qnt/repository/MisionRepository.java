@@ -28,6 +28,6 @@ public interface MisionRepository extends JpaRepository<Mision, Long> {
     @Query("DELETE FROM Mision m WHERE m.programacion.id = :programacionId")
     int deleteByProgramacionId(@Param("programacionId") Long programacionId);
 
-    @Query("SELECT m FROM Mision m LEFT JOIN FETCH m.piloto LEFT JOIN FETCH m.dron LEFT JOIN FETCH m.dock WHERE (m.programacion IS NOT NULL OR m.fechaInicio IS NOT NULL) AND (:desde IS NULL OR m.fechaInicio >= :desde) AND (:hasta IS NULL OR m.fechaInicio <= :hasta) ORDER BY m.fechaInicio DESC NULLS LAST, m.fechaCreacion DESC")
-    List<Mision> findHistorial(@Param("desde") java.time.LocalDateTime desde, @Param("hasta") java.time.LocalDateTime hasta);
+    @Query("SELECT m FROM Mision m LEFT JOIN FETCH m.piloto LEFT JOIN FETCH m.dron LEFT JOIN FETCH m.dock WHERE m.programacion IS NOT NULL OR m.fechaInicio IS NOT NULL ORDER BY m.fechaInicio DESC NULLS LAST, m.fechaCreacion DESC")
+    List<Mision> findHistorial();
 }

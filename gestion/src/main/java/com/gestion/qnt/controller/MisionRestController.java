@@ -116,8 +116,12 @@ public class MisionRestController {
         try {
             LocalDateTime desdeTs = desde != null ? desde.atStartOfDay() : null;
             LocalDateTime hastaTs = hasta != null ? hasta.plusDays(1).atStartOfDay().minusNanos(1) : null;
-            List<Mision> misiones = misionRepository.findHistorial(desdeTs, hastaTs);
-            return ResponseEntity.ok(misiones.stream().map(this::toDTO).collect(Collectors.toList()));
+            List<Mision> misiones = misionRepository.findHistorial();
+            return ResponseEntity.ok(misiones.stream()
+                    .filter(m -> desdeTs == null || (m.getFechaInicio() != null && !m.getFechaInicio().isBefore(desdeTs)))
+                    .filter(m -> hastaTs == null || (m.getFechaInicio() != null && !m.getFechaInicio().isAfter(hastaTs)))
+                    .map(this::toDTO)
+                    .collect(Collectors.toList()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

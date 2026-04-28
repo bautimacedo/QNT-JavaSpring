@@ -128,6 +128,32 @@ public class MisionRestController {
     }
 
     // ─────────────────────────────────────────────
+    // POST /misiones/cerrar-stuck — cierra misiones EN_CURSO con más de N horas sin actividad
+    // ─────────────────────────────────────────────
+    @PostMapping("/cerrar-stuck")
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> cerrarStuck(
+            @RequestParam(defaultValue = "4") int horasMinimas) {
+        try {
+            LocalDateTime corte = LocalDateTime.now().minusHours(horasMinimas);
+            List<Mision> stuck = misionRepository.findHistorial().stream()
+                    .filter(m -> m.getEstado() == EstadoMision.EN_CURSO)
+                    .filter(m -> m.getFechaInicio() == null || m.getFechaInicio().isBefore(corte))
+                    .collect(Collectors.toList());
+            LocalDateTime ahora = LocalDateTime.now();
+            for (Mision m : stuck) {
+                m.setEstado(EstadoMision.COMPLETADA);
+                m.setFechaFin(ahora);
+                misionRepository.save(m);
+            }
+            return ResponseEntity.ok(Map.of("cerradas", stuck.size()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // ─────────────────────────────────────────────
     // GET /misiones/piloto/{pilotoId} — historial de vuelos del piloto
     // ─────────────────────────────────────────────
     @GetMapping("/piloto/{pilotoId}")

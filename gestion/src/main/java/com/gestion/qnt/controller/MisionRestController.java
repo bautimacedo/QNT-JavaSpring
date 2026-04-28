@@ -144,7 +144,7 @@ public class MisionRestController {
             LocalDateTime ahora = LocalDateTime.now();
             for (Mision m : stuck) {
                 m.setEstado(EstadoMision.COMPLETADA);
-                m.setFechaFin(ahora);
+                // No se setea fechaFin: duración queda null (cierre manual por timeout)
                 misionRepository.save(m);
             }
             return ResponseEntity.ok(Map.of("cerradas", stuck.size()));

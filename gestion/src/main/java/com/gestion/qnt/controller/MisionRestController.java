@@ -28,8 +28,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import org.springframework.format.annotation.DateTimeFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -98,6 +100,25 @@ public class MisionRestController {
         } catch (NotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // ─────────────────────────────────────────────
+    // GET /misiones/historial — misiones lanzadas desde el sistema
+    // ─────────────────────────────────────────────
+    @GetMapping("/historial")
+    @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<MisionDTO>> historial(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
+        try {
+            LocalDateTime desdeTs = desde != null ? desde.atStartOfDay() : null;
+            LocalDateTime hastaTs = hasta != null ? hasta.plusDays(1).atStartOfDay().minusNanos(1) : null;
+            List<Mision> misiones = misionRepository.findHistorial(desdeTs, hastaTs);
+            return ResponseEntity.ok(misiones.stream().map(this::toDTO).collect(Collectors.toList()));
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

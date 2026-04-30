@@ -2,14 +2,17 @@ package com.gestion.qnt.controller;
 
 import com.gestion.qnt.config.ApiConstants;
 import com.gestion.qnt.model.*;
+import com.gestion.qnt.model.Dock;
 import com.gestion.qnt.model.enums.Estado;
 import com.gestion.qnt.model.enums.EstadoMision;
 import com.gestion.qnt.model.enums.TipoEventoVuelo;
+import com.gestion.qnt.model.enums.Yacimiento;
 import com.gestion.qnt.model.VueloLog;
 import com.gestion.qnt.repository.DronRepository;
 import com.gestion.qnt.repository.MisionRepository;
 import com.gestion.qnt.repository.UsuarioRepository;
 import com.gestion.qnt.repository.VueloLogRepository;
+import com.gestion.qnt.service.FlytbaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -17,6 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -42,6 +47,7 @@ public class InternalMisionController {
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private VueloLogRepository vueloLogRepository;
     @Autowired private JdbcTemplate jdbcTemplate;
+    @Autowired private FlytbaseService flytbaseService;
 
     /**
      * Llamado por n8n cuando FlytBase detecta ATERRIZAJE.
@@ -190,7 +196,21 @@ public class InternalMisionController {
         }
 
         VueloLog registro = buildVueloLog(body, evento);
-        vueloLogRepository.save(registro);
+        try {
+            vueloLogRepository.save(registro);
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "Evento ya registrado (eventId duplicado)", "eventId", registro.getEventId() != null ? registro.getEventId() : ""));
+        }
+
+        // ── EFO: actualizar droneEnDock según el evento ──────────────────────
+        if ("EFO".equals(site) && registro.getNombreDron() != null
+                && (evento == TipoEventoVuelo.DESPEGUE || evento == TipoEventoVuelo.ATERRIZAJE)) {
+            dronRepository.findByNombre(registro.getNombreDron()).ifPresent(d -> {
+                d.setDroneEnDock(evento == TipoEventoVuelo.ATERRIZAJE);
+                dronRepository.save(d);
+            });
+        }
 
         // ── EFO ATERRIZAJE: crear VUELO combinando con el DESPEGUE previo ────
         if ("EFO".equals(site) && evento == TipoEventoVuelo.ATERRIZAJE) {
@@ -227,6 +247,154 @@ public class InternalMisionController {
                 "id",     registro.getId(),
                 "evento", registro.getEvento().name(),
                 "site",   site != null ? site : ""));
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // GET /internal/bot/misiones — misiones EFO lanzables (para el bot Telegram)
+    // ─────────────────────────────────────────────────────────────────────────
+    @GetMapping("/bot/misiones")
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> botMisiones(
+            @RequestHeader(value = "X-Internal-Secret", required = false) String secret) {
+        if (!internalSecret.equals(secret))
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+
+        List<Map<String, Object>> result = misionRepository.findAllWithDetails().stream()
+                .filter(m -> (m.getEstado() == EstadoMision.PLANIFICADA || m.getEstado() == EstadoMision.COMPLETADA)
+                        && m.getDron() != null && m.getDron().getYacimiento() == Yacimiento.EFO)
+                .map(m -> {
+                    Map<String, Object> dto = new java.util.LinkedHashMap<>();
+                    dto.put("id",          m.getId());
+                    dto.put("nombre",      m.getNombre());
+                    dto.put("descripcion", m.getDescripcion());
+                    dto.put("estado",      m.getEstado().name());
+                    dto.put("dronNombre",  m.getDron().getNombre());
+                    Dock dock = m.getDock() != null ? m.getDock()
+                            : (m.getDron().getDock() != null ? m.getDron().getDock() : null);
+                    dto.put("dockNombre",  dock != null ? dock.getNombre() : null);
+                    return dto;
+                })
+                .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(result);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // POST /internal/bot/misiones/{id}/lanzar — lanza misión desde el bot
+    // Body: { "telegramUserId": 123, "telegramNombre": "Juan Pérez" }
+    // ─────────────────────────────────────────────────────────────────────────
+    @PostMapping("/bot/misiones/{id}/lanzar")
+    @Transactional
+    public ResponseEntity<Map<String, Object>> botLanzarMision(
+            @RequestHeader(value = "X-Internal-Secret", required = false) String secret,
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body) {
+
+        if (!internalSecret.equals(secret))
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+
+        Mision m = misionRepository.findById(id).orElse(null);
+        if (m == null) return ResponseEntity.notFound().build();
+
+        if (m.getEstado() != EstadoMision.PLANIFICADA && m.getEstado() != EstadoMision.COMPLETADA)
+            return ResponseEntity.badRequest().body(Map.of("error", "La misión debe estar PLANIFICADA o COMPLETADA"));
+
+        Dron dron = m.getDron();
+        if (dron == null || dron.getYacimiento() != Yacimiento.EFO)
+            return ResponseEntity.badRequest().body(Map.of("error", "Solo misiones EFO"));
+
+        if (m.getWebhookUrl() == null || m.getWebhookUrl().isBlank()
+                || m.getWebhookBearer() == null || m.getWebhookBearer().isBlank())
+            return ResponseEntity.badRequest().body(Map.of("error", "Webhook FlytBase no configurado"));
+
+        if (vueloLogRepository.hayVueloActivo(dron.getNombre()))
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "El dron '" + dron.getNombre() + "' ya tiene un vuelo activo"));
+
+        // Resolver piloto por telegramUserId o dejar sin piloto
+        Long telegramUserId = body.get("telegramUserId") instanceof Number n ? n.longValue() : null;
+        String telegramNombre = (String) body.get("telegramNombre");
+        Usuario piloto = telegramUserId != null
+                ? usuarioRepository.findByTelegramUserId(telegramUserId).orElse(null)
+                : null;
+
+        try {
+            flytbaseService.lanzarMision(
+                    m.getWebhookUrl(), m.getWebhookBearer(), m.getNombre(),
+                    m.getDock() != null ? m.getDock().getLatitud() : null,
+                    m.getDock() != null ? m.getDock().getLongitud() : null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .body(Map.of("error", "No se pudo contactar a FlytBase: " + e.getMessage()));
+        }
+
+        m.setPiloto(piloto);
+        if (piloto == null && telegramNombre != null) {
+            String obs = (m.getObservaciones() != null ? m.getObservaciones() + "\n" : "")
+                    + "Lanzado por Telegram: " + telegramNombre;
+            m.setObservaciones(obs);
+        }
+        m.setEstado(EstadoMision.EN_CURSO);
+        m.setUltimaEjecucion(LocalDateTime.now());
+        m.setFechaInicio(LocalDateTime.now());
+        m.setFechaFin(null);
+        misionRepository.save(m);
+
+        String pilotoNombre = piloto != null
+                ? (piloto.getNombre() + " " + (piloto.getApellido() != null ? piloto.getApellido() : "")).trim()
+                : (telegramNombre != null ? telegramNombre + " (no mapeado)" : "sin piloto");
+
+        jdbcTemplate.update(
+                "INSERT INTO mision_pendiente (drone_nombre, piloto_nombre, usuario_id, mision_id) VALUES (?, ?, ?, ?)",
+                dron.getNombre(), pilotoNombre, piloto != null ? piloto.getId() : null, m.getId());
+
+        return ResponseEntity.ok(Map.of(
+                "success",      true,
+                "misionId",     m.getId(),
+                "misionNombre", m.getNombre(),
+                "pilotoNombre", pilotoNombre,
+                "mensaje",      "Misión '" + m.getNombre() + "' lanzada exitosamente"));
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // GET /internal/bot/drones — drones EFO con estado inferido de vuelos_log
+    // ─────────────────────────────────────────────────────────────────────────
+    @GetMapping("/bot/drones")
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> botDrones(
+            @RequestHeader(value = "X-Internal-Secret", required = false) String secret) {
+        if (!internalSecret.equals(secret))
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+
+        List<Map<String, Object>> result = dronRepository.findAll().stream()
+                .filter(d -> d.getYacimiento() == Yacimiento.EFO)
+                .map(d -> {
+                    boolean volando = vueloLogRepository.hayVueloActivo(d.getNombre());
+                    // Último evento registrado para este dron
+                    List<VueloLog> ultimos = vueloLogRepository.findFiltered(
+                            d.getNombre(), "EFO", null, null, null);
+                    VueloLog ultimoEvento = ultimos.isEmpty() ? null : ultimos.get(0);
+
+                    Map<String, Object> dto = new java.util.LinkedHashMap<>();
+                    dto.put("id",            d.getId());
+                    dto.put("nombre",        d.getNombre());
+                    dto.put("estado",        d.getEstado() != null ? d.getEstado().name() : null);
+                    dto.put("cantidadVuelos", d.getCantidadVuelos());
+                    dto.put("ultimoVuelo",   d.getUltimoVuelo() != null ? d.getUltimoVuelo().toString() : null);
+                    dto.put("volandoAhora",  volando);
+                    dto.put("droneEnDock",   d.getDroneEnDock());
+                    if (ultimoEvento != null) {
+                        Map<String, String> ue = new java.util.LinkedHashMap<>();
+                        ue.put("tipo",      ultimoEvento.getEvento().name());
+                        ue.put("timestamp", ultimoEvento.getFechaRegistro() != null
+                                ? ultimoEvento.getFechaRegistro().toString() : null);
+                        dto.put("ultimoEvento", ue);
+                    } else {
+                        dto.put("ultimoEvento", null);
+                    }
+                    return dto;
+                })
+                .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(result);
     }
 
     private VueloLog buildVueloLog(Map<String, Object> body, TipoEventoVuelo evento) {

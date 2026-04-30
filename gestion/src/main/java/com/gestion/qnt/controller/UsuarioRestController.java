@@ -15,6 +15,8 @@ import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import com.gestion.qnt.model.business.interfaces.ILicenciaANACBusiness;
 import com.gestion.qnt.model.business.interfaces.IRoleBusiness;
 import com.gestion.qnt.model.business.interfaces.IUsuarioBusiness;
+import com.gestion.qnt.repository.UsuarioRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(ApiConstants.URL_BASE + "/usuarios")
@@ -36,6 +39,9 @@ public class UsuarioRestController {
     private final IRoleBusiness roleBusiness;
     private final PasswordEncoder passwordEncoder;
     private final ILicenciaANACBusiness licenciaANACBusiness;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     public UsuarioRestController(IUsuarioBusiness usuarioBusiness,
                                  IRoleBusiness roleBusiness,
@@ -340,5 +346,19 @@ public class UsuarioRestController {
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    @PatchMapping("/{id}/telegram")
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> setTelegramUserId(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body) {
+        Usuario u = usuarioRepository.findById(id).orElse(null);
+        if (u == null) return ResponseEntity.notFound().build();
+        Object val = body.get("telegramUserId");
+        u.setTelegramUserId(val == null ? null : ((Number) val).longValue());
+        usuarioRepository.save(u);
+        return ResponseEntity.ok(Map.of("id", u.getId(), "telegramUserId", u.getTelegramUserId() != null ? u.getTelegramUserId() : "null"));
     }
 }

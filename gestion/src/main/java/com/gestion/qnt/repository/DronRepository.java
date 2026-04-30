@@ -12,6 +12,8 @@ public interface DronRepository extends JpaRepository<Dron, Long> {
 
     Optional<Dron> findByNumeroSerie(String numeroSerie);
 
+    Optional<Dron> findByNombre(String nombre);
+
     List<Dron> findByEstado(Estado estado);
 
     List<Dron> findByBateriaTempCGreaterThan(BigDecimal temp);

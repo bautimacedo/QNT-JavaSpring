@@ -92,6 +92,9 @@ public class Usuario implements UserDetails {
     @Basic(optional = true)
     @JsonIgnore
     private byte[] imagenPerfil;
+
+    @Column(name = "telegram_user_id")
+    private Long telegramUserId;
     
     
  // le paso un rol y me dice si el usuario tiene el rol o no.

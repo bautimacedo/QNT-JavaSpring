@@ -204,11 +204,12 @@ public class InternalMisionController {
         }
 
         // ── EFO: actualizar droneEnDock y ultimoVuelo según el evento ────────
+        final TipoEventoVuelo eventoFinal = evento;
         if ("EFO".equals(site) && registro.getNombreDron() != null
-                && (evento == TipoEventoVuelo.DESPEGUE || evento == TipoEventoVuelo.ATERRIZAJE)) {
+                && (eventoFinal == TipoEventoVuelo.DESPEGUE || eventoFinal == TipoEventoVuelo.ATERRIZAJE)) {
             dronRepository.findByNombre(registro.getNombreDron()).ifPresent(d -> {
-                d.setDroneEnDock(evento == TipoEventoVuelo.ATERRIZAJE);
-                if (evento == TipoEventoVuelo.ATERRIZAJE) {
+                d.setDroneEnDock(eventoFinal == TipoEventoVuelo.ATERRIZAJE);
+                if (eventoFinal == TipoEventoVuelo.ATERRIZAJE) {
                     d.setUltimoVuelo(Instant.now());
                 }
                 dronRepository.save(d);

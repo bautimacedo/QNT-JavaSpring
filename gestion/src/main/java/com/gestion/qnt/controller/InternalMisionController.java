@@ -203,11 +203,14 @@ public class InternalMisionController {
                     .body(Map.of("error", "Evento ya registrado (eventId duplicado)", "eventId", registro.getEventId() != null ? registro.getEventId() : ""));
         }
 
-        // ── EFO: actualizar droneEnDock según el evento ──────────────────────
+        // ── EFO: actualizar droneEnDock y ultimoVuelo según el evento ────────
         if ("EFO".equals(site) && registro.getNombreDron() != null
                 && (evento == TipoEventoVuelo.DESPEGUE || evento == TipoEventoVuelo.ATERRIZAJE)) {
             dronRepository.findByNombre(registro.getNombreDron()).ifPresent(d -> {
                 d.setDroneEnDock(evento == TipoEventoVuelo.ATERRIZAJE);
+                if (evento == TipoEventoVuelo.ATERRIZAJE) {
+                    d.setUltimoVuelo(Instant.now());
+                }
                 dronRepository.save(d);
             });
         }

@@ -66,6 +66,7 @@ public class DockBusiness implements IDockBusiness {
             existing.setNumeroSerie(entity.getNumeroSerie());
             existing.setGarantia(entity.getGarantia());
             existing.setEstado(entity.getEstado());
+            existing.setYacimiento(entity.getYacimiento());
             existing.setLatitud(entity.getLatitud());
             existing.setLongitud(entity.getLongitud());
             existing.setAltitud(entity.getAltitud());

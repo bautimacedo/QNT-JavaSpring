@@ -419,6 +419,56 @@ public class InternalMisionController {
         return ResponseEntity.ok(result);
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // GET /internal/bot/stats — stats de vuelos para el reporte del bot
+    // ─────────────────────────────────────────────────────────────────────────
+    @GetMapping("/bot/stats")
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> botStats(
+            @RequestHeader(value = "X-Internal-Secret", required = false) String secret,
+            @RequestParam(required = false) String desde,
+            @RequestParam(required = false) String hasta) {
+        if (!internalSecret.equals(secret))
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+
+        List<VueloLog> registros = vueloLogRepository.findFiltered(null, null, null, desde, hasta);
+
+        long totalVuelos    = registros.stream().filter(v -> v.getEvento() == TipoEventoVuelo.VUELO).count();
+        long totalFallas    = registros.stream().filter(v ->
+                v.getEvento() == TipoEventoVuelo.FALLA_DESPEGUE ||
+                v.getEvento() == TipoEventoVuelo.DESPEGUE_FALLIDO ||
+                Boolean.TRUE.equals(v.getDespegueFallido())).count();
+        long totalMalTiempo = registros.stream().filter(v -> v.getEvento() == TipoEventoVuelo.MAL_TIEMPO).count();
+        long totalVuelosCortos = registros.stream()
+                .filter(v -> v.getEvento() == TipoEventoVuelo.VUELO
+                        && v.getDuracionMinutos() != null && v.getDuracionMinutos() < 3)
+                .count();
+
+        Map<String, Map<String, Long>> porSite = new java.util.LinkedHashMap<>();
+        registros.stream()
+                .filter(v -> v.getSite() != null)
+                .collect(java.util.stream.Collectors.groupingBy(VueloLog::getSite))
+                .forEach((s, logs) -> {
+                    Map<String, Long> sm = new java.util.LinkedHashMap<>();
+                    sm.put("vuelos", logs.stream().filter(v -> v.getEvento() == TipoEventoVuelo.VUELO).count());
+                    sm.put("fallas", logs.stream().filter(v ->
+                            v.getEvento() == TipoEventoVuelo.FALLA_DESPEGUE ||
+                            v.getEvento() == TipoEventoVuelo.DESPEGUE_FALLIDO ||
+                            Boolean.TRUE.equals(v.getDespegueFallido())).count());
+                    sm.put("vuelosCortos", logs.stream().filter(v -> v.getEvento() == TipoEventoVuelo.VUELO
+                            && v.getDuracionMinutos() != null && v.getDuracionMinutos() < 3).count());
+                    porSite.put(s, sm);
+                });
+
+        Map<String, Object> stats = new java.util.LinkedHashMap<>();
+        stats.put("totalVuelos",       totalVuelos);
+        stats.put("totalFallas",       totalFallas);
+        stats.put("totalMalTiempo",    totalMalTiempo);
+        stats.put("totalVuelosCortos", totalVuelosCortos);
+        stats.put("porSite",           porSite);
+        return ResponseEntity.ok(stats);
+    }
+
     private VueloLog buildVueloLog(Map<String, Object> body, TipoEventoVuelo evento) {
         VueloLog v = new VueloLog();
         v.setEvento(evento);

@@ -12,12 +12,12 @@ public interface VueloLogRepository extends JpaRepository<VueloLog, Long> {
 
     @Query(value = """
             SELECT * FROM vuelos_log
-            WHERE (:dron   IS NULL OR nombre_dron        = :dron)
-              AND (:site   IS NULL OR site                = :site)
-              AND (:evento IS NULL OR evento              = :evento)
-              AND (:desde  IS NULL OR timestamp_flytbase >= CAST(:desde AS timestamptz))
-              AND (:hasta  IS NULL OR timestamp_flytbase <= CAST(:hasta AS timestamptz))
-            ORDER BY timestamp_flytbase DESC
+            WHERE (:dron   IS NULL OR nombre_dron = :dron)
+              AND (:site   IS NULL OR site         = :site)
+              AND (:evento IS NULL OR evento        = :evento)
+              AND (:desde  IS NULL OR COALESCE(timestamp_flytbase, fecha_registro) >= CAST(:desde AS timestamptz))
+              AND (:hasta  IS NULL OR COALESCE(timestamp_flytbase, fecha_registro) <= CAST(:hasta AS timestamptz))
+            ORDER BY COALESCE(timestamp_flytbase, fecha_registro) DESC
             """, nativeQuery = true)
     List<VueloLog> findFiltered(
             @Param("dron")   String dron,

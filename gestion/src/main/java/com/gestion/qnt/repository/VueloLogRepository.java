@@ -59,18 +59,20 @@ public interface VueloLogRepository extends JpaRepository<VueloLog, Long> {
     /**
      * Retorna true si existe un DESPEGUE real (despegueFallido=false) para el drone
      * que NO tiene un ATERRIZAJE posterior — indica que el drone está actualmente volando.
+     * Usa COALESCE(timestamp_flytbase, fecha_registro) para soportar registros sin timestamp FlytBase.
      */
-    @Query("""
-            SELECT COUNT(v) > 0 FROM VueloLog v
-            WHERE v.nombreDron = :nombreDron
-              AND v.evento = com.gestion.qnt.model.enums.TipoEventoVuelo.DESPEGUE
-              AND v.despegueFallido = false
+    @Query(value = """
+            SELECT COUNT(*) > 0 FROM vuelos_log v
+            WHERE v.nombre_dron = :nombreDron
+              AND v.evento = 'DESPEGUE'
+              AND (v.despegue_fallido IS NULL OR v.despegue_fallido = false)
               AND NOT EXISTS (
-                SELECT 1 FROM VueloLog v2
-                WHERE v2.nombreDron = :nombreDron
-                  AND v2.evento = com.gestion.qnt.model.enums.TipoEventoVuelo.ATERRIZAJE
-                  AND v2.timestampFlytbase > v.timestampFlytbase
+                SELECT 1 FROM vuelos_log v2
+                WHERE v2.nombre_dron = :nombreDron
+                  AND v2.evento = 'ATERRIZAJE'
+                  AND COALESCE(v2.timestamp_flytbase, v2.fecha_registro)
+                    > COALESCE(v.timestamp_flytbase, v.fecha_registro)
               )
-            """)
+            """, nativeQuery = true)
     boolean hayVueloActivo(@Param("nombreDron") String nombreDron);
 }

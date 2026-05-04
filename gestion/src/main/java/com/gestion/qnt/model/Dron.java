@@ -99,7 +99,7 @@ public class Dron {
     private Instant ultimaTelemetria;
 
     @JsonIgnoreProperties({"seguro", "ultimoMantenimiento", "licencia", "mantenimientos", "dron", "hibernateLazyInitializer", "handler"})
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "dock_id", unique = true)
     private Dock dock;
 

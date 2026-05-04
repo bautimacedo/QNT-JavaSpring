@@ -1,6 +1,7 @@
 package com.gestion.qnt.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -97,6 +98,7 @@ public class Dron {
     @Column(name = "ultima_telemetria")
     private Instant ultimaTelemetria;
 
+    @JsonIgnoreProperties({"seguro", "ultimoMantenimiento", "licencia", "mantenimientos", "dron", "hibernateLazyInitializer", "handler"})
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dock_id", unique = true)
     private Dock dock;

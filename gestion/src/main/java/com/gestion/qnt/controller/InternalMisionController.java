@@ -110,9 +110,9 @@ public class InternalMisionController {
                 "accion", "ignorado"));
         }
 
-        // ── 1. Completar la misión ──────────────────────────────
+        // ── 1. Completar la misión y resetear a PLANIFICADA (misiones reutilizables) ──
         LocalDateTime ahora = LocalDateTime.now();
-        m.setEstado(EstadoMision.COMPLETADA);
+        m.setEstado(EstadoMision.PLANIFICADA);
         m.setFechaFin(ahora);
         misionRepository.save(m);
 
@@ -264,7 +264,7 @@ public class InternalMisionController {
             return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
 
         List<Map<String, Object>> result = misionRepository.findAllWithDetails().stream()
-                .filter(m -> (m.getEstado() == EstadoMision.PLANIFICADA || m.getEstado() == EstadoMision.COMPLETADA)
+                .filter(m -> m.getEstado() == EstadoMision.PLANIFICADA
                         && m.getDron() != null && m.getDron().getYacimiento() == Yacimiento.EFO)
                 .map(m -> {
                     Map<String, Object> dto = new java.util.LinkedHashMap<>();
@@ -299,8 +299,8 @@ public class InternalMisionController {
         Mision m = misionRepository.findById(id).orElse(null);
         if (m == null) return ResponseEntity.notFound().build();
 
-        if (m.getEstado() != EstadoMision.PLANIFICADA && m.getEstado() != EstadoMision.COMPLETADA)
-            return ResponseEntity.badRequest().body(Map.of("error", "La misión debe estar PLANIFICADA o COMPLETADA"));
+        if (m.getEstado() != EstadoMision.PLANIFICADA)
+            return ResponseEntity.badRequest().body(Map.of("error", "La misión no está disponible para lanzar"));
 
         Dron dron = m.getDron();
         if (dron == null || dron.getYacimiento() != Yacimiento.EFO)

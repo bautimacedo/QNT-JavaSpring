@@ -97,7 +97,6 @@ public class Dron {
     @Column(name = "ultima_telemetria")
     private Instant ultimaTelemetria;
 
-    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dock_id", unique = true)
     private Dock dock;

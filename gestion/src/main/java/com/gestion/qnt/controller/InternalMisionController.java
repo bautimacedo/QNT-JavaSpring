@@ -196,6 +196,17 @@ public class InternalMisionController {
         }
 
         VueloLog registro = buildVueloLog(body, evento);
+
+        // ── EFO DESPEGUE: piloto = quien lanzó la misión desde Telegram ────────
+        if ("EFO".equals(site) && evento == TipoEventoVuelo.DESPEGUE && registro.getNombreDron() != null) {
+            List<String> pilotos = jdbcTemplate.queryForList(
+                    "SELECT piloto_nombre FROM mision_pendiente WHERE drone_nombre = ? AND procesado = false LIMIT 1",
+                    String.class, registro.getNombreDron());
+            if (!pilotos.isEmpty() && pilotos.get(0) != null) {
+                registro.setPiloto(pilotos.get(0));
+            }
+        }
+
         try {
             vueloLogRepository.save(registro);
         } catch (DataIntegrityViolationException e) {
@@ -244,6 +255,13 @@ public class InternalMisionController {
                 }
                 vuelo.setDespegueFallido(false);
                 vueloLogRepository.save(vuelo);
+            }
+
+            // Limpiar mision_pendiente: el vuelo cerró
+            if (dronNombre != null) {
+                jdbcTemplate.update(
+                        "UPDATE mision_pendiente SET procesado = true WHERE drone_nombre = ? AND procesado = false",
+                        dronNombre);
             }
         }
 

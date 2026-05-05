@@ -160,7 +160,7 @@ public class MiPerfilPilotoController {
                     usuario.getTelegramUserId() != null ? usuario.getTelegramUserId() : ""));
         } catch (NotFoundException e) {
             return ResponseEntity.notFound().build();
-        } catch (BusinessException e) {
+        } catch (FoundException | BusinessException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

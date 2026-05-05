@@ -137,6 +137,34 @@ public class MiPerfilPilotoController {
         }
     }
 
+    // ──────────────────────────── Telegram User ID ──────────────────────────
+
+    @PatchMapping("/telegram")
+    @Transactional
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> setTelegramUserId(Authentication authentication,
+                                               @RequestBody Map<String, Object> body) {
+        AuthUser auth = authUser(authentication);
+        try {
+            Usuario usuario = usuarioBusiness.load(auth.getId());
+            Object val = body.get("telegramUserId");
+            if (val == null) {
+                usuario.setTelegramUserId(null);
+            } else if (val instanceof Number n) {
+                usuario.setTelegramUserId(n.longValue());
+            } else {
+                return ResponseEntity.badRequest().body("telegramUserId debe ser un número");
+            }
+            usuarioBusiness.update(usuario);
+            return ResponseEntity.ok(Map.of("telegramUserId",
+                    usuario.getTelegramUserId() != null ? usuario.getTelegramUserId() : ""));
+        } catch (NotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     // ──────────────────────────── Foto de perfil ────────────────────────────
 
     @PutMapping("/foto-perfil")

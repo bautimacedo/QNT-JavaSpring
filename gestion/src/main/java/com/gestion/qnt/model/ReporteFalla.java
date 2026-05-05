@@ -22,7 +22,6 @@ public class ReporteFalla {
     @Column(name = "archivo_nombre", nullable = false)
     private String archivoNombre;
 
-    @Lob
     @Column(nullable = false, columnDefinition = "bytea")
     @JsonIgnore
     private byte[] contenido;

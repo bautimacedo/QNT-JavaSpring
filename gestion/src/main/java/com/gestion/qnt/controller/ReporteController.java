@@ -86,16 +86,17 @@ public class ReporteController {
     public ResponseEntity<Map<String, Object>> subirFalla(
             @RequestParam("titulo") String titulo,
             @RequestParam("fecha") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
-            @RequestParam("archivo") MultipartFile archivo) throws Exception {
+            @RequestParam("archivo") MultipartFile archivo) throws java.io.IOException {
 
-        if (archivo.isEmpty() || !archivo.getOriginalFilename().toLowerCase().endsWith(".pdf")) {
+        String fn = archivo.getOriginalFilename();
+        if (archivo.isEmpty() || fn == null || !fn.toLowerCase().endsWith(".pdf")) {
             return ResponseEntity.badRequest().body(Map.of("error", "Solo se permiten archivos PDF"));
         }
 
         ReporteFalla r = new ReporteFalla();
         r.setTitulo(titulo);
         r.setFecha(fecha);
-        r.setArchivoNombre(Paths.get(archivo.getOriginalFilename()).getFileName().toString());
+        r.setArchivoNombre(Paths.get(fn).getFileName().toString());
         r.setContenido(archivo.getBytes());
         r.setFechaSubida(Instant.now());
         reporteFallaRepository.save(r);

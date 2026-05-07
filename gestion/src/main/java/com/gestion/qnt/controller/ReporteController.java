@@ -2,7 +2,10 @@ package com.gestion.qnt.controller;
 
 import com.gestion.qnt.config.ApiConstants;
 import com.gestion.qnt.model.ReporteFalla;
+import com.gestion.qnt.model.VueloLog;
+import com.gestion.qnt.model.enums.TipoEventoVuelo;
 import com.gestion.qnt.repository.ReporteFallaRepository;
+import com.gestion.qnt.repository.VueloLogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -17,10 +20,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(ApiConstants.URL_BASE + "/reportes")
@@ -28,6 +30,11 @@ public class ReporteController {
 
     @Autowired
     private ReporteFallaRepository reporteFallaRepository;
+
+    @Autowired
+    private VueloLogRepository vueloLogRepository;
+
+    private static final ZoneId ARG = ZoneId.of("America/Argentina/Buenos_Aires");
 
     // Archivos de ejemplo embebidos en el JAR
     private static final List<String> EJEMPLO_FILES = List.of(
@@ -124,5 +131,70 @@ public class ReporteController {
         if (!reporteFallaRepository.existsById(id)) return ResponseEntity.notFound().build();
         reporteFallaRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // ── Reportes diarios ─────────────────────────────────────────────────────
+
+    /**
+     * Retorna un resumen por día de la actividad de vuelo.
+     * desde/hasta: fechas en formato YYYY-MM-DD (Argentina).
+     */
+    @GetMapping("/diarios")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<Map<String, Object>>> listarDiarios(
+            @RequestParam(required = false) String desde,
+            @RequestParam(required = false) String hasta) {
+
+        String desdeTs = desde != null ? desde + "T00:00:00-03:00" : null;
+        String hastaTs = hasta != null ? hasta + "T23:59:59-03:00" : null;
+
+        List<VueloLog> registros = vueloLogRepository.findFiltered(null, null, null, desdeTs, hastaTs);
+
+        // Para sites != EFO, ATERRIZAJE/DESPEGUE cuenta como VUELO
+        for (VueloLog v : registros) {
+            if (!"EFO".equalsIgnoreCase(v.getSite())
+                    && (v.getEvento() == TipoEventoVuelo.ATERRIZAJE
+                        || v.getEvento() == TipoEventoVuelo.DESPEGUE)) {
+                v.setEvento(TipoEventoVuelo.VUELO);
+            }
+        }
+
+        // Agrupar por fecha local (Argentina)
+        Map<LocalDate, List<VueloLog>> porFecha = new TreeMap<>(Comparator.reverseOrder());
+        for (VueloLog v : registros) {
+            Instant ts = v.getTimestampFlytbase() != null
+                    ? v.getTimestampFlytbase()
+                    : (v.getFechaRegistro() != null ? v.getFechaRegistro().atZone(ARG).toInstant() : null);
+            if (ts == null) continue;
+            LocalDate fecha = ts.atZone(ARG).toLocalDate();
+            porFecha.computeIfAbsent(fecha, k -> new ArrayList<>()).add(v);
+        }
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        porFecha.forEach((fecha, logs) -> {
+            long vuelos = logs.stream().filter(v -> v.getEvento() == TipoEventoVuelo.VUELO).count();
+            long fallas = logs.stream().filter(v ->
+                    v.getEvento() == TipoEventoVuelo.FALLA_DESPEGUE ||
+                    v.getEvento() == TipoEventoVuelo.DESPEGUE_FALLIDO ||
+                    Boolean.TRUE.equals(v.getDespegueFallido())).count();
+            long cortos = logs.stream().filter(v ->
+                    v.getEvento() == TipoEventoVuelo.VUELO
+                    && v.getDuracionMinutos() != null && v.getDuracionMinutos() < 3).count();
+            List<String> sites = logs.stream()
+                    .map(VueloLog::getSite)
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .sorted()
+                    .collect(Collectors.toList());
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("fecha",             fecha.toString());
+            m.put("totalVuelos",       vuelos);
+            m.put("totalFallas",       fallas);
+            m.put("totalVuelosCortos", cortos);
+            m.put("sites",             sites);
+            result.add(m);
+        });
+
+        return ResponseEntity.ok(result);
     }
 }

@@ -254,6 +254,9 @@ public class InternalMisionController {
                     vuelo.setDuracionMinutos(Math.max(0, (int) (segundos / 60)));
                 }
                 vuelo.setDespegueFallido(false);
+                if (registro.getEventId() != null) {
+                    vuelo.setEventId("VUELO_" + registro.getEventId());
+                }
                 vueloLogRepository.save(vuelo);
             }
 
@@ -432,6 +435,15 @@ public class InternalMisionController {
             return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
 
         List<VueloLog> registros = vueloLogRepository.findFiltered(null, null, null, desde, hasta);
+
+        // Para sites != EFO, ATERRIZAJE/DESPEGUE cuenta como VUELO (igual que VueloLogRestController)
+        for (VueloLog v : registros) {
+            if (!"EFO".equalsIgnoreCase(v.getSite())
+                    && (v.getEvento() == TipoEventoVuelo.ATERRIZAJE
+                        || v.getEvento() == TipoEventoVuelo.DESPEGUE)) {
+                v.setEvento(TipoEventoVuelo.VUELO);
+            }
+        }
 
         long totalVuelos    = registros.stream().filter(v -> v.getEvento() == TipoEventoVuelo.VUELO).count();
         long totalFallas    = registros.stream().filter(v ->

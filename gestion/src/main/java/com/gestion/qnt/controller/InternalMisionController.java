@@ -193,6 +193,7 @@ public class InternalMisionController {
         }
 
         // ── CAM: cualquier DESPEGUE/ATERRIZAJE → VUELO directo ───────────────
+        TipoEventoVuelo eventoOriginalCam = evento;
         if ("CAM".equals(site) &&
                 (evento == TipoEventoVuelo.DESPEGUE || evento == TipoEventoVuelo.ATERRIZAJE)) {
             evento = TipoEventoVuelo.VUELO;
@@ -269,6 +270,66 @@ public class InternalMisionController {
                         "UPDATE mision_pendiente SET procesado = true WHERE drone_nombre = ? AND procesado = false",
                         dronNombre);
             }
+        }
+
+        // ── CAM ATERRIZAJE: actualizar droneEnDock y completar misión EN_CURSO ─
+        if ("CAM".equals(site) && eventoOriginalCam == TipoEventoVuelo.ATERRIZAJE
+                && registro.getNombreDron() != null) {
+
+            dronRepository.findByNombre(registro.getNombreDron()).ifPresent(d -> {
+                d.setDroneEnDock(true);
+                d.setUltimoVuelo(Instant.now());
+                dronRepository.save(d);
+            });
+
+            // Leer duración del VUELO recién guardado (o el último VUELO de este dron)
+            Integer durMinutos = 0;
+            try {
+                Integer dur = jdbcTemplate.queryForObject(
+                        "SELECT duracion_minutos FROM vuelos_log " +
+                        "WHERE nombre_dron = ? AND evento = 'VUELO' AND duracion_minutos IS NOT NULL " +
+                        "ORDER BY fecha_registro DESC LIMIT 1",
+                        Integer.class, registro.getNombreDron());
+                if (dur != null) durMinutos = dur;
+            } catch (Exception ignored) {}
+
+            final Integer durFinal = durMinutos;
+
+            misionRepository.findByDron_NombreAndEstado(registro.getNombreDron(), EstadoMision.EN_CURSO)
+                    .stream().findFirst().ifPresent(m -> {
+                m.setEstado(EstadoMision.PLANIFICADA);
+                m.setFechaFin(LocalDateTime.now());
+                misionRepository.save(m);
+
+                Dron dron = m.getDron();
+                if (dron != null) {
+                    dron.setCantidadVuelos((dron.getCantidadVuelos() != null ? dron.getCantidadVuelos() : 0) + 1);
+                    dron.setCantidadMinutosVolados((dron.getCantidadMinutosVolados() != null ? dron.getCantidadMinutosVolados() : 0) + durFinal);
+                    dronRepository.save(dron);
+
+                    for (Bateria bateria : dron.getBaterias()) {
+                        if (bateria.getEstado() == Estado.STOCK_ACTIVO) {
+                            bateria.setCantidadVuelos((bateria.getCantidadVuelos() != null ? bateria.getCantidadVuelos() : 0) + 1);
+                            bateria.setCantidadMinutosVolados((bateria.getCantidadMinutosVolados() != null ? bateria.getCantidadMinutosVolados() : 0) + durFinal);
+                            bateria.setCiclosCarga((bateria.getCiclosCarga() != null ? bateria.getCiclosCarga() : 0) + 1);
+                        }
+                    }
+                    for (Helice helice : dron.getHelices()) {
+                        if (helice.getEstado() == Estado.STOCK_ACTIVO) {
+                            helice.setCantidadVuelos((helice.getCantidadVuelos() != null ? helice.getCantidadVuelos() : 0) + 1);
+                            helice.setCantidadMinutosVolados((helice.getCantidadMinutosVolados() != null ? helice.getCantidadMinutosVolados() : 0) + durFinal);
+                        }
+                    }
+                }
+
+                Usuario piloto = m.getPiloto();
+                if (piloto != null) {
+                    double horas = piloto.getHorasVuelo() != null ? piloto.getHorasVuelo() : 0.0;
+                    piloto.setHorasVuelo(Math.round((horas + durFinal / 60.0) * 100.0) / 100.0);
+                    piloto.setCantidadVuelos((piloto.getCantidadVuelos() != null ? piloto.getCantidadVuelos() : 0) + 1);
+                    usuarioRepository.save(piloto);
+                }
+            });
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(

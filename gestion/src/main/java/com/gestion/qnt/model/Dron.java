@@ -101,6 +101,9 @@ public class Dron {
     @Column(name = "ultima_telemetria")
     private Instant ultimaTelemetria;
 
+    @Column(name = "sn_mqtt")
+    private String snMqtt;
+
     @JsonIgnoreProperties({"seguro", "ultimoMantenimiento", "licencia", "mantenimientos", "dron", "hibernateLazyInitializer", "handler"})
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "dock_id", unique = true)

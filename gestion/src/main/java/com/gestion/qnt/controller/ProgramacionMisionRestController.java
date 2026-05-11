@@ -155,6 +155,8 @@ public class ProgramacionMisionRestController {
             dto.misionPlantillaDronNombre = plantilla.getDron() != null ? plantilla.getDron().getNombre() : null;
             dto.misionPlantillaTieneWebhook = plantilla.getWebhookUrl() != null && !plantilla.getWebhookUrl().isBlank()
                     && plantilla.getWebhookBearer() != null && !plantilla.getWebhookBearer().isBlank();
+            dto.misionPlantillaSite = plantilla.getDron() != null && plantilla.getDron().getYacimiento() != null
+                    ? plantilla.getDron().getYacimiento().name() : null;
         }
 
         return dto;

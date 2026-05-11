@@ -48,18 +48,15 @@ public class TelemetriaScheduler {
                 actualizarDock(dock, snap);
                 dockRepository.save(dock);
 
-                // Actualizar drone asociado en dock
-                if (snap.droneSn != null) {
-                    dronRepository.findByNumeroSerie(snap.droneSn).ifPresent(dron -> {
-                        actualizarDronDesdeDock(dron, snap);
-                        dronRepository.save(dron);
+                // Actualizar drone asociado por FK (más fiable que buscar por SN reportado)
+                dronRepository.findByDock_Id(dock.getId()).ifPresent(dron -> {
+                    actualizarDronDesdeDock(dron, snap);
+                    dronRepository.save(dron);
 
-                        // Actualizar batería si tenemos ciclos
-                        if (snap.droneBateriaCiclos != null) {
-                            actualizarBateriaDesdeDock(dron, snap);
-                        }
-                    });
-                }
+                    if (snap.droneBateriaCiclos != null) {
+                        actualizarBateriaDesdeDock(dron, snap);
+                    }
+                });
 
                 log.info("Dock {} actualizado: tempAmb={}°C viento={} m/s", snap.sn, snap.temperaturaAmbiente, snap.velocidadViento);
             }, () -> log.warn("Dock con SN {} no encontrado en BD", snap.sn));
@@ -70,7 +67,11 @@ public class TelemetriaScheduler {
         telemetriaService.getDronSnapshots().values().forEach(snap -> {
             if (snap.sn == null) return;
 
-            dronRepository.findByNumeroSerie(snap.sn).ifPresentOrElse(dron -> {
+            // Intentar por numero_serie; si no, por sn_mqtt (para drones con SN MQTT distinto al físico)
+            java.util.Optional<Dron> dronOpt = dronRepository.findByNumeroSerie(snap.sn);
+            if (dronOpt.isEmpty()) dronOpt = dronRepository.findBySnMqtt(snap.sn);
+
+            dronOpt.ifPresentOrElse(dron -> {
                 if (snap.latitud != null) dron.setLatitud(snap.latitud);
                 if (snap.longitud != null) dron.setLongitud(snap.longitud);
                 if (snap.altitud != null) dron.setAltitud(snap.altitud);

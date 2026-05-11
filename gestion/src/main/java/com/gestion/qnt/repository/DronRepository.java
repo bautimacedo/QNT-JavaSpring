@@ -20,4 +20,8 @@ public interface DronRepository extends JpaRepository<Dron, Long> {
     List<Dron> findByBateriaTempCGreaterThan(BigDecimal temp);
 
     List<Dron> findByYacimiento(Yacimiento yacimiento);
+
+    Optional<Dron> findBySnMqtt(String snMqtt);
+
+    Optional<Dron> findByDock_Id(Long dockId);
 }

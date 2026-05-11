@@ -27,4 +27,5 @@ public class ProgramacionMisionDTO {
     public String misionPlantillaNombre;
     public String misionPlantillaDronNombre;
     public boolean misionPlantillaTieneWebhook;
+    public String misionPlantillaSite;
 }

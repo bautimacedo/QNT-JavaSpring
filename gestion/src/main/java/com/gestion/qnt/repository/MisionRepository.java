@@ -36,4 +36,7 @@ public interface MisionRepository extends JpaRepository<Mision, Long> {
 
     @Query("SELECT m FROM Mision m WHERE m.flightHubWaylineUuid IS NOT NULL AND m.estado = :estado")
     List<Mision> findCAMMisionesByEstado(@Param("estado") EstadoMision estado);
+
+    @Query("SELECT m FROM Mision m LEFT JOIN FETCH m.piloto LEFT JOIN FETCH m.dron d LEFT JOIN FETCH d.baterias LEFT JOIN FETCH d.helices WHERE d.nombre = :dronNombre AND m.estado = :estado ORDER BY m.fechaInicio DESC NULLS LAST")
+    java.util.List<Mision> findByDron_NombreAndEstado(@Param("dronNombre") String dronNombre, @Param("estado") EstadoMision estado);
 }

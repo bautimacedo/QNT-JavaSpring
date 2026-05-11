@@ -66,6 +66,10 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
         if (header != null && header.startsWith(AuthConstants.TOKEN_PREFIX)) {
             return header.substring(AuthConstants.TOKEN_PREFIX.length()).trim();
         }
+        String queryParam = request.getParameter("authtoken");
+        if (queryParam != null && !queryParam.isBlank()) {
+            return queryParam.trim();
+        }
         return null;
     }
 

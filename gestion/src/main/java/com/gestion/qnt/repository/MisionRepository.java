@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MisionRepository extends JpaRepository<Mision, Long> {
 
@@ -30,4 +31,9 @@ public interface MisionRepository extends JpaRepository<Mision, Long> {
 
     @Query("SELECT m FROM Mision m LEFT JOIN FETCH m.piloto LEFT JOIN FETCH m.dron LEFT JOIN FETCH m.dock WHERE m.programacion IS NOT NULL OR m.fechaInicio IS NOT NULL ORDER BY m.fechaInicio DESC NULLS LAST, m.fechaCreacion DESC")
     List<Mision> findHistorial();
+
+    Optional<Mision> findByFlightHubWaylineUuid(String flightHubWaylineUuid);
+
+    @Query("SELECT m FROM Mision m WHERE m.flightHubWaylineUuid IS NOT NULL AND m.estado = :estado")
+    List<Mision> findCAMMisionesByEstado(@Param("estado") EstadoMision estado);
 }

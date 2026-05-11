@@ -80,6 +80,18 @@ public class Mision {
     @Column(name = "flighthub_wayline_uuid")
     private String flightHubWaylineUuid;
 
+    @Column(name = "wayline_update_time")
+    private Long waylineUpdateTime;
+
+    @Column(name = "distancia_metros")
+    private Double distanciaMetros;
+
+    @Column(name = "waypoint_count")
+    private Integer waypointCount;
+
+    @Column(name = "coordenadas_json", columnDefinition = "TEXT")
+    private String coordenadasJson;
+
     @Column(name = "fecha_programada")
     private LocalDateTime fechaProgramada;
 

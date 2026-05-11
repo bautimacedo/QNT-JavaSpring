@@ -259,6 +259,10 @@ public class MisionRestController {
                         dron.setCantidadMinutosVolados((dron.getCantidadMinutosVolados() != null ? dron.getCantidadMinutosVolados() : 0) + (int) minutos);
                         dron.setCantidadVuelos((dron.getCantidadVuelos() != null ? dron.getCantidadVuelos() : 0) + 1);
                         dron.setUltimoVuelo(Instant.now());
+                        // Acumular distancia para misiones CAM (tienen distanciaMetros en la wayline)
+                        if (m.getDistanciaMetros() != null && m.getDistanciaMetros() > 0) {
+                            dron.setDistanciaMetrosVolados((dron.getDistanciaMetrosVolados() != null ? dron.getDistanciaMetrosVolados() : 0.0) + m.getDistanciaMetros());
+                        }
                     }
 
                     // Actualizar piloto (puede ser null si la misión nunca fue lanzada)
@@ -441,6 +445,9 @@ public class MisionRestController {
         }
         dto.webhookUrl             = m.getWebhookUrl();
         dto.flightHubWaylineUuid   = m.getFlightHubWaylineUuid();
+        dto.distanciaMetros        = m.getDistanciaMetros();
+        dto.waypointCount          = m.getWaypointCount();
+        dto.coordenadasJson        = m.getCoordenadasJson();
         dto.fechaProgramada = m.getFechaProgramada();
         dto.programacionId = m.getProgramacion() != null ? m.getProgramacion().getId() : null;
 
@@ -451,10 +458,16 @@ public class MisionRestController {
         if (m.getDron() != null) {
             dto.dronId     = m.getDron().getId();
             dto.dronNombre = m.getDron().getNombre();
+            dto.site = m.getDron().getYacimiento() == Yacimiento.CAM ? "CAM" : "EFO";
         }
-        if (m.getDock() != null) {
-            dto.dockId     = m.getDock().getId();
-            dto.dockNombre = m.getDock().getNombre();
+        // Dock: directo en la misión, o inferido del dron
+        com.gestion.qnt.model.Dock dock = m.getDock() != null ? m.getDock()
+                : (m.getDron() != null ? m.getDron().getDock() : null);
+        if (dock != null) {
+            dto.dockId     = dock.getId();
+            dto.dockNombre = dock.getNombre();
+            dto.dockLat    = dock.getLatitud()  != null ? dock.getLatitud().doubleValue()  : null;
+            dto.dockLon    = dock.getLongitud() != null ? dock.getLongitud().doubleValue() : null;
         }
         return dto;
     }

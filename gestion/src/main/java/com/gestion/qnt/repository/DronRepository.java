@@ -2,6 +2,7 @@ package com.gestion.qnt.repository;
 
 import com.gestion.qnt.model.Dron;
 import com.gestion.qnt.model.enums.Estado;
+import com.gestion.qnt.model.enums.Yacimiento;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.math.BigDecimal;
@@ -17,4 +18,6 @@ public interface DronRepository extends JpaRepository<Dron, Long> {
     List<Dron> findByEstado(Estado estado);
 
     List<Dron> findByBateriaTempCGreaterThan(BigDecimal temp);
+
+    List<Dron> findByYacimiento(Yacimiento yacimiento);
 }

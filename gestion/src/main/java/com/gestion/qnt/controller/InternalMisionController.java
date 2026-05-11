@@ -50,6 +50,7 @@ public class InternalMisionController {
     @Autowired private JdbcTemplate jdbcTemplate;
     @Autowired private FlytbaseService flytbaseService;
     @Autowired private FlightHubService flightHubService;
+    @Autowired private com.gestion.qnt.scheduler.FlightHubSyncJob flightHubSyncJob;
 
     /**
      * Llamado por n8n cuando FlytBase detecta ATERRIZAJE.
@@ -489,66 +490,19 @@ public class InternalMisionController {
         return ResponseEntity.ok(stats);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // POST /internal/flighthub/sync-misiones
-    // Sincroniza waylines de FlightHub como misiones CAM en QNT.
-    // Llama a FlightHub task list, extrae wayline_uuid únicos de tareas exitosas
-    // y crea misiones CAM si aún no existen (idempotente).
-    // ─────────────────────────────────────────────────────────────────────────
+    // POST /internal/flighthub/sync-misiones — trigger manual del FlightHubSyncJob
     @PostMapping("/flighthub/sync-misiones")
-    @Transactional
     public ResponseEntity<Map<String, Object>> syncFlightHubMisiones(
             @RequestHeader(value = "X-Internal-Secret", required = false) String secret) {
         if (!internalSecret.equals(secret))
             return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
-
-        long now     = System.currentTimeMillis() / 1000;
-        long beginAt = now - 90L * 24 * 3600; // últimos 90 días
-
-        List<Map<String, Object>> tareas;
         try {
-            tareas = flightHubService.listarTareas(beginAt, now);
+            flightHubSyncJob.sync();
+            return ResponseEntity.ok(Map.of("ok", true));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                    .body(Map.of("error", "No se pudo contactar a FlightHub: " + e.getMessage()));
+                    .body(Map.of("error", e.getMessage()));
         }
-
-        // Drone CAM por defecto para asignar a las misiones importadas
-        Dron dronCam = dronRepository.findAll().stream()
-                .filter(d -> d.getYacimiento() == Yacimiento.CAM)
-                .findFirst().orElse(null);
-
-        int creadas = 0;
-        int yaExistian = 0;
-
-        java.util.Set<String> waylinesSeen = new java.util.LinkedHashSet<>();
-        for (Map<String, Object> tarea : tareas) {
-            String waylineUuid = (String) tarea.get("wayline_uuid");
-            String nombre      = (String) tarea.get("name");
-            String status      = (String) tarea.get("status");
-            if (waylineUuid == null || !"success".equals(status)) continue;
-            if (!waylinesSeen.add(waylineUuid)) continue; // deduplica
-
-            boolean existe = misionRepository.findAllWithDetails().stream()
-                    .anyMatch(m -> waylineUuid.equals(m.getFlightHubWaylineUuid()));
-            if (existe) {
-                yaExistian++;
-                continue;
-            }
-
-            Mision nueva = new Mision();
-            nueva.setNombre(nombre != null ? nombre : "CAM-" + waylineUuid.substring(0, 8));
-            nueva.setEstado(EstadoMision.PLANIFICADA);
-            nueva.setFlightHubWaylineUuid(waylineUuid);
-            if (dronCam != null) {
-                nueva.setDron(dronCam);
-                if (dronCam.getDock() != null) nueva.setDock(dronCam.getDock());
-            }
-            misionRepository.save(nueva);
-            creadas++;
-        }
-
-        return ResponseEntity.ok(Map.of("creadas", creadas, "yaExistian", yaExistian));
     }
 
     private VueloLog buildVueloLog(Map<String, Object> body, TipoEventoVuelo evento) {

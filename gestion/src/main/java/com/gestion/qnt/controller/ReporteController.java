@@ -53,6 +53,7 @@ public class ReporteController {
     }
 
     @GetMapping("/descargar/{nombre}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Resource> descargar(@PathVariable String nombre) {
         String sanitized = Paths.get(nombre).getFileName().toString();
         if (!sanitized.toLowerCase().endsWith(".pdf")) {
@@ -99,6 +100,10 @@ public class ReporteController {
         if (archivo.isEmpty() || fn == null || !fn.toLowerCase().endsWith(".pdf")) {
             return ResponseEntity.badRequest().body(Map.of("error", "Solo se permiten archivos PDF"));
         }
+        byte[] bytes = archivo.getBytes();
+        if (bytes.length < 4 || bytes[0] != 0x25 || bytes[1] != 0x50 || bytes[2] != 0x44 || bytes[3] != 0x46) {
+            return ResponseEntity.badRequest().body(Map.of("error", "El archivo no es un PDF válido"));
+        }
 
         ReporteFalla r = new ReporteFalla();
         r.setTitulo(titulo);
@@ -115,6 +120,7 @@ public class ReporteController {
     }
 
     @GetMapping("/fallas/{id}/descargar")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<byte[]> descargarFalla(@PathVariable Long id) {
         return reporteFallaRepository.findById(id)
                 .map(r -> ResponseEntity.ok()

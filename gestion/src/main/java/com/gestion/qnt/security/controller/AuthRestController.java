@@ -164,40 +164,6 @@ public class AuthRestController {
     }
 
     /**
-     * Solo desarrollo: codifica una contraseña con BCrypt.
-     * Ruta permitAll en SecurityConfiguration solo para /api/qnt/v1/demo/**
-     */
-    @GetMapping(value = "/demo/encodepass", produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> encodePass(@RequestParam String password) {
-        return ResponseEntity.ok(passwordEncoder.encode(password));
-    }
-
-    /**
-     * Solo desarrollo: comprueba si la contraseña coincide con la guardada para ese email.
-     * Útil para diagnosticar "Credenciales incorrectas" (hash en BD, longitud, etc.).
-     */
-    @GetMapping(value = "/demo/checkpass", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> checkPass(@RequestParam String email, @RequestParam String password) {
-        try {
-            var usuario = usuarioBusiness.load(email);
-            String stored = usuario.getPassword();
-            boolean matches = passwordEncoder.matches(password, stored);
-            String json = String.format(
-                    "{\"email\":\"%s\",\"usuarioEncontrado\":true,\"passwordCoincide\":%s,\"longitudHashEnBD\":%d,\"hashEmpiezaCon\":\"%s\"}",
-                    email.replace("\"", "\\\""),
-                    matches,
-                    stored != null ? stored.length() : 0,
-                    stored != null && stored.length() >= 4 ? stored.substring(0, 4) : "n/a"
-            );
-            return ResponseEntity.ok(json);
-        } catch (NotFoundException e) {
-            return ResponseEntity.ok("{\"email\":\"" + email.replace("\"", "\\\"") + "\",\"usuarioEncontrado\":false,\"mensaje\":\"No existe usuario con ese email\"}");
-        } catch (BusinessException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\":\"" + e.getMessage().replace("\"", "\\\"") + "\"}");
-        }
-    }
-
-    /**
      * Solicita recuperación de contraseña. Siempre responde 200 aunque el email no exista
      * (evita enumerar usuarios). Envía un email con link de un solo uso válido por 1 hora.
      */

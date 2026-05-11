@@ -4,6 +4,7 @@ import com.gestion.qnt.config.ApiConstants;
 import com.gestion.qnt.controller.dto.*;
 import com.gestion.qnt.model.LicenciaANAC;
 import com.gestion.qnt.model.Usuario;
+import com.gestion.qnt.repository.UsuarioRepository;
 import com.gestion.qnt.security.AuthUser;
 import com.gestion.qnt.model.business.exceptions.BusinessException;
 import com.gestion.qnt.model.business.exceptions.FoundException;
@@ -33,13 +34,16 @@ public class MiPerfilPilotoController {
     private final IUsuarioBusiness usuarioBusiness;
     private final ILicenciaANACBusiness licenciaANACBusiness;
     private final PasswordEncoder passwordEncoder;
+    private final UsuarioRepository usuarioRepository;
 
     public MiPerfilPilotoController(IUsuarioBusiness usuarioBusiness,
                                     ILicenciaANACBusiness licenciaANACBusiness,
-                                    PasswordEncoder passwordEncoder) {
+                                    PasswordEncoder passwordEncoder,
+                                    UsuarioRepository usuarioRepository) {
         this.usuarioBusiness = usuarioBusiness;
         this.licenciaANACBusiness = licenciaANACBusiness;
         this.passwordEncoder = passwordEncoder;
+        this.usuarioRepository = usuarioRepository;
     }
 
     private static AuthUser authUser(Authentication auth) {
@@ -151,13 +155,21 @@ public class MiPerfilPilotoController {
             if (val == null) {
                 usuario.setTelegramUserId(null);
             } else if (val instanceof Number n) {
-                usuario.setTelegramUserId(n.longValue());
+                long nuevoId = n.longValue();
+                usuarioRepository.findByTelegramUserId(nuevoId).ifPresent(existing -> {
+                    if (!existing.getId().equals(usuario.getId())) {
+                        throw new IllegalArgumentException("telegramUserId ya está en uso por otro usuario");
+                    }
+                });
+                usuario.setTelegramUserId(nuevoId);
             } else {
                 return ResponseEntity.badRequest().body("telegramUserId debe ser un número");
             }
             usuarioBusiness.update(usuario);
             return ResponseEntity.ok(Map.of("telegramUserId",
                     usuario.getTelegramUserId() != null ? usuario.getTelegramUserId() : ""));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (NotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (FoundException | BusinessException e) {

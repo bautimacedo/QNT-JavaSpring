@@ -37,12 +37,18 @@ public class MisionDTO {
     // Dock (nullable)
     public Long dockId;
     public String dockNombre;
+    public Double dockLat;
+    public Double dockLon;
 
     // FlytBase webhook (EFO) — bearer nunca se expone en la respuesta
     public String webhookUrl;
 
     // FlightHub 2 (CAM)
     public String flightHubWaylineUuid;
+    public String site;            // "EFO" o "CAM"
+    public Double distanciaMetros;
+    public Integer waypointCount;
+    public String coordenadasJson; // JSON array [{lat,lon},...]
 
     public LocalDateTime fechaProgramada;
     public Long programacionId;

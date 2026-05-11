@@ -71,6 +71,9 @@ public class Dron {
     @Column(name = "cantidad_minutos_volados")
     private Integer cantidadMinutosVolados;
 
+    @Column(name = "distancia_metros_volados")
+    private Double distanciaMetrosVolados;
+
     @Column(columnDefinition = "TEXT")
     private String incidentes;
 

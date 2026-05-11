@@ -552,7 +552,7 @@ public class MisionRestController {
             com.gestion.qnt.mqtt.DockSnapshot dockSnap =
                     dronTelemetriaService.getDockSnapshots().get(dron.getDock().getNumeroSerie());
             if (dockSnap != null) {
-                return Boolean.FALSE.equals(dockSnap.droneEnDock);
+                return Boolean.FALSE.equals(dockSnap.confirmedDroneEnDock);
             }
         }
         // Sin dock o sin snapshot de dock: fallback al drone snapshot

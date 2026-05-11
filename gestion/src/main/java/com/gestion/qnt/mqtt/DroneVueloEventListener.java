@@ -42,6 +42,10 @@ public class DroneVueloEventListener {
     @EventListener
     @Transactional
     public void onVueloEvent(DroneVueloEvent event) {
+        if (event.droneSn == null) {
+            log.warn("DroneVueloEvent ignorado: droneSn null (dock {} aún no recibió sub_device)", event.dockSn);
+            return;
+        }
         Dron dron = resolverDron(event.droneSn);
         String dockNombre = dockRepository.findByNumeroSerie(event.dockSn)
                 .map(Dock::getNombre).orElse(event.dockSn);
@@ -78,7 +82,7 @@ public class DroneVueloEventListener {
 
         if (dron != null) {
             dron.setDroneEnDock(true);
-            dron.setUltimoVuelo(Instant.now());
+            dron.setUltimoVuelo(event.timestamp);
             dronRepository.save(dron);
         }
 

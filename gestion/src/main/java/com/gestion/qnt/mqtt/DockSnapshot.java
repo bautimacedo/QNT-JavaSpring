@@ -12,15 +12,16 @@ public class DockSnapshot {
 
     // Drone asociado al dock
     public String droneSn;
-    public Boolean droneEnDock;
+    public volatile Boolean droneEnDock;
     public Integer droneBateriaPorc;
     public BigDecimal droneBateriaTempC;
     public Integer droneBateriaCiclos;
 
     // Debounce: evita disparar eventos por glitches MQTT transitorios
-    public Boolean confirmedDroneEnDock = null; // último estado confirmado (≥3 mensajes consecutivos)
+    // volatile: escrito por el thread MQTT, leído por el TelemetriaScheduler
+    public volatile Boolean confirmedDroneEnDock = null;
     public int pendingConfirmations = 0;
 
     // Timestamp del despegue detectado, para calcular duración al aterrizar
-    public java.time.Instant despegueTimestamp = null;
+    public volatile java.time.Instant despegueTimestamp = null;
 }

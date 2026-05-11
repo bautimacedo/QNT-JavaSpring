@@ -150,9 +150,8 @@ public class TelemetriaScheduler {
     }
 
     private void actualizarBateriaDesdeDock(Dron dron, DockSnapshot snap) {
-        // Busca la batería activa del drone por el dron_id
         dron.getBaterias().stream()
-                .filter(b -> b.getCiclosCarga() != null || snap.droneBateriaCiclos != null)
+                .filter(b -> b.getEstado() == com.gestion.qnt.model.enums.Estado.STOCK_ACTIVO)
                 .findFirst()
                 .ifPresent(bat -> {
                     if (snap.droneBateriaCiclos != null) bat.setCiclosCarga(snap.droneBateriaCiclos);

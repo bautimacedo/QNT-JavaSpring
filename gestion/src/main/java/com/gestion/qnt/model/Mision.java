@@ -76,6 +76,10 @@ public class Mision {
     @Column(name = "webhook_bearer", columnDefinition = "TEXT")
     private String webhookBearer;
 
+    /** UUID de la wayline en FlightHub 2, usado para lanzar misiones CAM. */
+    @Column(name = "flighthub_wayline_uuid")
+    private String flightHubWaylineUuid;
+
     @Column(name = "fecha_programada")
     private LocalDateTime fechaProgramada;
 

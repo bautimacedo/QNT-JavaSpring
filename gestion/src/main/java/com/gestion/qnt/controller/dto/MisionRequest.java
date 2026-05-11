@@ -26,4 +26,7 @@ public class MisionRequest {
     // FlytBase webhook (EFO)
     public String webhookUrl;
     public String webhookBearer;
+
+    // FlightHub 2 (CAM)
+    public String flightHubWaylineUuid;
 }

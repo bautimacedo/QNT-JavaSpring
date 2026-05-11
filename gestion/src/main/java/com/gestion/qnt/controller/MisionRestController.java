@@ -439,7 +439,8 @@ public class MisionRestController {
         if (m.getFechaInicio() != null && m.getFechaFin() != null) {
             dto.duracionMinutos = ChronoUnit.MINUTES.between(m.getFechaInicio(), m.getFechaFin());
         }
-        dto.webhookUrl = m.getWebhookUrl();
+        dto.webhookUrl             = m.getWebhookUrl();
+        dto.flightHubWaylineUuid   = m.getFlightHubWaylineUuid();
         dto.fechaProgramada = m.getFechaProgramada();
         dto.programacionId = m.getProgramacion() != null ? m.getProgramacion().getId() : null;
 
@@ -502,6 +503,7 @@ public class MisionRestController {
 
         m.setWebhookUrl(req.webhookUrl);
         m.setWebhookBearer(req.webhookBearer);
+        m.setFlightHubWaylineUuid(req.flightHubWaylineUuid);
 
         return m;
     }

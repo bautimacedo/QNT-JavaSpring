@@ -17,6 +17,9 @@ import java.time.Instant;
 public class TelemetriaScheduler {
 
     private static final Logger log = LoggerFactory.getLogger(TelemetriaScheduler.class);
+    private static final long FLUSH_LENTO_SEGUNDOS = 300; // 5 min
+
+    private volatile Instant lastFullFlush = Instant.EPOCH;
 
     private final DronTelemetriaService telemetriaService;
     private final DockRepository dockRepository;
@@ -33,11 +36,31 @@ public class TelemetriaScheduler {
         this.bateriaRepository = bateriaRepository;
     }
 
-    @Scheduled(fixedRateString = "${mqtt.flush-interval-ms:300000}") // 5 minutos por defecto
+    @Scheduled(fixedRate = 10_000)
     @Transactional
     public void persistirTelemetria() {
-        persistirDocks();
-        persistirDrones();
+        boolean droneVolando = algDroneVolando();
+        Instant ahora = Instant.now();
+        boolean tiempoFlushLento = ahora.isAfter(lastFullFlush.plusSeconds(FLUSH_LENTO_SEGUNDOS));
+
+        if (droneVolando) {
+            // Drone en vuelo: persistir posición cada 10s; datos de dock cada 5min
+            persistirDrones();
+            if (tiempoFlushLento) {
+                persistirDocks();
+                lastFullFlush = ahora;
+            }
+        } else if (tiempoFlushLento) {
+            // Sin vuelo activo: flush lento cada 5min
+            persistirDocks();
+            persistirDrones();
+            lastFullFlush = ahora;
+        }
+    }
+
+    private boolean algDroneVolando() {
+        return telemetriaService.getDockSnapshots().values().stream()
+                .anyMatch(snap -> Boolean.FALSE.equals(snap.confirmedDroneEnDock));
     }
 
     private void persistirDocks() {

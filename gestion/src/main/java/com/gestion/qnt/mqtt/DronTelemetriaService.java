@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,14 +12,22 @@ import java.util.Map;
 
 /**
  * Escucha mensajes MQTT y guarda el último snapshot de telemetría en memoria.
- * El TelemetriaScheduler se encarga de persistir a DB cada 5 minutos.
+ * Detecta transiciones DESPEGUE/ATERRIZAJE con debounce de 3 mensajes consecutivos
+ * y publica DroneVueloEvent para que el listener maneje la lógica de negocio.
+ * El TelemetriaScheduler persiste a DB a frecuencia adaptativa (10s en vuelo, 5min en dock).
  */
 @Service
 public class DronTelemetriaService {
 
     private static final Logger log = LoggerFactory.getLogger(DronTelemetriaService.class);
+    private static final int DEBOUNCE_CONFIRMACIONES = 3;
 
+    private final ApplicationEventPublisher eventPublisher;
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    public DronTelemetriaService(ApplicationEventPublisher eventPublisher) {
+        this.eventPublisher = eventPublisher;
+    }
 
     // Último snapshot por SN del dispositivo
     private final Map<String, DockSnapshot> dockSnapshots = new ConcurrentHashMap<>();
@@ -106,8 +115,61 @@ public class DronTelemetriaService {
             snap.droneSn = subDevice.get("device_sn").asText();
         }
 
+        // Detectar transiciones DESPEGUE/ATERRIZAJE con debounce
+        if (snap.droneEnDock != null) {
+            detectarTransicion(snap);
+        }
+
         log.debug("Telemetría dock {}: lat={} lon={} tempAmb={}°C viento={} bat={}%",
                 sn, snap.latitud, snap.longitud, snap.temperaturaAmbiente, snap.velocidadViento, snap.droneBateriaPorc);
+    }
+
+    /**
+     * Debounce de 3 mensajes consecutivos antes de confirmar una transición.
+     * Evita falsos DESPEGUE/ATERRIZAJE por glitches MQTT transitorios.
+     */
+    private void detectarTransicion(DockSnapshot snap) {
+        java.time.Instant ahora = java.time.Instant.now();
+
+        if (snap.confirmedDroneEnDock == null) {
+            // Primera observación: establecer estado inicial sin disparar evento
+            snap.confirmedDroneEnDock = snap.droneEnDock;
+            snap.pendingConfirmations = 0;
+            return;
+        }
+
+        if (snap.droneEnDock.equals(snap.confirmedDroneEnDock)) {
+            // Estado estable, resetear contador de transición pendiente
+            snap.pendingConfirmations = 0;
+        } else {
+            // Posible transición: acumular confirmaciones
+            snap.pendingConfirmations++;
+            if (snap.pendingConfirmations >= DEBOUNCE_CONFIRMACIONES) {
+                Boolean estadoAnterior = snap.confirmedDroneEnDock;
+                snap.confirmedDroneEnDock = snap.droneEnDock;
+                snap.pendingConfirmations = 0;
+
+                if (Boolean.FALSE.equals(snap.droneEnDock) && Boolean.TRUE.equals(estadoAnterior)) {
+                    // DESPEGUE confirmado
+                    snap.despegueTimestamp = ahora;
+                    log.info("DESPEGUE detectado por MQTT — dock {}, droneSn {}", snap.sn, snap.droneSn);
+                    eventPublisher.publishEvent(new DroneVueloEvent(this, snap.sn, snap.droneSn,
+                            DroneVueloEvent.Tipo.DESPEGUE, ahora, null));
+                } else if (Boolean.TRUE.equals(snap.droneEnDock) && Boolean.FALSE.equals(estadoAnterior)) {
+                    // ATERRIZAJE confirmado — calcular duración
+                    Integer duracion = null;
+                    if (snap.despegueTimestamp != null) {
+                        long segundos = ahora.getEpochSecond() - snap.despegueTimestamp.getEpochSecond();
+                        duracion = (int) Math.max(0, segundos / 60);
+                    }
+                    snap.despegueTimestamp = null;
+                    log.info("ATERRIZAJE detectado por MQTT — dock {}, droneSn {}, duración {}min",
+                            snap.sn, snap.droneSn, duracion);
+                    eventPublisher.publishEvent(new DroneVueloEvent(this, snap.sn, snap.droneSn,
+                            DroneVueloEvent.Tipo.ATERRIZAJE, ahora, duracion));
+                }
+            }
+        }
     }
 
     private void parsearBateriaDesdeDock(String sn, JsonNode host) {

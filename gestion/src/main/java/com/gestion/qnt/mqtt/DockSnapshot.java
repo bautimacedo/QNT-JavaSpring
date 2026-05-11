@@ -16,4 +16,11 @@ public class DockSnapshot {
     public Integer droneBateriaPorc;
     public BigDecimal droneBateriaTempC;
     public Integer droneBateriaCiclos;
+
+    // Debounce: evita disparar eventos por glitches MQTT transitorios
+    public Boolean confirmedDroneEnDock = null; // último estado confirmado (≥3 mensajes consecutivos)
+    public int pendingConfirmations = 0;
+
+    // Timestamp del despegue detectado, para calcular duración al aterrizar
+    public java.time.Instant despegueTimestamp = null;
 }

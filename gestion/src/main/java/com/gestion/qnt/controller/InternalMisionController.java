@@ -574,7 +574,7 @@ public class InternalMisionController {
         if (dron.getDock() != null && dron.getDock().getNumeroSerie() != null) {
             com.gestion.qnt.mqtt.DockSnapshot dockSnap =
                     dronTelemetriaService.getDockSnapshots().get(dron.getDock().getNumeroSerie());
-            if (dockSnap != null && Boolean.FALSE.equals(dockSnap.droneEnDock)) return true;
+            if (dockSnap != null) return Boolean.FALSE.equals(dockSnap.droneEnDock);
         }
         com.gestion.qnt.mqtt.DronSnapshot dronSnap =
                 dronTelemetriaService.getDronSnapshots().get(dron.getNumeroSerie());

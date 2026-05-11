@@ -72,12 +72,24 @@ public class TelemetriaScheduler {
             if (dronOpt.isEmpty()) dronOpt = dronRepository.findBySnMqtt(snap.sn);
 
             dronOpt.ifPresentOrElse(dron -> {
-                if (snap.latitud != null) dron.setLatitud(snap.latitud);
-                if (snap.longitud != null) dron.setLongitud(snap.longitud);
-                if (snap.altitud != null) dron.setAltitud(snap.altitud);
-                if (snap.bateriaPorc != null) dron.setBateriaPorc(snap.bateriaPorc);
-                if (snap.bateriaTempC != null) dron.setBateriaTempC(snap.bateriaTempC);
-                dron.setDroneEnDock(false);
+                // Si el dock asociado dice que el drone está dentro, estos mensajes son
+                // heartbeats con coordenadas congeladas — no actualizar posición ni droneEnDock.
+                boolean dronRealmenteVolando = true;
+                if (dron.getDock() != null && dron.getDock().getNumeroSerie() != null) {
+                    DockSnapshot dockSnap = telemetriaService.getDockSnapshots()
+                            .get(dron.getDock().getNumeroSerie());
+                    if (dockSnap != null && Boolean.TRUE.equals(dockSnap.droneEnDock)) {
+                        dronRealmenteVolando = false;
+                    }
+                }
+                if (dronRealmenteVolando) {
+                    if (snap.latitud != null) dron.setLatitud(snap.latitud);
+                    if (snap.longitud != null) dron.setLongitud(snap.longitud);
+                    if (snap.altitud != null) dron.setAltitud(snap.altitud);
+                    if (snap.bateriaPorc != null) dron.setBateriaPorc(snap.bateriaPorc);
+                    if (snap.bateriaTempC != null) dron.setBateriaTempC(snap.bateriaTempC);
+                    dron.setDroneEnDock(false);
+                }
                 dron.setUltimaTelemetria(Instant.now());
                 dronRepository.save(dron);
 

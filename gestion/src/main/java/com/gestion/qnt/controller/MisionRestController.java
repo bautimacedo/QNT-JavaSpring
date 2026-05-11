@@ -547,15 +547,15 @@ public class MisionRestController {
      * Prioriza el dock snapshot (más fiable); si no, usa el drone snapshot.
      */
     private boolean esDroneVolandoMqtt(Dron dron) {
-        // 1. Dock snapshot: droneEnDock=false → el dock sabe que su drone no está dentro
+        // El dock es la fuente autoritativa: si hay snapshot del dock, confiar en él
         if (dron.getDock() != null && dron.getDock().getNumeroSerie() != null) {
             com.gestion.qnt.mqtt.DockSnapshot dockSnap =
                     dronTelemetriaService.getDockSnapshots().get(dron.getDock().getNumeroSerie());
-            if (dockSnap != null && Boolean.FALSE.equals(dockSnap.droneEnDock)) {
-                return true;
+            if (dockSnap != null) {
+                return Boolean.FALSE.equals(dockSnap.droneEnDock);
             }
         }
-        // 2. Drone snapshot por numero_serie o sn_mqtt: enDock=false → mensajes de vuelo recibidos
+        // Sin dock o sin snapshot de dock: fallback al drone snapshot
         com.gestion.qnt.mqtt.DronSnapshot dronSnap =
                 dronTelemetriaService.getDronSnapshots().get(dron.getNumeroSerie());
         if (dronSnap == null && dron.getSnMqtt() != null) {

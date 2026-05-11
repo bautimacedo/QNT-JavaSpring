@@ -51,6 +51,7 @@ public class InternalMisionController {
     @Autowired private FlytbaseService flytbaseService;
     @Autowired private FlightHubService flightHubService;
     @Autowired private com.gestion.qnt.scheduler.FlightHubSyncJob flightHubSyncJob;
+    @Autowired private com.gestion.qnt.mqtt.DronTelemetriaService dronTelemetriaService;
 
     /**
      * Llamado por n8n cuando FlytBase detecta ATERRIZAJE.
@@ -415,6 +416,9 @@ public class InternalMisionController {
                 // CAM u otro yacimiento → FlightHub 2
                 if (m.getFlightHubWaylineUuid() == null || m.getFlightHubWaylineUuid().isBlank())
                     return ResponseEntity.badRequest().body(Map.of("error", "FlightHub wayline UUID no configurado"));
+                if (esDroneVolandoMqtt(dron))
+                    return ResponseEntity.status(HttpStatus.CONFLICT)
+                            .body(Map.of("error", "El dron '" + dron.getNombre() + "' ya está volando según telemetría MQTT. Esperá a que aterrice."));
                 flightHubService.lanzarMision(m.getNombre(), m.getFlightHubWaylineUuid());
             }
         } catch (Exception e) {
@@ -564,6 +568,19 @@ public class InternalMisionController {
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
                     .body(Map.of("error", e.getMessage()));
         }
+    }
+
+    private boolean esDroneVolandoMqtt(Dron dron) {
+        if (dron.getDock() != null && dron.getDock().getNumeroSerie() != null) {
+            com.gestion.qnt.mqtt.DockSnapshot dockSnap =
+                    dronTelemetriaService.getDockSnapshots().get(dron.getDock().getNumeroSerie());
+            if (dockSnap != null && Boolean.FALSE.equals(dockSnap.droneEnDock)) return true;
+        }
+        com.gestion.qnt.mqtt.DronSnapshot dronSnap =
+                dronTelemetriaService.getDronSnapshots().get(dron.getNumeroSerie());
+        if (dronSnap == null && dron.getSnMqtt() != null)
+            dronSnap = dronTelemetriaService.getDronSnapshots().get(dron.getSnMqtt());
+        return dronSnap != null && Boolean.FALSE.equals(dronSnap.enDock);
     }
 
     private VueloLog buildVueloLog(Map<String, Object> body, TipoEventoVuelo evento) {

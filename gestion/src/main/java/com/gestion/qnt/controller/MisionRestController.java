@@ -74,6 +74,9 @@ public class MisionRestController {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private com.gestion.qnt.mqtt.DronTelemetriaService dronTelemetriaService;
+
     // ─────────────────────────────────────────────
     // GET /misiones — lista con detalles
     // ─────────────────────────────────────────────
@@ -356,6 +359,10 @@ public class MisionRestController {
                 return ResponseEntity.badRequest()
                         .body(Map.of("error", "La misión CAM no tiene configurado el Wayline UUID de FlightHub."));
             }
+            if (esDroneVolandoMqtt(dron)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(Map.of("error", "El drone '" + dron.getNombre() + "' ya está volando según la telemetría en tiempo real. Esperá a que aterrice antes de lanzar."));
+            }
             try {
                 flightHubService.lanzarMision(m.getNombre(), m.getFlightHubWaylineUuid());
             } catch (Exception e) {
@@ -533,5 +540,27 @@ public class MisionRestController {
         m.setFlightHubWaylineUuid(req.flightHubWaylineUuid);
 
         return m;
+    }
+
+    /**
+     * Consulta la telemetría MQTT en memoria para determinar si el drone está volando.
+     * Prioriza el dock snapshot (más fiable); si no, usa el drone snapshot.
+     */
+    private boolean esDroneVolandoMqtt(Dron dron) {
+        // 1. Dock snapshot: droneEnDock=false → el dock sabe que su drone no está dentro
+        if (dron.getDock() != null && dron.getDock().getNumeroSerie() != null) {
+            com.gestion.qnt.mqtt.DockSnapshot dockSnap =
+                    dronTelemetriaService.getDockSnapshots().get(dron.getDock().getNumeroSerie());
+            if (dockSnap != null && Boolean.FALSE.equals(dockSnap.droneEnDock)) {
+                return true;
+            }
+        }
+        // 2. Drone snapshot por numero_serie o sn_mqtt: enDock=false → mensajes de vuelo recibidos
+        com.gestion.qnt.mqtt.DronSnapshot dronSnap =
+                dronTelemetriaService.getDronSnapshots().get(dron.getNumeroSerie());
+        if (dronSnap == null && dron.getSnMqtt() != null) {
+            dronSnap = dronTelemetriaService.getDronSnapshots().get(dron.getSnMqtt());
+        }
+        return dronSnap != null && Boolean.FALSE.equals(dronSnap.enDock);
     }
 }

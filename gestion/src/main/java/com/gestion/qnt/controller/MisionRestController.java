@@ -17,6 +17,7 @@ import com.gestion.qnt.repository.PozoRepository;
 import com.gestion.qnt.repository.UsuarioRepository;
 import com.gestion.qnt.repository.VueloLogRepository;
 import com.gestion.qnt.security.AuthUser;
+import com.gestion.qnt.service.FlightHubService;
 import com.gestion.qnt.service.FlytbaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -66,6 +67,9 @@ public class MisionRestController {
 
     @Autowired
     private FlytbaseService flytbaseService;
+
+    @Autowired
+    private FlightHubService flightHubService;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -338,73 +342,83 @@ public class MisionRestController {
                     .body(Map.of("error", "La misión debe estar en estado PLANIFICADA o COMPLETADA para lanzarse."));
         }
 
-        // Debe tener dron asignado con yacimiento EFO
         Dron dron = m.getDron();
         if (dron == null) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "La misión no tiene un drone asignado."));
         }
-        if (dron.getYacimiento() != Yacimiento.EFO) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Solo se pueden lanzar misiones con drones del yacimiento EFO."));
+
+        boolean esCAM = dron.getYacimiento() == Yacimiento.CAM;
+
+        if (esCAM) {
+            // ── CAM → FlightHub 2 ───────────────────────────────────────────
+            if (m.getFlightHubWaylineUuid() == null || m.getFlightHubWaylineUuid().isBlank()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "La misión CAM no tiene configurado el Wayline UUID de FlightHub."));
+            }
+            try {
+                flightHubService.lanzarMision(m.getNombre(), m.getFlightHubWaylineUuid());
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                        .body(Map.of("error", "No se pudo contactar a FlightHub: " + e.getMessage()));
+            }
+        } else {
+            // ── EFO → FlytBase ──────────────────────────────────────────────
+            if (m.getWebhookUrl() == null || m.getWebhookUrl().isBlank()
+                    || m.getWebhookBearer() == null || m.getWebhookBearer().isBlank()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "La misión no tiene configurado el webhook de FlytBase. Pedile a un administrador que lo configure."));
+            }
+            if (vueloLogRepository.hayVueloActivo(dron.getNombre())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(Map.of("error", "El drone '" + dron.getNombre() + "' ya tiene un vuelo activo en curso. Esperá a que aterrice antes de lanzar otra misión."));
+            }
+            try {
+                flytbaseService.lanzarMision(
+                        m.getWebhookUrl(),
+                        m.getWebhookBearer(),
+                        m.getNombre(),
+                        m.getDock() != null ? m.getDock().getLatitud() : null,
+                        m.getDock() != null ? m.getDock().getLongitud() : null
+                );
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                        .body(Map.of("error", "No se pudo contactar a FlytBase: " + e.getMessage()));
+            }
         }
 
-        // Debe tener webhook configurado
-        if (m.getWebhookUrl() == null || m.getWebhookUrl().isBlank()
-                || m.getWebhookBearer() == null || m.getWebhookBearer().isBlank()) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "La misión no tiene configurado el webhook de FlytBase. Pedile a un administrador que lo configure."));
-        }
-
-        // Verificar que no haya un vuelo activo para este drone en vuelos_log
-        if (vueloLogRepository.hayVueloActivo(dron.getNombre())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("error", "El drone '" + dron.getNombre() + "' ya tiene un vuelo activo en curso. Esperá a que aterrice antes de lanzar otra misión."));
-        }
-
-        // Llamar webhook FlytBase
-        try {
-            flytbaseService.lanzarMision(
-                    m.getWebhookUrl(),
-                    m.getWebhookBearer(),
-                    m.getNombre(),
-                    m.getDock() != null ? m.getDock().getLatitud() : null,
-                    m.getDock() != null ? m.getDock().getLongitud() : null
-            );
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                    .body(Map.of("error", "No se pudo contactar a FlytBase: " + e.getMessage()));
-        }
-
-        // Asignar piloto al usuario que ejecuta la misión (no al creador)
+        // Asignar piloto al usuario que ejecuta la misión
         AuthUser authUser = (AuthUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuarioActual = usuarioRepository.findById(authUser.getId())
                 .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
         m.setPiloto(usuarioActual);
 
-        // Registrar en mision_pendiente para atribución de piloto en n8n
-        String pilotoNombre = usuarioActual.getNombre() + " " + (usuarioActual.getApellido() != null ? usuarioActual.getApellido() : "");
-        jdbcTemplate.update(
-                "INSERT INTO mision_pendiente (drone_nombre, piloto_nombre, usuario_id, mision_id) VALUES (?, ?, ?, ?)",
-                dron.getNombre(), pilotoNombre.trim(), usuarioActual.getId(), m.getId()
-        );
+        // Para EFO: registrar en mision_pendiente para atribución de piloto en n8n
+        if (!esCAM) {
+            String pilotoNombre = usuarioActual.getNombre() + " " + (usuarioActual.getApellido() != null ? usuarioActual.getApellido() : "");
+            jdbcTemplate.update(
+                    "INSERT INTO mision_pendiente (drone_nombre, piloto_nombre, usuario_id, mision_id) VALUES (?, ?, ?, ?)",
+                    dron.getNombre(), pilotoNombre.trim(), usuarioActual.getId(), m.getId()
+            );
+        }
 
         // Cambiar estado de la misión a EN_CURSO
         EstadoMision estadoAnteriorLanzar = m.getEstado();
         m.setEstado(EstadoMision.EN_CURSO);
         m.setUltimaEjecucion(LocalDateTime.now());
         m.setFechaInicio(LocalDateTime.now());
-        m.setFechaFin(null);  // limpiar fechaFin de ejecuciones previas
+        m.setFechaFin(null);
         try {
             misionBusiness.update(m);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Misión lanzada en FlytBase pero error al actualizar estado: " + e.getMessage()));
+                    .body(Map.of("error", "Misión lanzada pero error al actualizar estado: " + e.getMessage()));
         }
 
         registrarLog(m, estadoAnteriorLanzar, EstadoMision.EN_CURSO);
 
-        return ResponseEntity.ok(Map.of("message", "Misión '" + m.getNombre() + "' lanzada exitosamente en FlytBase."));
+        String plataforma = esCAM ? "FlightHub" : "FlytBase";
+        return ResponseEntity.ok(Map.of("message", "Misión '" + m.getNombre() + "' lanzada exitosamente en " + plataforma + "."));
     }
 
     // ─────────────────────────────────────────────

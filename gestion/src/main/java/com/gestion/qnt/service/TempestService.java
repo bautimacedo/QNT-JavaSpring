@@ -2,6 +2,7 @@ package com.gestion.qnt.service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -28,7 +29,8 @@ public class TempestService {
         return restClient.get()
                 .uri("/observations/station/{id}?token={token}", stationId, token)
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
+                .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {})
+                .body(new ParameterizedTypeReference<Map<String, Object>>() {});
     }
 
     public Map<String, Object> getForecast(double lat, double lon) throws RestClientException {

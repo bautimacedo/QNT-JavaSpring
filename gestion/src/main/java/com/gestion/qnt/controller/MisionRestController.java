@@ -166,7 +166,15 @@ public class MisionRestController {
     @GetMapping("/piloto/{pilotoId}")
     @Transactional(readOnly = true)
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<MisionDTO>> listByPiloto(@PathVariable Long pilotoId) {
+    public ResponseEntity<List<MisionDTO>> listByPiloto(
+            @PathVariable Long pilotoId,
+            org.springframework.security.core.Authentication auth) {
+        AuthUser user = (AuthUser) auth.getPrincipal();
+        boolean esAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        if (!esAdmin && !user.getId().equals(pilotoId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         try {
             List<Mision> misiones = misionRepository.findByPilotoIdWithDetails(pilotoId);
             return ResponseEntity.ok(misiones.stream().map(this::toDTO).collect(Collectors.toList()));

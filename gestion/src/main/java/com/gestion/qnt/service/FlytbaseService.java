@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.math.BigDecimal;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 
 /**
@@ -15,6 +17,24 @@ import java.util.Map;
 public class FlytbaseService {
 
     private final RestClient restClient = RestClient.builder().build();
+
+    private static void validarWebhookUrl(String url) {
+        try {
+            URI uri = new URI(url);
+            String scheme = uri.getScheme();
+            String host = uri.getHost() != null ? uri.getHost().toLowerCase() : "";
+            if (!"https".equals(scheme)) {
+                throw new IllegalArgumentException("Webhook URL debe usar HTTPS");
+            }
+            if (host.equals("localhost") || host.equals("127.0.0.1") || host.equals("0.0.0.0")
+                    || host.startsWith("169.254.") || host.startsWith("10.")
+                    || host.startsWith("192.168.") || host.startsWith("172.")) {
+                throw new IllegalArgumentException("Webhook URL apunta a red interna: " + host);
+            }
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Webhook URL inválida: " + url);
+        }
+    }
 
     /**
      * Dispara el webhook de FlytBase para lanzar una misión.
@@ -28,6 +48,7 @@ public class FlytbaseService {
      */
     public void lanzarMision(String webhookUrl, String bearer,
                               String descripcion, BigDecimal lat, BigDecimal lon) {
+        validarWebhookUrl(webhookUrl);
         Map<String, Object> body = Map.of(
                 "timestamp",    System.currentTimeMillis(),
                 "severity",     2,

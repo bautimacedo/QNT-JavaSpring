@@ -78,6 +78,7 @@ public class Usuario implements UserDetails {
     private Integer cantidadVuelos;
 
     /** Clave/contraseña para misiones; relevante para pilotos. Máx. 30 caracteres. */
+    @JsonIgnore
     @Column(name = "password_mission", length = 30, nullable = true)
     private String passwordMission;
 

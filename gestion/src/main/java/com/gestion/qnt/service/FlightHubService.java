@@ -7,6 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
@@ -103,10 +104,11 @@ public class FlightHubService {
     public List<Map<String, Object>> listarTareas(long beginAt, long endAt) {
         try {
             String json = restClient.get()
-                    .uri(baseUrl + "/openapi/v0.1/flight-task/list"
-                            + "?sn=" + sn
-                            + "&begin_at=" + beginAt
-                            + "&end_at=" + endAt)
+                    .uri(UriComponentsBuilder.fromUriString(baseUrl + "/openapi/v0.1/flight-task/list")
+                            .queryParam("sn", sn)
+                            .queryParam("begin_at", beginAt)
+                            .queryParam("end_at", endAt)
+                            .toUriString())
                     .header("X-Request-Id",   UUID.randomUUID().toString())
                     .header("X-Language",     "en")
                     .header("X-Project-Uuid", projectUuid)
@@ -159,7 +161,10 @@ public class FlightHubService {
         try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(kmzBytes))) {
             ZipEntry entry;
             while ((entry = zip.getNextEntry()) != null) {
-                if (entry.getName().endsWith(".kml")) {
+                String name = entry.getName();
+                // Zip Slip: descartar entradas con path traversal
+                if (name.contains("..") || name.startsWith("/") || name.startsWith("\\")) continue;
+                if (name.endsWith(".kml")) {
                     kmlBytes = zip.readAllBytes();
                     break;
                 }
@@ -167,8 +172,13 @@ public class FlightHubService {
         }
         if (kmlBytes == null) return List.of();
 
-        Document doc = DocumentBuilderFactory.newInstance()
-                .newDocumentBuilder()
+        // XXE: deshabilitar DOCTYPE y entidades externas antes de parsear
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        dbf.setExpandEntityReferences(false);
+        Document doc = dbf.newDocumentBuilder()
                 .parse(new ByteArrayInputStream(kmlBytes));
 
         // Busca todos los <coordinates> dentro de <Point> (waypoints individuales)

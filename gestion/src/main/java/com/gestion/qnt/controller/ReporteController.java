@@ -63,8 +63,9 @@ public class ReporteController {
         if (!resource.exists()) {
             return ResponseEntity.notFound().build();
         }
+        String safeStaticFilename = sanitized.replaceAll("[\\r\\n\"\\\\]", "_");
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + sanitized + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + safeStaticFilename + "\"")
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(resource);
     }
@@ -123,11 +124,14 @@ public class ReporteController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<byte[]> descargarFalla(@PathVariable Long id) {
         return reporteFallaRepository.findById(id)
-                .map(r -> ResponseEntity.ok()
+                .map(r -> {
+                    String safeFilename = r.getArchivoNombre().replaceAll("[\\r\\n\"\\\\]", "_");
+                    return ResponseEntity.ok()
                         .header(HttpHeaders.CONTENT_DISPOSITION,
-                                "attachment; filename=\"" + r.getArchivoNombre() + "\"")
+                                "attachment; filename=\"" + safeFilename + "\"")
                         .contentType(MediaType.APPLICATION_PDF)
-                        .body(r.getContenido()))
+                        .body(r.getContenido());
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
 

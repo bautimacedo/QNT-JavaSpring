@@ -19,9 +19,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
 import java.util.List;
 
 @RestController
@@ -51,7 +53,11 @@ public class InspeccionAibRestController {
             @RequestPart("datos") String datosJson,
             @RequestPart(value = "graficos", required = false) List<MultipartFile> graficos) {
 
-        if (apiKey.isBlank() || headerKey == null || !headerKey.equals(apiKey)) {
+        boolean apiKeyValida = !apiKey.isBlank() && MessageDigest.isEqual(
+            apiKey.getBytes(StandardCharsets.UTF_8),
+            (headerKey != null ? headerKey : "").getBytes(StandardCharsets.UTF_8)
+        );
+        if (!apiKeyValida) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 

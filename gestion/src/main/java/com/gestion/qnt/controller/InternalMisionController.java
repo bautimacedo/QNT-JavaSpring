@@ -2,6 +2,8 @@ package com.gestion.qnt.controller;
 
 import com.gestion.qnt.config.ApiConstants;
 import com.gestion.qnt.model.*;
+import java.security.MessageDigest;
+import java.nio.charset.StandardCharsets;
 import com.gestion.qnt.model.Dock;
 import com.gestion.qnt.model.enums.Estado;
 import com.gestion.qnt.model.enums.EstadoMision;
@@ -66,7 +68,7 @@ public class InternalMisionController {
             @RequestHeader(value = "X-Internal-Secret", required = false) String secret,
             @RequestBody Map<String, Object> body) {
 
-        if (!internalSecret.equals(secret)) {
+        if (secretInvalido(secret)) {
             return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         }
 
@@ -179,7 +181,7 @@ public class InternalMisionController {
             @RequestHeader(value = "X-Internal-Secret", required = false) String secret,
             @RequestBody Map<String, Object> body) {
 
-        if (!internalSecret.equals(secret)) {
+        if (secretInvalido(secret)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
         }
 
@@ -289,7 +291,7 @@ public class InternalMisionController {
     @Transactional(readOnly = true)
     public ResponseEntity<?> botMisiones(
             @RequestHeader(value = "X-Internal-Secret", required = false) String secret) {
-        if (!internalSecret.equals(secret))
+        if (secretInvalido(secret))
             return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
 
         List<Map<String, Object>> result = misionRepository.findAllWithDetails().stream()
@@ -322,7 +324,7 @@ public class InternalMisionController {
             @PathVariable Long id,
             @RequestBody Map<String, Object> body) {
 
-        if (!internalSecret.equals(secret))
+        if (secretInvalido(secret))
             return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
 
         Mision m = misionRepository.findById(id).orElse(null);
@@ -404,7 +406,7 @@ public class InternalMisionController {
     @Transactional(readOnly = true)
     public ResponseEntity<?> botDrones(
             @RequestHeader(value = "X-Internal-Secret", required = false) String secret) {
-        if (!internalSecret.equals(secret))
+        if (secretInvalido(secret))
             return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
 
         List<Map<String, Object>> result = dronRepository.findAll().stream()
@@ -448,7 +450,7 @@ public class InternalMisionController {
             @RequestHeader(value = "X-Internal-Secret", required = false) String secret,
             @RequestParam(required = false) String desde,
             @RequestParam(required = false) String hasta) {
-        if (!internalSecret.equals(secret))
+        if (secretInvalido(secret))
             return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
 
         List<VueloLog> registros = vueloLogRepository.findFiltered(null, null, null, desde, hasta);
@@ -502,7 +504,7 @@ public class InternalMisionController {
     @PostMapping("/flighthub/sync-misiones")
     public ResponseEntity<Map<String, Object>> syncFlightHubMisiones(
             @RequestHeader(value = "X-Internal-Secret", required = false) String secret) {
-        if (!internalSecret.equals(secret))
+        if (secretInvalido(secret))
             return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         try {
             flightHubSyncJob.sync();
@@ -511,6 +513,13 @@ public class InternalMisionController {
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
                     .body(Map.of("error", e.getMessage()));
         }
+    }
+
+    private boolean secretInvalido(String secret) {
+        return !MessageDigest.isEqual(
+            internalSecret.getBytes(StandardCharsets.UTF_8),
+            (secret != null ? secret : "").getBytes(StandardCharsets.UTF_8)
+        );
     }
 
     private boolean esDroneVolandoMqtt(Dron dron) {

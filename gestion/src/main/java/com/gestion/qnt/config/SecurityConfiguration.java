@@ -3,6 +3,7 @@ package com.gestion.qnt.config;
 import com.gestion.qnt.security.AuthConstants;
 import com.gestion.qnt.security.custom.CustomAuthenticationManager;
 import com.gestion.qnt.security.filters.JWTAuthorizationFilter;
+import com.gestion.qnt.security.filters.RateLimitingFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +14,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.SecurityFilterChain;
@@ -49,7 +51,7 @@ public class SecurityConfiguration {
                 ? List.of("*")
                 : Arrays.asList(allowedOrigins.trim().split("\\s*,\\s*")));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Internal-Secret", "X-API-Key"));
         config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(!allowedOrigins.trim().equals("*"));
 
@@ -68,6 +70,15 @@ public class SecurityConfiguration {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
+            .headers(headers -> headers
+                .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)
+                .contentTypeOptions(org.springframework.security.config.Customizer.withDefaults())
+                .httpStrictTransportSecurity(hsts -> hsts
+                    .includeSubDomains(true)
+                    .maxAgeInSeconds(31_536_000))
+                .contentSecurityPolicy(csp -> csp
+                    .policyDirectives("default-src 'self'; frame-ancestors 'none'"))
+            )
             .authorizeHttpRequests(auth -> auth
                 // 1. Permitimos OPTIONS para TODAS las rutas (vital para el navegador)
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -98,6 +109,7 @@ public class SecurityConfiguration {
                     response.getWriter().write("{\"status\":403,\"error\":\"Forbidden\",\"message\":\"Acceso denegado\"}");
                 })
             )
+            .addFilterBefore(new RateLimitingFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(new JWTAuthorizationFilter(authConstants), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

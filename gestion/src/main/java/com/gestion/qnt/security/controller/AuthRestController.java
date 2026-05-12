@@ -129,7 +129,12 @@ public class AuthRestController {
             usuario.setRoles(new java.util.ArrayList<>());
 
             Usuario created = usuarioBusiness.add(usuario);
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                "id",       created.getId(),
+                "email",    created.getEmail(),
+                "nombre",   created.getNombre(),
+                "apellido", created.getApellido() != null ? created.getApellido() : ""
+            ));
         } catch (FoundException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (BusinessException e) {

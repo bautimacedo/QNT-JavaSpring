@@ -43,25 +43,34 @@ public class VueloLogRestController {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<VueloLog>> list(
+    public ResponseEntity<Map<String, Object>> list(
             @RequestParam(required = false) String dron,
             @RequestParam(required = false) String site,
             @RequestParam(required = false) TipoEventoVuelo evento,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant desde,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant hasta) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant hasta,
+            @RequestParam(defaultValue = "0")   int page,
+            @RequestParam(defaultValue = "500") int size) {
         try {
-            String desdeStr  = desde  != null ? desde.toString()  : null;
-            String hastaStr  = hasta  != null ? hasta.toString()  : null;
-            // No filtramos por evento en SQL: aplicamos el filtro después del pairing,
-            // ya que un DESPEGUE pareado se transforma en VUELO.
-            List<VueloLog> regs = new ArrayList<>(repository.findFiltered(dron, site, null, desdeStr, hastaStr));
+            size = Math.min(size, 1000);
+            String desdeStr = desde != null ? desde.toString() : null;
+            String hastaStr = hasta != null ? hasta.toString() : null;
+            String eventoStr = null; // filtro de evento se aplica en memoria tras pairing
+            long total = repository.countFiltered(dron, site, eventoStr, desdeStr, hastaStr);
+            List<VueloLog> regs = new ArrayList<>(
+                    repository.findFilteredPaged(dron, site, eventoStr, desdeStr, hastaStr, size, (long) page * size));
             regs = fillMissingDrones(regs);
             regs = pairTakeoffsAndLandings(regs);
             if (evento != null) {
                 final TipoEventoVuelo target = evento;
                 regs = regs.stream().filter(r -> r.getEvento() == target).collect(Collectors.toList());
             }
-            return ResponseEntity.ok(regs);
+            Map<String, Object> resp = new HashMap<>();
+            resp.put("data",  regs);
+            resp.put("total", total);
+            resp.put("page",  page);
+            resp.put("size",  size);
+            return ResponseEntity.ok(resp);
         } catch (Exception e) {
             log.error("Error en GET /vuelos-log", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

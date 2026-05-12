@@ -26,6 +26,40 @@ public interface VueloLogRepository extends JpaRepository<VueloLog, Long> {
             @Param("desde")  String desde,
             @Param("hasta")  String hasta);
 
+    @Query(value = """
+            SELECT * FROM vuelos_log
+            WHERE (:dron   IS NULL OR nombre_dron = :dron)
+              AND (:site   IS NULL OR site         = :site)
+              AND (:evento IS NULL OR evento        = :evento)
+              AND (:desde  IS NULL OR COALESCE(timestamp_flytbase, fecha_registro) >= CAST(:desde AS timestamptz))
+              AND (:hasta  IS NULL OR COALESCE(timestamp_flytbase, fecha_registro) <= CAST(:hasta AS timestamptz))
+            ORDER BY COALESCE(timestamp_flytbase, fecha_registro) DESC
+            LIMIT :size OFFSET :offset
+            """, nativeQuery = true)
+    List<VueloLog> findFilteredPaged(
+            @Param("dron")   String dron,
+            @Param("site")   String site,
+            @Param("evento") String evento,
+            @Param("desde")  String desde,
+            @Param("hasta")  String hasta,
+            @Param("size")   int size,
+            @Param("offset") long offset);
+
+    @Query(value = """
+            SELECT COUNT(*) FROM vuelos_log
+            WHERE (:dron   IS NULL OR nombre_dron = :dron)
+              AND (:site   IS NULL OR site         = :site)
+              AND (:evento IS NULL OR evento        = :evento)
+              AND (:desde  IS NULL OR COALESCE(timestamp_flytbase, fecha_registro) >= CAST(:desde AS timestamptz))
+              AND (:hasta  IS NULL OR COALESCE(timestamp_flytbase, fecha_registro) <= CAST(:hasta AS timestamptz))
+            """, nativeQuery = true)
+    long countFiltered(
+            @Param("dron")   String dron,
+            @Param("site")   String site,
+            @Param("evento") String evento,
+            @Param("desde")  String desde,
+            @Param("hasta")  String hasta);
+
     /** Distinct drones que tienen registros. */
     @Query("SELECT DISTINCT v.nombreDron FROM VueloLog v WHERE v.nombreDron IS NOT NULL ORDER BY v.nombreDron")
     List<String> findDistinctDrones();

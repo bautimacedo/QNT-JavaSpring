@@ -68,23 +68,27 @@ public class DronTelemetriaService {
         }
     }
 
+    private static double clamp(double v, double min, double max) {
+        return Math.max(min, Math.min(max, v));
+    }
+
     private void parsearDrone(String sn, JsonNode host) {
         DronSnapshot snap = dronSnapshots.computeIfAbsent(sn, k -> new DronSnapshot());
         snap.sn = sn;
 
-        if (host.has("latitude")) snap.latitud = host.get("latitude").decimalValue();
-        if (host.has("longitude")) snap.longitud = host.get("longitude").decimalValue();
-        if (host.has("height")) snap.altitud = host.get("height").decimalValue();
+        if (host.has("latitude"))  snap.latitud  = java.math.BigDecimal.valueOf(clamp(host.get("latitude").asDouble(),  -90,    90));
+        if (host.has("longitude")) snap.longitud = java.math.BigDecimal.valueOf(clamp(host.get("longitude").asDouble(), -180,   180));
+        if (host.has("height"))    snap.altitud  = java.math.BigDecimal.valueOf(clamp(host.get("height").asDouble(),    -500, 10000));
         snap.enDock = false;
 
         JsonNode battery = host.path("battery");
         if (!battery.isMissingNode()) {
-            if (battery.has("capacity_percent")) snap.bateriaPorc = battery.get("capacity_percent").asInt();
+            if (battery.has("capacity_percent")) snap.bateriaPorc = (int) clamp(battery.get("capacity_percent").asInt(), 0, 100);
             JsonNode bats = battery.path("batteries");
             if (bats.isArray() && bats.size() > 0) {
                 JsonNode b = bats.get(0);
-                if (b.has("temperature")) snap.bateriaTempC = b.get("temperature").decimalValue();
-                if (b.has("loop_times")) snap.bateriaCiclos = b.get("loop_times").asInt();
+                if (b.has("temperature")) snap.bateriaTempC = java.math.BigDecimal.valueOf(clamp(b.get("temperature").asDouble(), -50, 100));
+                if (b.has("loop_times"))  snap.bateriaCiclos = (int) clamp(b.get("loop_times").asInt(), 0, 10000);
                 if (b.has("sn")) snap.bateriaSn = b.get("sn").asText();
             }
         }
@@ -96,16 +100,16 @@ public class DronTelemetriaService {
         DockSnapshot snap = dockSnapshots.computeIfAbsent(sn, k -> new DockSnapshot());
         snap.sn = sn;
 
-        if (host.has("latitude")) snap.latitud = host.get("latitude").decimalValue();
-        if (host.has("longitude")) snap.longitud = host.get("longitude").decimalValue();
-        if (host.has("height")) snap.altitud = host.get("height").decimalValue();
-        if (host.has("environment_temperature")) snap.temperaturaAmbiente = host.get("environment_temperature").decimalValue();
-        if (host.has("wind_speed")) snap.velocidadViento = host.get("wind_speed").decimalValue();
+        if (host.has("latitude"))               snap.latitud            = java.math.BigDecimal.valueOf(clamp(host.get("latitude").asDouble(),               -90,    90));
+        if (host.has("longitude"))              snap.longitud           = java.math.BigDecimal.valueOf(clamp(host.get("longitude").asDouble(),              -180,   180));
+        if (host.has("height"))                 snap.altitud            = java.math.BigDecimal.valueOf(clamp(host.get("height").asDouble(),                 -500, 10000));
+        if (host.has("environment_temperature")) snap.temperaturaAmbiente = java.math.BigDecimal.valueOf(clamp(host.get("environment_temperature").asDouble(), -50,   80));
+        if (host.has("wind_speed"))             snap.velocidadViento    = java.math.BigDecimal.valueOf(clamp(host.get("wind_speed").asDouble(),              0,    100));
 
         // Batería del drone en dock
         JsonNode chargeState = host.path("drone_charge_state");
         if (!chargeState.isMissingNode()) {
-            snap.droneBateriaPorc = chargeState.has("capacity_percent") ? chargeState.get("capacity_percent").asInt() : null;
+            snap.droneBateriaPorc = chargeState.has("capacity_percent") ? (int) clamp(chargeState.get("capacity_percent").asInt(), 0, 100) : null;
             snap.droneEnDock = host.has("drone_in_dock") && host.get("drone_in_dock").asInt() == 1;
         }
 

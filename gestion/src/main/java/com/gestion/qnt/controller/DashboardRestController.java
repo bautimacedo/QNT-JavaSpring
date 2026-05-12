@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/qnt/v1/dashboard")
@@ -42,21 +43,24 @@ public class DashboardRestController {
     @Transactional(readOnly = true)
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<DashboardStatsResponse> stats() {
-        long dronesTotal          = dronRepository.count();
-        long dronesOperativos     = dronRepository.findByEstado(Estado.STOCK_ACTIVO).size();
-        long dronesEnMant         = dronRepository.findByEstado(Estado.EN_MANTENIMIENTO).size();
-        long dronesEnDesuso       = dronRepository.findByEstado(Estado.EN_DESUSO).size();
+        // 2 queries de agregación reemplazan las 8 originales (findByEstado × 4 por entidad)
+        List<Object[]> dronCounts   = dronRepository.countGroupByEstado();
+        List<Object[]> misionCounts = misionRepository.countGroupByEstado();
 
-        long misionesTotal        = misionRepository.count();
-        long planificadas         = misionRepository.findByEstado(EstadoMision.PLANIFICADA).size();
-        long enCurso              = misionRepository.findByEstado(EstadoMision.EN_CURSO).size();
-        long completadas          = misionRepository.findByEstado(EstadoMision.COMPLETADA).size();
-        long canceladas           = misionRepository.findByEstado(EstadoMision.CANCELADA).size();
+        long dronesTotal      = dronRepository.count();
+        long dronesOperativos = extractCount(dronCounts, Estado.STOCK_ACTIVO);
+        long dronesEnMant     = extractCount(dronCounts, Estado.EN_MANTENIMIENTO);
+        long dronesEnDesuso   = extractCount(dronCounts, Estado.EN_DESUSO);
 
-        long alertasActivas       = alertaRepository.countByResueltaFalse();
+        long misionesTotal = misionRepository.count();
+        long planificadas  = extractCount(misionCounts, EstadoMision.PLANIFICADA);
+        long enCurso       = extractCount(misionCounts, EstadoMision.EN_CURSO);
+        long completadas   = extractCount(misionCounts, EstadoMision.COMPLETADA);
+        long canceladas    = extractCount(misionCounts, EstadoMision.CANCELADA);
 
-        long batCiclos            = bateriaRepository.findByCiclosCargaGreaterThan(CICLOS_MAX).size();
-        long dronsTempAlta        = dronRepository.findByBateriaTempCGreaterThan(TEMP_BAT_MAX).size();
+        long alertasActivas = alertaRepository.countByResueltaFalse();
+        long batCiclos      = bateriaRepository.countByCiclosCargaGreaterThan(CICLOS_MAX);
+        long dronsTempAlta  = dronRepository.countByBateriaTempCGreaterThan(TEMP_BAT_MAX);
 
         return ResponseEntity.ok(new DashboardStatsResponse(
                 dronesTotal, dronesOperativos, dronesEnMant, dronesEnDesuso,
@@ -64,5 +68,12 @@ public class DashboardRestController {
                 alertasActivas,
                 batCiclos, dronsTempAlta
         ));
+    }
+
+    private long extractCount(List<Object[]> rows, Enum<?> estado) {
+        for (Object[] row : rows) {
+            if (estado.equals(row[0])) return ((Number) row[1]).longValue();
+        }
+        return 0L;
     }
 }

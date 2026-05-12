@@ -7,18 +7,41 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
+@Component
 public class RateLimitingFilter extends OncePerRequestFilter {
 
     private final ConcurrentHashMap<String, Bucket> loginBuckets    = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Bucket> internalBuckets = new ConcurrentHashMap<>();
+
+    private final boolean trustedProxyEnabled;
+
+    public RateLimitingFilter(
+            @Value("${app.trusted-proxy-enabled:false}") boolean trustedProxyEnabled) {
+        this.trustedProxyEnabled = trustedProxyEnabled;
+        // Limpiar buckets cada hora para evitar memory leak con IPs únicas
+        ScheduledExecutorService cleaner = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "rate-limit-evict");
+            t.setDaemon(true);
+            return t;
+        });
+        cleaner.scheduleAtFixedRate(() -> {
+            loginBuckets.clear();
+            internalBuckets.clear();
+        }, 1, 1, TimeUnit.HOURS);
+    }
 
     private Bucket loginBucketFor(String ip) {
         return loginBuckets.computeIfAbsent(ip, k ->
@@ -60,9 +83,11 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     }
 
     private String resolveClientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            return forwarded.split(",")[0].trim();
+        if (trustedProxyEnabled) {
+            String forwarded = request.getHeader("X-Forwarded-For");
+            if (forwarded != null && !forwarded.isBlank()) {
+                return forwarded.split(",")[0].trim();
+            }
         }
         return request.getRemoteAddr();
     }

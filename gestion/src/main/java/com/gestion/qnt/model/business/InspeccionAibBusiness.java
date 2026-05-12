@@ -156,16 +156,22 @@ public class InspeccionAibBusiness implements IInspeccionAibBusiness {
         for (MultipartFile file : graficos) {
             String name = file.getOriginalFilename();
             if (name == null || name.isBlank()) continue;
-            Path dest = dir.resolve(name);
+            String safeName = Paths.get(name).getFileName().toString();
+            if (safeName.isBlank() || safeName.contains("..")) continue;
+            int dotIdx = safeName.lastIndexOf('.');
+            if (dotIdx < 0) continue;
+            String ext = safeName.substring(dotIdx + 1).toLowerCase();
+            if (!java.util.Set.of("png", "jpg", "jpeg", "gif", "webp").contains(ext)) continue;
+            Path dest = dir.resolve(safeName);
             file.transferTo(dest.toFile());
 
-            String relativePath = aibId + "/" + id + "/" + name;
-            if (name.startsWith("captura_anotada")) inspeccion.setCapturaAnotadaPath(relativePath);
-            else if (name.startsWith("grafico_posicion_in")) inspeccion.setGraficoPosicionInPath(relativePath);
-            else if (name.startsWith("grafico_procesada")) inspeccion.setGraficoProcesadaPath(relativePath);
-            else if (name.startsWith("grafico_velocidad")) inspeccion.setGraficoVelocidadPath(relativePath);
-            else if (name.startsWith("grafico_derivada_in")) inspeccion.setGraficoDerivadaInPath(relativePath);
-            else if (name.startsWith("grafico_aceleracion_in")) inspeccion.setGraficoAceleracionInPath(relativePath);
+            String relativePath = aibId + "/" + id + "/" + safeName;
+            if (safeName.startsWith("captura_anotada")) inspeccion.setCapturaAnotadaPath(relativePath);
+            else if (safeName.startsWith("grafico_posicion_in")) inspeccion.setGraficoPosicionInPath(relativePath);
+            else if (safeName.startsWith("grafico_procesada")) inspeccion.setGraficoProcesadaPath(relativePath);
+            else if (safeName.startsWith("grafico_velocidad")) inspeccion.setGraficoVelocidadPath(relativePath);
+            else if (safeName.startsWith("grafico_derivada_in")) inspeccion.setGraficoDerivadaInPath(relativePath);
+            else if (safeName.startsWith("grafico_aceleracion_in")) inspeccion.setGraficoAceleracionInPath(relativePath);
         }
     }
 

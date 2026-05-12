@@ -34,13 +34,16 @@ public class SecurityConfiguration {
     private final AuthConstants authConstants;
     private final CustomAuthenticationManager customAuthenticationManager;
     private final Environment environment;
+    private final RateLimitingFilter rateLimitingFilter;
 
     public SecurityConfiguration(AuthConstants authConstants,
                                 CustomAuthenticationManager customAuthenticationManager,
-                                Environment environment) {
+                                Environment environment,
+                                RateLimitingFilter rateLimitingFilter) {
         this.authConstants = authConstants;
         this.customAuthenticationManager = customAuthenticationManager;
         this.environment = environment;
+        this.rateLimitingFilter = rateLimitingFilter;
     }
 
     @Bean
@@ -109,7 +112,7 @@ public class SecurityConfiguration {
                     response.getWriter().write("{\"status\":403,\"error\":\"Forbidden\",\"message\":\"Acceso denegado\"}");
                 })
             )
-            .addFilterBefore(new RateLimitingFilter(), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(new JWTAuthorizationFilter(authConstants), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

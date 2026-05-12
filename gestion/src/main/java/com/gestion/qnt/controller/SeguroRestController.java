@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(ApiConstants.URL_BASE + "/seguros")
@@ -114,8 +115,15 @@ public class SeguroRestController {
     public ResponseEntity<?> subirImagen(@PathVariable Long id,
                                          @RequestParam("file") MultipartFile file) {
         try {
+            byte[] bytes = file.getBytes();
+            boolean isPdf  = bytes.length >= 4 && bytes[0] == 0x25 && bytes[1] == 0x50 && bytes[2] == 0x44 && bytes[3] == 0x46;
+            boolean isJpeg = bytes.length >= 2 && (bytes[0] & 0xFF) == 0xFF && (bytes[1] & 0xFF) == 0xD8;
+            boolean isPng  = bytes.length >= 4 && (bytes[0] & 0xFF) == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47;
+            if (!isPdf && !isJpeg && !isPng) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Solo se permiten archivos PDF, JPEG o PNG"));
+            }
             Seguro seguro = seguroBusiness.load(id);
-            seguro.setImagenPoliza(file.getBytes());
+            seguro.setImagenPoliza(bytes);
             seguroBusiness.update(seguro);
             return ResponseEntity.ok().build();
         } catch (NotFoundException e) {

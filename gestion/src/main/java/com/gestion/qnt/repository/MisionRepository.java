@@ -14,6 +14,9 @@ public interface MisionRepository extends JpaRepository<Mision, Long> {
 
     List<Mision> findByEstado(EstadoMision estado);
 
+    @Query("SELECT m.estado, COUNT(m) FROM Mision m GROUP BY m.estado")
+    List<Object[]> countGroupByEstado();
+
     List<Mision> findByPilotoId(Long pilotoId);
 
     @Query("SELECT m FROM Mision m LEFT JOIN FETCH m.piloto LEFT JOIN FETCH m.dron LEFT JOIN FETCH m.dock ORDER BY m.fechaCreacion DESC")

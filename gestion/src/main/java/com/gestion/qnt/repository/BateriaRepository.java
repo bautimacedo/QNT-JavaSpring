@@ -14,4 +14,6 @@ public interface BateriaRepository extends JpaRepository<Bateria, Long> {
     Optional<Bateria> findByNumeroSerie(String numeroSerie);
 
     List<Bateria> findByCiclosCargaGreaterThan(int ciclos);
+
+    long countByCiclosCargaGreaterThan(int ciclos);
 }

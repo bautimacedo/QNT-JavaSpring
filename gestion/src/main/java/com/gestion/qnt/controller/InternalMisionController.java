@@ -89,11 +89,14 @@ public class InternalMisionController {
             if (dur != null) duracionMinutos = dur;
         } catch (Exception ignored) {}
 
-        // Buscar misión pendiente para este drone
+        // Atomic: marca procesado=true y recupera los datos en una sola operación.
+        // Si dos requests llegan concurrentes, el segundo UPDATE no encontrará filas (procesado ya = true).
         List<Map<String, Object>> filas = jdbcTemplate.queryForList(
-                "SELECT id, mision_id, usuario_id FROM mision_pendiente " +
-                "WHERE drone_nombre = ? AND procesado = false AND mision_id IS NOT NULL " +
-                "ORDER BY timestamp_lanzamiento DESC LIMIT 1",
+                "UPDATE mision_pendiente SET procesado = true " +
+                "WHERE id = (SELECT id FROM mision_pendiente " +
+                "            WHERE drone_nombre = ? AND procesado = false AND mision_id IS NOT NULL " +
+                "            ORDER BY timestamp_lanzamiento DESC LIMIT 1) " +
+                "RETURNING id, mision_id, usuario_id",
                 dronNombre);
 
         if (filas.isEmpty()) {
@@ -103,11 +106,7 @@ public class InternalMisionController {
         }
 
         Map<String, Object> fila = filas.get(0);
-        long pendienteId = ((Number) fila.get("id")).longValue();
-        long misionId    = ((Number) fila.get("mision_id")).longValue();
-
-        // Marcar procesado de entrada para evitar doble ejecución
-        jdbcTemplate.update("UPDATE mision_pendiente SET procesado = true WHERE id = ?", pendienteId);
+        long misionId = ((Number) fila.get("mision_id")).longValue();
 
         Mision m = misionRepository.findById(misionId).orElse(null);
         if (m == null || m.getEstado() != EstadoMision.EN_CURSO) {

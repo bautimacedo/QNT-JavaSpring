@@ -13,6 +13,7 @@ import com.gestion.qnt.repository.MisionRepository;
 import com.gestion.qnt.repository.ProgramacionMisionRepository;
 import com.gestion.qnt.scheduler.TempestPollingJob;
 import com.gestion.qnt.service.WeatherEvaluator.Aptitud;
+import org.springframework.beans.factory.annotation.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +51,9 @@ public class ProgramacionMisionService {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Value("${weather.gate.enabled:false}")
+    private boolean weatherGateEnabled;
 
     public LocalDateTime calcularProxEjecucion(ProgramacionMision p) {
         if (p.getTipoRecurrencia() == null || p.getHora() == null) return null;
@@ -135,7 +139,7 @@ public class ProgramacionMisionService {
         );
 
         // ── Weather gate ────────────────────────────────────────────────
-        Aptitud aptitud = tempestPollingJob.getAptitudActual();
+        Aptitud aptitud = weatherGateEnabled ? tempestPollingJob.getAptitudActual() : null;
         if (aptitud == Aptitud.NO_VOLAR) {
             saved.setEstado(EstadoMision.CANCELADA);
             misionRepository.save(saved);

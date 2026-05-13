@@ -69,6 +69,12 @@ public class TempestPollingJob {
         }
 
         Evaluacion eval = evaluator.evaluar(raw);
+        if (eval == null) {
+            // Sin sensor o datos vacíos — no modificar el estado actual
+            log.debug("TempestPollingJob: sin datos de observación, estado actual preservado");
+            return;
+        }
+
         persistirRegistro(raw, eval);
         detectarTransicion(eval);
     }

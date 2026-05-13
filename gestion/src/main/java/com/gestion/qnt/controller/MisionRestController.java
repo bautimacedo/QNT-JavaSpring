@@ -29,6 +29,7 @@ import com.gestion.qnt.model.enums.NivelAlerta;
 import com.gestion.qnt.model.enums.TipoAlerta;
 import com.gestion.qnt.repository.AlertaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -97,6 +98,9 @@ public class MisionRestController {
 
     @Autowired
     private AlertaRepository alertaRepository;
+
+    @Value("${weather.gate.enabled:false}")
+    private boolean weatherGateEnabled;
 
     // ─────────────────────────────────────────────
     // GET /misiones — lista con detalles
@@ -383,13 +387,15 @@ public class MisionRestController {
         boolean esCAM = dron.getYacimiento() == Yacimiento.CAM;
 
         // ── Weather gate ────────────────────────────────────────────────
-        Aptitud aptitud = tempestPollingJob.getAptitudActual();
-        if (aptitud == Aptitud.NO_VOLAR) {
-            m.setEstado(EstadoMision.CANCELADA);
-            try { misionBusiness.update(m); } catch (Exception ignored) {}
-            registrarCancelacionClima(m);
-            return ResponseEntity.status(422)
-                    .body(Map.of("error", "Misión cancelada: condiciones climáticas NO VOLAR. Revisá la Estación Tempest."));
+        if (weatherGateEnabled) {
+            Aptitud aptitud = tempestPollingJob.getAptitudActual();
+            if (aptitud == Aptitud.NO_VOLAR) {
+                m.setEstado(EstadoMision.CANCELADA);
+                try { misionBusiness.update(m); } catch (Exception ignored) {}
+                registrarCancelacionClima(m);
+                return ResponseEntity.status(422)
+                        .body(Map.of("error", "Misión cancelada: condiciones climáticas NO VOLAR. Revisá la Estación Tempest."));
+            }
         }
         // ────────────────────────────────────────────────────────────────
 

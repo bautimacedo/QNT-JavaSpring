@@ -32,21 +32,19 @@ public class WeatherEvaluator {
      * Evalúa a partir del mapa de observaciones devuelto por TempestService.getObservations().
      * Espera obs[0] como mapa con keys nombradas (ya normalizadas por el servicio).
      */
+    /**
+     * Retorna null si no hay datos suficientes para evaluar (sin sensor, API vacía).
+     * El caller debe tratar null como "sin datos" — no bloquear lanzamientos.
+     */
     @SuppressWarnings("unchecked")
     public Evaluacion evaluar(Map<String, Object> rawObs) {
-        if (rawObs == null || rawObs.isEmpty()) {
-            return new Evaluacion(Aptitud.NO_VOLAR, List.of("Sin datos meteorológicos disponibles"));
-        }
+        if (rawObs == null || rawObs.isEmpty()) return null;
 
         List<?> obsList = (List<?>) rawObs.get("obs");
-        if (obsList == null || obsList.isEmpty()) {
-            return new Evaluacion(Aptitud.NO_VOLAR, List.of("Sin observaciones disponibles"));
-        }
+        if (obsList == null || obsList.isEmpty()) return null;
 
         Object first = obsList.get(0);
-        if (!(first instanceof Map)) {
-            return new Evaluacion(Aptitud.NO_VOLAR, List.of("Formato de observaciones inesperado"));
-        }
+        if (!(first instanceof Map)) return null;
 
         Map<String, Object> obs = (Map<String, Object>) first;
 

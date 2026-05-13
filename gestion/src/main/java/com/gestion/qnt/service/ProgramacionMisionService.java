@@ -1,12 +1,18 @@
 package com.gestion.qnt.service;
 
+import com.gestion.qnt.model.Alerta;
 import com.gestion.qnt.model.Dock;
 import com.gestion.qnt.model.Mision;
 import com.gestion.qnt.model.ProgramacionMision;
 import com.gestion.qnt.model.enums.EstadoMision;
+import com.gestion.qnt.model.enums.NivelAlerta;
 import com.gestion.qnt.model.enums.PrioridadMision;
+import com.gestion.qnt.model.enums.TipoAlerta;
+import com.gestion.qnt.repository.AlertaRepository;
 import com.gestion.qnt.repository.MisionRepository;
 import com.gestion.qnt.repository.ProgramacionMisionRepository;
+import com.gestion.qnt.scheduler.TempestPollingJob;
+import com.gestion.qnt.service.WeatherEvaluator.Aptitud;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +38,15 @@ public class ProgramacionMisionService {
 
     @Autowired
     private FlytbaseService flytbaseService;
+
+    @Autowired
+    private TempestPollingJob tempestPollingJob;
+
+    @Autowired
+    private TelegramNotificationService telegramNotificationService;
+
+    @Autowired
+    private AlertaRepository alertaRepository;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -118,6 +133,23 @@ public class ProgramacionMisionService {
                 "INSERT INTO mision_pendiente (drone_nombre, piloto_nombre, usuario_id, mision_id) VALUES (?, ?, ?, ?)",
                 dronNombre, pilotoNombre, pilotoId, saved.getId()
         );
+
+        // ── Weather gate ────────────────────────────────────────────────
+        Aptitud aptitud = tempestPollingJob.getAptitudActual();
+        if (aptitud == Aptitud.NO_VOLAR) {
+            saved.setEstado(EstadoMision.CANCELADA);
+            misionRepository.save(saved);
+            log.warn("Programación {}: misión {} cancelada por MAL_TIEMPO (NO VOLAR)", progId, saved.getId());
+            String msg = "🔴 Misión programada <b>'" + saved.getNombre() + "'</b> cancelada automáticamente — condiciones climáticas NO VOLAR.";
+            telegramNotificationService.notifyAll(msg);
+            String dedup = "MAL_TIEMPO_MISION_" + saved.getId();
+            Alerta a = new Alerta(TipoAlerta.MAL_TIEMPO, NivelAlerta.CRITICA,
+                    "Misión cancelada por mal tiempo", "Drone: " + dronNombre, "MISION", saved.getId());
+            a.setClaveDedup(dedup);
+            alertaRepository.save(a);
+            return;
+        }
+        // ────────────────────────────────────────────────────────────────
 
         if (webhookUrl != null && !webhookUrl.isBlank() && webhookBearer != null && !webhookBearer.isBlank()) {
             try {

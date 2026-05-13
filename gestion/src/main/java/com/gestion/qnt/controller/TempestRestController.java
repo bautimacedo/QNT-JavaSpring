@@ -1,5 +1,7 @@
 package com.gestion.qnt.controller;
 
+import com.gestion.qnt.model.TempestRegistro;
+import com.gestion.qnt.repository.TempestRegistroRepository;
 import com.gestion.qnt.service.TempestService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -7,6 +9,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClientException;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -15,9 +19,11 @@ import java.util.Map;
 public class TempestRestController {
 
     private final TempestService tempestService;
+    private final TempestRegistroRepository registroRepo;
 
-    public TempestRestController(TempestService tempestService) {
+    public TempestRestController(TempestService tempestService, TempestRegistroRepository registroRepo) {
         this.tempestService = tempestService;
+        this.registroRepo   = registroRepo;
     }
 
     @GetMapping("/observations")
@@ -50,5 +56,12 @@ public class TempestRestController {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                     .body(Map.of("error", "No se pudo obtener info de la estación", "detail", e.getMessage()));
         }
+    }
+
+    @GetMapping("/historial")
+    public ResponseEntity<List<TempestRegistro>> historial(
+            @RequestParam(defaultValue = "24") int horas) {
+        Instant desde = Instant.now().minusSeconds((long) horas * 3600);
+        return ResponseEntity.ok(registroRepo.findByTimestampAfterOrderByTimestampAsc(desde));
     }
 }

@@ -7,5 +7,6 @@ public enum TipoAlerta {
     SEGURO,
     LICENCIA,
     TELEMETRIA,
+    MAL_TIEMPO,
     OTRO
 }

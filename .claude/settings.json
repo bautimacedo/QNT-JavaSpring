@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": ["Bash(*)", "WebFetch(domain:*)"],
+    "additionalDirectories": [
+      "/home/bauti/Proyectos GITHUB/QNT-Frontend/QNT-Frontend/src/assets"
+    ]
+  }
+}

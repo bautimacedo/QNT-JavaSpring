@@ -1,164 +1,560 @@
-{"timestamp":1772376051962,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":17,"passwordPresent":true},"hypothesisId":"D"}
-{"timestamp":1772376051965,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@ejemplo.com","passwordPresent":true},"hypothesisId":"A"}
-{"timestamp":1772376052477,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
-{"timestamp":1772376052605,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"admin@ejemplo.com"},"hypothesisId":"B"}
-{"timestamp":1772376052605,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Credenciales inválidas"},"hypothesisId":"A"}
-{"timestamp":1772376323426,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":17,"passwordPresent":true},"hypothesisId":"D"}
-{"timestamp":1772376323426,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@ejemplo.com","passwordPresent":true},"hypothesisId":"A"}
-{"timestamp":1772376323432,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
-{"timestamp":1772376323556,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"admin@ejemplo.com"},"hypothesisId":"B"}
-{"timestamp":1772376323557,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Credenciales inválidas"},"hypothesisId":"A"}
-{"timestamp":1772376379117,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":17,"passwordPresent":true},"hypothesisId":"D"}
-{"timestamp":1772376379117,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@ejemplo.com","passwordPresent":true},"hypothesisId":"A"}
-{"timestamp":1772376379123,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
-{"timestamp":1772376379248,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"admin@ejemplo.com"},"hypothesisId":"B"}
-{"timestamp":1772376379248,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Credenciales inválidas"},"hypothesisId":"A"}
-{"timestamp":1772376483111,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":17,"passwordPresent":true},"hypothesisId":"D"}
-{"timestamp":1772376483113,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@ejemplo.com","passwordPresent":true},"hypothesisId":"A"}
-{"timestamp":1772376483157,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
-{"timestamp":1772376483284,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"admin@ejemplo.com"},"hypothesisId":"B"}
-{"timestamp":1772376483285,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
-{"timestamp":1772376485880,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":17,"passwordPresent":true},"hypothesisId":"D"}
-{"timestamp":1772376485880,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@ejemplo.com","passwordPresent":true},"hypothesisId":"A"}
-{"timestamp":1772376485886,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
-{"timestamp":1772376486018,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"admin@ejemplo.com"},"hypothesisId":"B"}
-{"timestamp":1772376486019,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
-{"timestamp":1772376503405,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":17,"passwordPresent":true},"hypothesisId":"D"}
-{"timestamp":1772376503407,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@ejemplo.com","passwordPresent":true},"hypothesisId":"A"}
-{"timestamp":1772376503448,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
-{"timestamp":1772376503577,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"admin@ejemplo.com"},"hypothesisId":"B"}
-{"timestamp":1772376503578,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
-{"timestamp":1772376536209,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":17,"passwordPresent":true},"hypothesisId":"D"}
-{"timestamp":1772376536210,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@ejemplo.com","passwordPresent":true},"hypothesisId":"A"}
-{"timestamp":1772376536243,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
-{"timestamp":1772376536356,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"admin@ejemplo.com"},"hypothesisId":"B"}
-{"timestamp":1772376536356,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
-{"timestamp":1772376976737,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":17,"passwordPresent":true},"hypothesisId":"D"}
-{"timestamp":1772376976738,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@ejemplo.com","passwordPresent":true},"hypothesisId":"A"}
-{"timestamp":1772376976743,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
-{"timestamp":1772376976869,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"admin@ejemplo.com"},"hypothesisId":"B"}
-{"timestamp":1772376976869,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
-{"timestamp":1772377000473,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":17,"passwordPresent":true},"hypothesisId":"D"}
-{"timestamp":1772377000474,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@ejemplo.com","passwordPresent":true},"hypothesisId":"A"}
-{"timestamp":1772377000479,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
-{"timestamp":1772377000601,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"admin@ejemplo.com"},"hypothesisId":"B"}
-{"timestamp":1772377000602,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
-{"timestamp":1772377114333,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":17,"passwordPresent":true},"hypothesisId":"D"}
-{"timestamp":1772377114334,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@ejemplo.com","passwordPresent":true},"hypothesisId":"A"}
-{"timestamp":1772377114376,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
-{"timestamp":1772377114490,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"admin@ejemplo.com"},"hypothesisId":"B"}
-{"timestamp":1772377114491,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
-{"timestamp":1772377193703,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":17,"passwordPresent":true},"hypothesisId":"D"}
-{"timestamp":1772377193703,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@ejemplo.com","passwordPresent":true},"hypothesisId":"A"}
-{"timestamp":1772377193707,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
-{"timestamp":1772377193829,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"admin@ejemplo.com"},"hypothesisId":"B"}
-{"timestamp":1772377193829,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
-{"timestamp":1772377484037,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":17,"passwordPresent":true},"hypothesisId":"D"}
-{"timestamp":1772377484037,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@ejemplo.com","passwordPresent":true},"hypothesisId":"A"}
-{"timestamp":1772377484043,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
-{"timestamp":1772377542413,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":17,"passwordPresent":true},"hypothesisId":"D"}
-{"timestamp":1772377542413,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@ejemplo.com","passwordPresent":true},"hypothesisId":"A"}
-{"timestamp":1772377542417,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
-{"timestamp":1772377572785,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":17,"passwordPresent":true},"hypothesisId":"D"}
-{"timestamp":1772377572785,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@ejemplo.com","passwordPresent":true},"hypothesisId":"A"}
-{"timestamp":1772377572789,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
-{"timestamp":1772377591916,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":17,"passwordPresent":true},"hypothesisId":"D"}
-{"timestamp":1772377591917,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@ejemplo.com","passwordPresent":true},"hypothesisId":"A"}
-{"timestamp":1772377591920,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
-{"timestamp":1772377694626,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":17,"passwordPresent":true},"hypothesisId":"D"}
-{"timestamp":1772377694627,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@ejemplo.com","passwordPresent":true},"hypothesisId":"A"}
-{"timestamp":1772377694676,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
-{"timestamp":1772377771468,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":17,"passwordPresent":true},"hypothesisId":"D"}
-{"timestamp":1772377771485,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@ejemplo.com","passwordPresent":true},"hypothesisId":"A"}
-{"timestamp":1772377771506,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
-{"timestamp":1772378609197,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":17,"passwordPresent":true},"hypothesisId":"D"}
-{"timestamp":1772378609200,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@ejemplo.com","passwordPresent":true},"hypothesisId":"A"}
-{"timestamp":1772378609209,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
-{"timestamp":1772392885520,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":17},"hypothesisId":"D"}
-{"timestamp":1772392885526,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@example.com"},"hypothesisId":"A"}
-{"timestamp":1772392885744,"location":"CustomAuthenticationManager.java:authenticate","message":"Usuario not found by email","data":{"email":"admin@example.com"},"hypothesisId":"A"}
-{"timestamp":1772392885746,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Credenciales incorrectas"},"hypothesisId":"A"}
-{"timestamp":1772392901553,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":17},"hypothesisId":"D"}
-{"timestamp":1772392901554,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@ejemplo.com"},"hypothesisId":"A"}
-{"timestamp":1772392901565,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772393772461,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":17},"hypothesisId":"D"}
-{"timestamp":1772393772462,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@ejemplo.com"},"hypothesisId":"A"}
-{"timestamp":1772393772464,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772394339981,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":17},"hypothesisId":"D"}
-{"timestamp":1772394339981,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@ejemplo.com"},"hypothesisId":"A"}
-{"timestamp":1772394339983,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772396876941,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":17},"hypothesisId":"D"}
-{"timestamp":1772396876943,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@ejemplo.com"},"hypothesisId":"A"}
-{"timestamp":1772396876946,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772397565776,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":17},"hypothesisId":"D"}
-{"timestamp":1772397565777,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@ejemplo.com"},"hypothesisId":"A"}
-{"timestamp":1772397565779,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772398702608,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":17},"hypothesisId":"D"}
-{"timestamp":1772398702611,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@ejemplo.com"},"hypothesisId":"A"}
-{"timestamp":1772398702615,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772398797298,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":18},"hypothesisId":"D"}
-{"timestamp":1772398797299,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"bautimrf@gmail.com"},"hypothesisId":"A"}
-{"timestamp":1772398797301,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":2,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772398797362,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"bautimrf@gmail.com"},"hypothesisId":"B"}
-{"timestamp":1772398797365,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
-{"timestamp":1772398798571,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":18},"hypothesisId":"D"}
-{"timestamp":1772398798572,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"bautimrf@gmail.com"},"hypothesisId":"A"}
-{"timestamp":1772398798574,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":2,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772405555802,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":18},"hypothesisId":"D"}
-{"timestamp":1772405555815,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"bautimrf@gmail.com"},"hypothesisId":"A"}
-{"timestamp":1772405555938,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":2,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772405776695,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":18},"hypothesisId":"D"}
-{"timestamp":1772405776696,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"bautimrf@gmail.com"},"hypothesisId":"A"}
-{"timestamp":1772405776701,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":2,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772405776830,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"bautimrf@gmail.com"},"hypothesisId":"B"}
-{"timestamp":1772405776834,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
-{"timestamp":1772405779548,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":18},"hypothesisId":"D"}
-{"timestamp":1772405779550,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"bautimrf@gmail.com"},"hypothesisId":"A"}
-{"timestamp":1772405779554,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":2,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772406439640,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":18},"hypothesisId":"D"}
-{"timestamp":1772406439643,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"bautimrf@gmail.com"},"hypothesisId":"A"}
-{"timestamp":1772406439652,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":2,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772412966745,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":18},"hypothesisId":"D"}
-{"timestamp":1772412966760,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"bautimrf@gmail.com"},"hypothesisId":"A"}
-{"timestamp":1772412966951,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":2,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772413519050,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":18},"hypothesisId":"D"}
-{"timestamp":1772413519053,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"bautimrf@gmail.com"},"hypothesisId":"A"}
-{"timestamp":1772413519079,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":2,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772413832483,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":18},"hypothesisId":"D"}
-{"timestamp":1772413832487,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"bautimrf@gmail.com"},"hypothesisId":"A"}
-{"timestamp":1772413832513,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":2,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772415682606,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":17},"hypothesisId":"D"}
-{"timestamp":1772415682609,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@ejemplo.com"},"hypothesisId":"A"}
-{"timestamp":1772415682617,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772415682747,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"admin@ejemplo.com"},"hypothesisId":"B"}
-{"timestamp":1772415682753,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
-{"timestamp":1772415684123,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":17},"hypothesisId":"D"}
-{"timestamp":1772415684125,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@ejemplo.com"},"hypothesisId":"A"}
-{"timestamp":1772415684130,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772723709954,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":15},"hypothesisId":"D"}
-{"timestamp":1772723709960,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@admin.com"},"hypothesisId":"A"}
-{"timestamp":1772723710015,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772723998877,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":15},"hypothesisId":"D"}
-{"timestamp":1772723998878,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@admin.com"},"hypothesisId":"A"}
-{"timestamp":1772723998881,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772725857039,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":15},"hypothesisId":"D"}
-{"timestamp":1772725857040,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@admin.com"},"hypothesisId":"A"}
-{"timestamp":1772725857050,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772725982811,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":15},"hypothesisId":"D"}
-{"timestamp":1772725982812,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@admin.com"},"hypothesisId":"A"}
-{"timestamp":1772725982814,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772726001761,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":15},"hypothesisId":"D"}
-{"timestamp":1772726001763,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@admin.com"},"hypothesisId":"A"}
-{"timestamp":1772726001765,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772726147459,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":15},"hypothesisId":"D"}
-{"timestamp":1772726147461,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@admin.com"},"hypothesisId":"A"}
-{"timestamp":1772726147468,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772728553240,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":15},"hypothesisId":"D"}
-{"timestamp":1772728553243,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@admin.com"},"hypothesisId":"A"}
-{"timestamp":1772728553247,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772730401194,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":15},"hypothesisId":"D"}
-{"timestamp":1772730401196,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@admin.com"},"hypothesisId":"A"}
-{"timestamp":1772730401202,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
-{"timestamp":1772730444237,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":15},"hypothesisId":"D"}
-{"timestamp":1772730444245,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@admin.com"},"hypothesisId":"A"}
-{"timestamp":1772730444306,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
+{"id":"log_jwt_before_auth","timestamp":1773695922194,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/clima","hasToken":false},"hypothesisId":"H1"}
+{"id":"log_jwt_login_path","timestamp":1773695929076,"location":"JWTAuthorizationFilter.doFilterInternal","message":"login path hit","data":{"path":"/api/qnt/v1/auth/login"},"hypothesisId":"H1"}
+{"timestamp":1773695929121,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":15},"hypothesisId":"D"}
+{"timestamp":1773695929128,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@admin.com"},"hypothesisId":"A"}
+{"timestamp":1773695929144,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
+{"id":"log_jwt_before_auth","timestamp":1773695929343,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/auth/me","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773695929343,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/alertas/activas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773695929343,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773695929343,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/tareas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773695929343,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/clima","hasToken":false},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773695929402,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/alertas/activas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773695931993,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773695931993,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773695931993,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773695932054,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773695933308,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mi-perfil","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773695934632,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773695934633,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773695934633,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773695934658,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773695936985,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773695938680,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773695939988,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773696043573,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":false},"hypothesisId":"H1"}
+{"id":"log_jwt_login_path","timestamp":1773696049945,"location":"JWTAuthorizationFilter.doFilterInternal","message":"login path hit","data":{"path":"/api/qnt/v1/auth/login"},"hypothesisId":"H1"}
+{"id":"log_jwt_login_path","timestamp":1773696060974,"location":"JWTAuthorizationFilter.doFilterInternal","message":"login path hit","data":{"path":"/api/qnt/v1/auth/login"},"hypothesisId":"H1"}
+{"timestamp":1773696060977,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":15,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1773696060983,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@admin.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1773696061002,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
+{"id":"log_jwt_login_path","timestamp":1773696067410,"location":"JWTAuthorizationFilter.doFilterInternal","message":"login path hit","data":{"path":"/api/qnt/v1/auth/login"},"hypothesisId":"H1"}
+{"timestamp":1773696067413,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":15,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1773696067415,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@admin.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1773696067419,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
+{"id":"log_jwt_before_auth","timestamp":1773696067581,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_login_path","timestamp":1773696129301,"location":"JWTAuthorizationFilter.doFilterInternal","message":"login path hit","data":{"path":"/api/qnt/v1/auth/login"},"hypothesisId":"H1"}
+{"timestamp":1773696129303,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":15,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1773696129305,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@admin.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1773696129312,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
+{"id":"log_jwt_login_path","timestamp":1773696209203,"location":"JWTAuthorizationFilter.doFilterInternal","message":"login path hit","data":{"path":"/api/qnt/v1/auth/login"},"hypothesisId":"H1"}
+{"timestamp":1773696209206,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":15,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1773696209208,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@admin.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1773696209213,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
+{"id":"log_jwt_before_auth","timestamp":1773696209369,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_login_path","timestamp":1773696340272,"location":"JWTAuthorizationFilter.doFilterInternal","message":"login path hit","data":{"path":"/api/qnt/v1/auth/login"},"hypothesisId":"H1"}
+{"timestamp":1773696340356,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":15,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1773696340362,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@admin.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1773696340377,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
+{"id":"log_jwt_before_auth","timestamp":1773696340543,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773696340678,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/antenas-rtk","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773696340716,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/helices","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_login_path","timestamp":1773696667780,"location":"JWTAuthorizationFilter.doFilterInternal","message":"login path hit","data":{"path":"/api/qnt/v1/auth/login"},"hypothesisId":"H1"}
+{"timestamp":1773696667788,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":15,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1773696667790,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@admin.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1773696667800,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
+{"id":"log_jwt_before_auth","timestamp":1773696667944,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773696667977,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/antenas-rtk","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773696668006,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/antenas-starlink","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773696668036,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/helices","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_login_path","timestamp":1773696710354,"location":"JWTAuthorizationFilter.doFilterInternal","message":"login path hit","data":{"path":"/api/qnt/v1/auth/login"},"hypothesisId":"H1"}
+{"timestamp":1773696710357,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":1,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1773696710359,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"x","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1773696710365,"location":"CustomAuthenticationManager.java:authenticate","message":"Usuario not found by email","data":{"email":"x"},"hypothesisId":"A"}
+{"timestamp":1773696710371,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Credenciales incorrectas"},"hypothesisId":"A"}
+{"id":"log_jwt_login_path","timestamp":1773696786110,"location":"JWTAuthorizationFilter.doFilterInternal","message":"login path hit","data":{"path":"/api/qnt/v1/auth/login"},"hypothesisId":"H1"}
+{"timestamp":1773696786114,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":15,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1773696786115,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@admin.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1773696786119,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
+{"id":"log_jwt_before_auth","timestamp":1773696786266,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773696786286,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773696786324,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mapa/equipos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_login_path","timestamp":1773696873874,"location":"JWTAuthorizationFilter.doFilterInternal","message":"login path hit","data":{"path":"/api/qnt/v1/auth/login"},"hypothesisId":"H1"}
+{"timestamp":1773696873876,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":15,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1773696873877,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@admin.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1773696873881,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
+{"id":"log_jwt_login_path","timestamp":1773696943754,"location":"JWTAuthorizationFilter.doFilterInternal","message":"login path hit","data":{"path":"/api/qnt/v1/auth/login"},"hypothesisId":"H1"}
+{"timestamp":1773696943757,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":15,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1773696943759,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@admin.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1773696943764,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
+{"id":"log_jwt_before_auth","timestamp":1773696943956,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773696943957,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/auth/me","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773696943957,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/tareas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773696943957,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/alertas/activas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773696943957,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/clima","hasToken":false},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773696944009,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/alertas/activas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773696946517,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773696946517,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773696946517,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773696946558,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773696948406,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773696953841,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias/5","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697062618,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/alertas/activas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697062618,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/auth/me","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697062618,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias/5","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697068805,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias/5","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697068805,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/alertas/activas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697068805,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/auth/me","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697071759,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697072783,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias/6","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697077156,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697077767,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias/5","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697088604,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697093261,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias/1","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697122633,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697142160,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697142161,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697142163,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697142190,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697144633,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mapa/equipos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697144634,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697144920,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697144923,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697144923,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697144942,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697145434,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mi-perfil","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697146979,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697147924,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/proveedores","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697150661,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697150661,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pendientes","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697150664,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/roles","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697151573,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697151623,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras/tipos-equipo","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697152205,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/proveedores","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697152758,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697153212,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697153212,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697153213,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697153236,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697154341,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697154344,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697154346,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697154346,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697154346,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697154346,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697169614,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697169663,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697173580,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697181824,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias/5","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697185428,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/alertas/activas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697185428,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias/5","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697185428,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/auth/me","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697250112,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/alertas/activas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697250114,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias/5","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697250114,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/auth/me","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697251666,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mi-perfil","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697266027,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mi-perfil/cambio-password","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697268758,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697269707,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/proveedores","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697271799,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697273946,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697273980,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras/tipos-equipo","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697276871,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697276872,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/roles","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697276872,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pendientes","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697277705,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/licencias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697278739,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/seguros","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697280395,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mi-perfil","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697281025,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697281027,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697281027,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697281051,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697285029,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mapa/equipos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697285030,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697298837,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697298837,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mapa/equipos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697304329,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697304329,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697304331,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697304348,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697306044,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697306046,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697306046,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697306047,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697306047,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697306047,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697306756,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697306756,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/logs","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697315996,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/logs","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697316028,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/logs","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697318992,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697318992,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697318996,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697318996,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697318996,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697318996,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697321623,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697327044,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias/5","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697331315,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/alertas/activas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697331315,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/auth/me","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697331315,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias/5","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697331980,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697337223,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias/1","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697344632,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/alertas/activas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697344632,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias/1","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697344632,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/auth/me","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697346321,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697348656,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697348663,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697348665,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697348667,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697348667,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697348667,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697362871,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697362906,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697366370,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697370389,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias/8","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697377764,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias/8","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697377764,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/alertas/activas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697377764,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/auth/me","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697380564,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias/8","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697380564,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/auth/me","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697380564,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/alertas/activas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697380978,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697387698,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697387701,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697387702,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697387702,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697387702,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697387702,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697500918,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697502880,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks/8","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697503685,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697506969,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697507599,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias/2","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697508500,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697509263,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias/5","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697513223,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697513229,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697513229,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697513229,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697513231,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697513231,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697514661,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mapa/equipos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697514661,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697750291,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697750297,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697750297,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697750297,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697750297,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697750304,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697863614,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697863617,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697863619,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697863638,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773697878420,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698195846,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698195846,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698195846,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698195846,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698195847,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698195846,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698195886,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/helices","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698265954,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/helices","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698274269,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698274270,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/alertas/activas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698274275,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/tareas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698274275,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/clima","hasToken":false},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698274849,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698274849,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698274849,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698274870,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698277017,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mi-perfil","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698277678,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698277714,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras/tipos-equipo","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698290614,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698290699,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698318330,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/alertas/activas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698318330,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/auth/me","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698318330,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698318366,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras/tipos-equipo","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698320480,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/proveedores","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698321460,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698321483,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras/tipos-equipo","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698330399,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698330399,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698330399,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698330419,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698334141,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/antenas-starlink","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698337980,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/helices","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698339331,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/helices/6","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698385861,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mapa/equipos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698385864,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698410557,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mapa/equipos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698410557,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698424781,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698424781,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/alertas/activas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698424782,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/tareas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698424783,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/clima","hasToken":false},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698425783,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mi-perfil","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698426709,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/proveedores","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698428765,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mi-perfil","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698441577,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/roles","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698441577,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698441577,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pendientes","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698442295,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698442319,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras/tipos-equipo","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698443244,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/proveedores","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698444131,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698446016,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mi-perfil","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698446315,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698446317,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698446317,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698446340,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698446990,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mapa/equipos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698446991,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698450904,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698450904,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698450906,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698450907,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698450907,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698450907,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698450931,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/helices","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698452264,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/logs","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698452264,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698453106,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mapa/equipos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698453108,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698454286,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698454290,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698454290,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698454315,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698455182,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698455182,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/alertas/activas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698455189,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/tareas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698455189,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/clima","hasToken":false},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698456457,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698456458,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/tareas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698468375,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/tareas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698470375,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698470376,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/tareas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698470376,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/alertas/activas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698470376,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/clima","hasToken":false},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698490374,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698490374,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698490374,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698490400,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698491068,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mapa/equipos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698491068,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698491951,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698491951,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mapa/equipos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698492594,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698492594,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mapa/equipos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698492821,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mapa/equipos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698492821,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698493005,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698493005,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mapa/equipos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698493159,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698493159,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mapa/equipos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698493326,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698493326,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mapa/equipos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698496836,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698496837,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/clima","hasToken":false},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698496837,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/tareas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698496837,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/alertas/activas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698501731,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698501731,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698501732,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698501746,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698502451,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mapa/equipos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698502453,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698504919,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/helices","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698508720,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/accesorios","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698509513,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/accesorios/2","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698511487,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/accesorios","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698513374,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/antenas-starlink","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698513924,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/antenas-starlink/4","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698520915,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/antenas-starlink","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698524392,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698525188,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones/3","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698530612,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698532234,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones/1","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698559476,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mi-perfil","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698561475,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/proveedores","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698562408,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698563182,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698563204,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras/tipos-equipo","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698563764,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698563765,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pendientes","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698563765,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/roles","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698564505,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/licencias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698565139,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/seguros","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698567922,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698567927,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698567927,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698567945,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698571892,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mapa/equipos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698571893,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698579651,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698579660,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698579660,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698579660,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698579660,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698579660,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/baterias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698579676,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/helices","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698618675,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698618717,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mantenimientos/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698622870,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698625935,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones/1","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698631938,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698738452,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698738453,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/clima","hasToken":false},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698738453,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/alertas/activas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698738453,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/tareas","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698739447,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/misiones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698739447,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/drones","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698739447,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698739465,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/docks","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698740094,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/logs","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698740094,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698741490,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mi-perfil","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698751112,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mi-perfil/foto-perfil","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698956677,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698956681,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pendientes","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698956682,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/roles","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698957485,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/licencias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698958331,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698958332,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pendientes","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698958333,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/roles","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698958862,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698958883,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras/tipos-equipo","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698959751,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/licencias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698964189,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698964192,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pendientes","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698964193,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/roles","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698966970,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698966992,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras/tipos-equipo","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698967852,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698975469,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/1/licencias-anac/1/imagen-cma","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698975498,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/1/licencias-anac/1/imagen-certificado-idoneidad","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698979327,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pilotos","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698986447,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/proveedores","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698987310,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698987334,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/compras/tipos-equipo","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698988766,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698988766,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/usuarios/pendientes","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698988766,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/roles","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773698989562,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/licencias","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773699308292,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mi-perfil","hasToken":true},"hypothesisId":"H1"}
+{"id":"log_jwt_before_auth","timestamp":1773699313071,"location":"JWTAuthorizationFilter.doFilterInternal","message":"before auth","data":{"path":"/api/qnt/v1/mi-perfil/foto-perfil","hasToken":true},"hypothesisId":"H1"}
+{"timestamp":1773703715773,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":15,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1773703715780,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@admin.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1773703715790,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
+{"timestamp":1773703715921,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"admin@admin.com"},"hypothesisId":"B"}
+{"timestamp":1773703715925,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
+{"timestamp":1773703718966,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":15,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1773703718968,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@admin.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1773703718973,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
+{"timestamp":1774536788963,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":15,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774536788969,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@admin.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774536788977,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
+{"timestamp":1774536812789,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":15,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774536812790,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@admin.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774536812794,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
+{"timestamp":1774537721638,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":15},"hypothesisId":"D"}
+{"timestamp":1774537721645,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@admin.com"},"hypothesisId":"A"}
+{"timestamp":1774537721655,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
+{"timestamp":1774537744835,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":15},"hypothesisId":"D"}
+{"timestamp":1774537744838,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@admin.com"},"hypothesisId":"A"}
+{"timestamp":1774537744842,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
+{"timestamp":1774620999466,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":15},"hypothesisId":"D"}
+{"timestamp":1774620999474,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@admin.com"},"hypothesisId":"A"}
+{"timestamp":1774620999482,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
+{"timestamp":1774621439828,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":15},"hypothesisId":"D"}
+{"timestamp":1774621439829,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@admin.com"},"hypothesisId":"A"}
+{"timestamp":1774621439833,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
+{"timestamp":1774621635369,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":18,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774621635374,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"bautimrf@gmail.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774621635377,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":false,"usuarioId":2},"hypothesisId":"B"}
+{"timestamp":1774621834021,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":18,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774621834023,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"bautimrf@gmail.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774621834028,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":false,"usuarioId":2},"hypothesisId":"B"}
+{"timestamp":1774622069896,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":18,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774622069898,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"bautimrf@gmail.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774622069904,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":false,"usuarioId":2},"hypothesisId":"B"}
+{"timestamp":1774622070022,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"bautimrf@gmail.com"},"hypothesisId":"B"}
+{"timestamp":1774622070024,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
+{"timestamp":1774622071939,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":18,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774622071942,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"bautimrf@gmail.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774622071945,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":false,"usuarioId":2},"hypothesisId":"B"}
+{"timestamp":1774622072080,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"bautimrf@gmail.com"},"hypothesisId":"B"}
+{"timestamp":1774622072082,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
+{"timestamp":1774622075214,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":18,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774622075216,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"bautimrf@gmail.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774622075220,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":false,"usuarioId":2},"hypothesisId":"B"}
+{"timestamp":1774622075353,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"bautimrf@gmail.com"},"hypothesisId":"B"}
+{"timestamp":1774622075355,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
+{"timestamp":1774622079315,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":18,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774622079318,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"bautimrf@gmail.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774622079321,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":false,"usuarioId":2},"hypothesisId":"B"}
+{"timestamp":1774622079452,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"bautimrf@gmail.com"},"hypothesisId":"B"}
+{"timestamp":1774622079454,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
+{"timestamp":1774622083355,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":18,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774622083357,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"bautimrf@gmail.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774622083361,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":false,"usuarioId":2},"hypothesisId":"B"}
+{"timestamp":1774622087010,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":18,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774622087011,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"bautimrf@gmail.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774622087015,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":false,"usuarioId":2},"hypothesisId":"B"}
+{"timestamp":1774622087170,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"bautimrf@gmail.com"},"hypothesisId":"B"}
+{"timestamp":1774622087172,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
+{"timestamp":1774622290326,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":18,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774622290328,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"bautimrf@gmail.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774622290331,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":false,"usuarioId":2},"hypothesisId":"B"}
+{"timestamp":1774622290454,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"bautimrf@gmail.com"},"hypothesisId":"B"}
+{"timestamp":1774622290455,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
+{"timestamp":1774622290474,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":13,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774622290475,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"fake@fake.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774622290478,"location":"CustomAuthenticationManager.java:authenticate","message":"Usuario not found by email","data":{"email":"fake@fake.com"},"hypothesisId":"A"}
+{"timestamp":1774622290479,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Credenciales incorrectas"},"hypothesisId":"A"}
+{"timestamp":1774622348257,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":18,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774622348259,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"bautimrf@gmail.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774622348263,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":false,"usuarioId":2},"hypothesisId":"B"}
+{"timestamp":1774622348381,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"bautimrf@gmail.com"},"hypothesisId":"B"}
+{"timestamp":1774622348383,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
+{"timestamp":1774622588871,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":18,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774622588874,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"bautimrf@gmail.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774622588884,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":2},"hypothesisId":"B"}
+{"timestamp":1774622589040,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"bautimrf@gmail.com"},"hypothesisId":"B"}
+{"timestamp":1774622589043,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
+{"timestamp":1774622600145,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":18,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774622600146,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"bautimrf@gmail.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774622600150,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":2},"hypothesisId":"B"}
+{"timestamp":1774622628888,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":18,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774622628889,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"bautimrf@gmail.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774622628893,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":2},"hypothesisId":"B"}
+{"timestamp":1774622662428,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":18,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774622662429,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"bautimrf@gmail.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774622662433,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":2},"hypothesisId":"B"}
+{"timestamp":1774664970541,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":15,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774664970547,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@admin.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774664970560,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
+{"timestamp":1774665353439,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":15,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774665353441,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@admin.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774665353445,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}
+{"timestamp":1774665372508,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":19,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774665372509,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"usuario@usuario.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774665372513,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":false,"usuarioId":3},"hypothesisId":"B"}
+{"timestamp":1774665380963,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":19,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774665380965,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"usuario@usuario.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774665380969,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":false,"usuarioId":3},"hypothesisId":"B"}
+{"timestamp":1774665382451,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":19,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774665382452,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"usuario@usuario.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774665382457,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":false,"usuarioId":3},"hypothesisId":"B"}
+{"timestamp":1774665382579,"location":"CustomAuthenticationManager.java:authenticate","message":"password mismatch","data":{"email":"usuario@usuario.com"},"hypothesisId":"B"}
+{"timestamp":1774665382582,"location":"AuthRestController.java:login","message":"BadCredentialsException","data":{"message":"Contraseña incorrecta"},"hypothesisId":"A"}
+{"timestamp":1774665384663,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":19,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774665384665,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"usuario@usuario.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774665384669,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":false,"usuarioId":3},"hypothesisId":"B"}
+{"timestamp":1774665607313,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":19,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1774665607314,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"usuario@usuario.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1774665607318,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":false,"usuarioId":3},"hypothesisId":"B"}
+{"timestamp":1774914194900,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":15},"hypothesisId":"D"}
+{"timestamp":1774914194908,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@admin.com"},"hypothesisId":"A"}
+{"timestamp":1774914194917,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
+{"timestamp":1776089256051,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":15},"hypothesisId":"D"}
+{"timestamp":1776089256059,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@admin.com"},"hypothesisId":"A"}
+{"timestamp":1776089256070,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
+{"timestamp":1776358424423,"location":"AuthRestController.java:login","message":"login request received","data":{"passwordPresent":true,"usernameLength":15},"hypothesisId":"D"}
+{"timestamp":1776358424431,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"passwordPresent":true,"email":"admin@admin.com"},"hypothesisId":"A"}
+{"timestamp":1776358424442,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"usuarioId":1,"activo":true},"hypothesisId":"B"}
+{"timestamp":1776528335043,"location":"AuthRestController.java:login","message":"login request received","data":{"usernameLength":15,"passwordPresent":true},"hypothesisId":"D"}
+{"timestamp":1776528335049,"location":"CustomAuthenticationManager.java:authenticate","message":"authenticate entry","data":{"email":"admin@admin.com","passwordPresent":true},"hypothesisId":"A"}
+{"timestamp":1776528335059,"location":"CustomAuthenticationManager.java:authenticate","message":"usuario loaded","data":{"activo":true,"usuarioId":1},"hypothesisId":"B"}

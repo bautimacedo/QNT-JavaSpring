@@ -19,6 +19,15 @@ import com.gestion.qnt.repository.VueloLogRepository;
 import com.gestion.qnt.security.AuthUser;
 import com.gestion.qnt.service.FlightHubService;
 import com.gestion.qnt.service.FlytbaseService;
+import com.gestion.qnt.service.WeatherEvaluator;
+import com.gestion.qnt.service.WeatherEvaluator.Aptitud;
+import com.gestion.qnt.service.WeatherEvaluator.Evaluacion;
+import com.gestion.qnt.service.TelegramNotificationService;
+import com.gestion.qnt.scheduler.TempestPollingJob;
+import com.gestion.qnt.model.Alerta;
+import com.gestion.qnt.model.enums.NivelAlerta;
+import com.gestion.qnt.model.enums.TipoAlerta;
+import com.gestion.qnt.repository.AlertaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -76,6 +85,18 @@ public class MisionRestController {
 
     @Autowired
     private com.gestion.qnt.mqtt.DronTelemetriaService dronTelemetriaService;
+
+    @Autowired
+    private WeatherEvaluator weatherEvaluator;
+
+    @Autowired
+    private TempestPollingJob tempestPollingJob;
+
+    @Autowired
+    private TelegramNotificationService telegramService;
+
+    @Autowired
+    private AlertaRepository alertaRepository;
 
     // ─────────────────────────────────────────────
     // GET /misiones — lista con detalles
@@ -361,6 +382,17 @@ public class MisionRestController {
 
         boolean esCAM = dron.getYacimiento() == Yacimiento.CAM;
 
+        // ── Weather gate ────────────────────────────────────────────────
+        Aptitud aptitud = tempestPollingJob.getAptitudActual();
+        if (aptitud == Aptitud.NO_VOLAR) {
+            m.setEstado(EstadoMision.CANCELADA);
+            try { misionBusiness.update(m); } catch (Exception ignored) {}
+            registrarCancelacionClima(m);
+            return ResponseEntity.status(422)
+                    .body(Map.of("error", "Misión cancelada: condiciones climáticas NO VOLAR. Revisá la Estación Tempest."));
+        }
+        // ────────────────────────────────────────────────────────────────
+
         if (esCAM) {
             // ── CAM → FlightHub 2 ───────────────────────────────────────────
             if (m.getFlightHubWaylineUuid() == null || m.getFlightHubWaylineUuid().isBlank()) {
@@ -548,6 +580,22 @@ public class MisionRestController {
         m.setFlightHubWaylineUuid(req.flightHubWaylineUuid);
 
         return m;
+    }
+
+    private void registrarCancelacionClima(Mision m) {
+        try {
+            String dronNombre = m.getDron() != null ? m.getDron().getNombre() : "desconocido";
+            String msg = "🔴 Misión '" + m.getNombre() + "' cancelada por MAL_TIEMPO (condiciones NO VOLAR).";
+            telegramService.notifyAll(msg);
+            String dedup = "MAL_TIEMPO_MISION_" + m.getId();
+            if (!alertaRepository.existsByClaveDedup(dedup)) {
+                Alerta a = new Alerta(TipoAlerta.MAL_TIEMPO, NivelAlerta.CRITICA,
+                        "Misión cancelada por mal tiempo", "Drone: " + dronNombre,
+                        "MISION", m.getId());
+                a.setClaveDedup(dedup);
+                alertaRepository.save(a);
+            }
+        } catch (Exception ignored) {}
     }
 
     /**

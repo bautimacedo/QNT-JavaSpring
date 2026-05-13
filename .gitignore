@@ -1,2 +1,7 @@
 # Agent logs
 .agents/*.log
+
+# Temporales / docs locales
+*.pdf
+tmp_report/
+.claude/settings.local.json.tmp.*

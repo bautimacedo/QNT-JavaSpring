@@ -42,7 +42,7 @@ public class FlightHubVueloLogJob {
     @Autowired private DockRepository dockRepository;
     @Autowired private JdbcTemplate jdbcTemplate;
 
-    @Scheduled(fixedDelay = 15 * 60 * 1000)
+    @Scheduled(fixedDelay = 3 * 60 * 1000)
     @Transactional
     public void sincronizar() {
         long now     = Instant.now().getEpochSecond();

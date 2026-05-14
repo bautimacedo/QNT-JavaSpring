@@ -56,6 +56,7 @@ public class FlightHubVueloLogJob {
             return;
         }
 
+        log.info("FlightHubVueloLogJob: {} tareas recibidas de FlightHub", tasks.size());
         if (tasks.isEmpty()) return;
 
         int insertados = 0, omitidos = 0;
@@ -64,13 +65,12 @@ public class FlightHubVueloLogJob {
                 procesarTarea(t);
                 insertados++;
             } catch (DataIntegrityViolationException e) {
-                omitidos++; // event_id duplicado, ya procesado
+                omitidos++;
             } catch (Exception e) {
                 log.error("FlightHubVueloLogJob: error procesando tarea {}: {}", t.get("flight_task_id"), e.getMessage());
             }
         }
-        if (insertados > 0)
-            log.info("FlightHubVueloLogJob: insertados={}, omitidos={}", insertados, omitidos);
+        log.info("FlightHubVueloLogJob: insertados={}, omitidos={}", insertados, omitidos);
     }
 
     private void procesarTarea(Map<String, Object> t) {

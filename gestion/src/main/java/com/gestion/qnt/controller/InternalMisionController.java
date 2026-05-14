@@ -270,6 +270,8 @@ public class InternalMisionController {
                     vuelo.setEventId("VUELO_" + registro.getEventId());
                 }
                 vueloLogRepository.save(vuelo);
+                // Eliminar el DESPEGUE: el VUELO explícito ya lo reemplaza, evita duplicados en la vista
+                vueloLogRepository.delete(desp);
             }
 
             // Limpiar mision_pendiente: el vuelo cerró

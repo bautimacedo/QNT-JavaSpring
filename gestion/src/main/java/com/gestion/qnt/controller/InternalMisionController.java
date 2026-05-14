@@ -207,8 +207,10 @@ public class InternalMisionController {
 
         VueloLog registro = buildVueloLog(body, evento);
 
-        // ── EFO DESPEGUE: piloto = quien lanzó la misión desde Telegram ────────
-        if ("EFO".equals(site) && evento == TipoEventoVuelo.DESPEGUE && registro.getNombreDron() != null) {
+        // ── Piloto desde Telegram/Web: si hay entrada en mision_pendiente, pisar lo que manda FlightHub/n8n ──
+        boolean esDespegue = evento == TipoEventoVuelo.DESPEGUE
+                || ("CAM".equals(site) && eventoOriginalCam == TipoEventoVuelo.DESPEGUE);
+        if (esDespegue && registro.getNombreDron() != null) {
             List<String> pilotos = jdbcTemplate.queryForList(
                     "SELECT piloto_nombre FROM mision_pendiente WHERE drone_nombre = ? AND procesado = false LIMIT 1",
                     String.class, registro.getNombreDron());

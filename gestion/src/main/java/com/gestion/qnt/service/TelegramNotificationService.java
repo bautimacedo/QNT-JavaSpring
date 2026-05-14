@@ -15,25 +15,31 @@ public class TelegramNotificationService {
     private static final Logger log = LoggerFactory.getLogger(TelegramNotificationService.class);
 
     private final String botToken;
+    private final Long groupChatId;
     private final RestClient restClient;
     private final UsuarioRepository usuarioRepository;
 
     public TelegramNotificationService(
             @Value("${telegram.bot-token:}") String botToken,
+            @Value("${telegram.group-chat-id:0}") Long groupChatId,
             UsuarioRepository usuarioRepository) {
-        this.botToken = botToken;
+        this.botToken     = botToken;
+        this.groupChatId  = groupChatId;
         this.usuarioRepository = usuarioRepository;
         this.restClient = RestClient.builder()
                 .baseUrl("https://api.telegram.org")
                 .build();
     }
 
-    /** Envía a todos los usuarios que tienen telegramUserId registrado. */
+    /** Envía al grupo operativo y a todos los usuarios con telegramUserId registrado. */
     public void notifyAll(String text) {
         if (botToken.isBlank()) {
             log.debug("Telegram deshabilitado: TELEGRAM_BOT_TOKEN no configurado");
             return;
         }
+        // Grupo principal
+        if (groupChatId != 0) send(groupChatId, text);
+        // Usuarios individuales
         usuarioRepository.findAll().stream()
                 .filter(u -> u.getTelegramUserId() != null)
                 .forEach(u -> send(u.getTelegramUserId(), text));

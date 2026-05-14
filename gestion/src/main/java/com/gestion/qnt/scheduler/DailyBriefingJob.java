@@ -85,11 +85,13 @@ public class DailyBriefingJob {
     private String obtenerPronostico() {
         try {
             Map<String, Object> resp = tempestService.getForecast(clLat, clLon);
-            Map<String, Object> forecast = (Map<String, Object>) resp.get("forecast");
-            if (forecast == null) return "🔸 Pronóstico no disponible";
+            Object forecastObj = resp.get("forecast");
+            if (!(forecastObj instanceof Map)) return "🔸 Pronóstico no disponible";
+            Map<String, Object> forecast = (Map<String, Object>) forecastObj;
 
             List<?> daily = (List<?>) forecast.get("daily");
             if (daily == null || daily.isEmpty()) return "🔸 Pronóstico no disponible";
+            if (!(daily.get(0) instanceof Map)) return "🔸 Pronóstico no disponible";
 
             Map<String, Object> hoy = (Map<String, Object>) daily.get(0);
 

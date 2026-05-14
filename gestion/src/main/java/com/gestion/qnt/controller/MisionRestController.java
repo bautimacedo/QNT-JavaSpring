@@ -401,18 +401,13 @@ public class MisionRestController {
             }
             if (aptitud == Aptitud.PRECAUCION && !confirmar) {
                 Evaluacion eval = tempestPollingJob.getEvaluacionActual();
-                double viento = 0, rafaga = 0;
-                if (eval != null) {
-                    WeatherEvaluator.Evaluacion e = eval;
-                    // extraer valores de razones no es ideal — usar el último registro
-                }
+                String detalle = eval != null ? String.join(", ", eval.razones()) : "Condiciones de precaución";
                 return ResponseEntity.status(200)
                         .body(Map.of(
                                 "warning", "PRECAUCION",
                                 "aptitud", "PRECAUCION",
-                                "detalle", eval != null ? String.join(", ", eval.razones()) : "Condiciones de precaución",
-                                "lanzado", "false",
-                                "mensaje", "Estado PRECAUCIÓN en Cañadón León. Confirmá para lanzar de todas formas."));
+                                "detalle", detalle,
+                                "lanzado", "false"));
             }
         }
         // ────────────────────────────────────────────────────────────────

@@ -430,7 +430,10 @@ public class InternalMisionController {
                     dto.put("nombre",        d.getNombre());
                     dto.put("site",          site);
                     dto.put("estado",        d.getEstado() != null ? d.getEstado().name() : null);
-                    dto.put("cantidadVuelos", d.getCantidadVuelos());
+                    long vuelosLog = ultimos.stream()
+                            .filter(v -> v.getEvento() == com.gestion.qnt.model.enums.TipoEventoVuelo.VUELO).count();
+                    long totalVuelos = Math.max(d.getCantidadVuelos() != null ? d.getCantidadVuelos() : 0, vuelosLog);
+                    dto.put("cantidadVuelos", totalVuelos);
                     dto.put("ultimoVuelo",   d.getUltimoVuelo() != null ? d.getUltimoVuelo().toString() : null);
                     dto.put("volandoAhora",  volando);
                     dto.put("droneEnDock",   d.getDroneEnDock());

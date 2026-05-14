@@ -40,7 +40,8 @@ public class TempestPollingJob {
     private final MisionRepository misionRepo;
     private final TelegramNotificationService telegram;
 
-    private final AtomicReference<Aptitud> lastAptitud = new AtomicReference<>(null);
+    private final AtomicReference<Aptitud>    lastAptitud    = new AtomicReference<>(null);
+    private final AtomicReference<Evaluacion> lastEvaluacion = new AtomicReference<>(null);
 
     public TempestPollingJob(
             TempestService tempestService,
@@ -75,6 +76,7 @@ public class TempestPollingJob {
             return;
         }
 
+        lastEvaluacion.set(eval);
         persistirRegistro(raw, eval);
         detectarTransicion(eval);
     }
@@ -91,6 +93,11 @@ public class TempestPollingJob {
     /** Devuelve la última aptitud conocida (para el weather gate). */
     public Aptitud getAptitudActual() {
         return lastAptitud.get();
+    }
+
+    /** Devuelve la última evaluación completa (aptitud + razones) para mensajes detallados. */
+    public Evaluacion getEvaluacionActual() {
+        return lastEvaluacion.get();
     }
 
     // ── privados ──────────────────────────────────────────────────────

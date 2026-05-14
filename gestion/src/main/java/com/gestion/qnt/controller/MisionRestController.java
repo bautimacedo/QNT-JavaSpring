@@ -361,7 +361,9 @@ public class MisionRestController {
     @PostMapping("/{id}/lanzar")
     @Transactional
     @PreAuthorize("hasRole('PILOTO') or hasRole('ADMIN')")
-    public ResponseEntity<Map<String, String>> lanzar(@PathVariable Long id) {
+    public ResponseEntity<Map<String, String>> lanzar(
+            @PathVariable Long id,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "false") boolean confirmar) {
         Mision m;
         try {
             m = misionBusiness.load(id);
@@ -386,15 +388,31 @@ public class MisionRestController {
 
         boolean esCAM = dron.getYacimiento() == Yacimiento.CAM;
 
-        // ── Weather gate ────────────────────────────────────────────────
-        if (weatherGateEnabled) {
+        // ── Weather gate (solo Cañadón León) ────────────────────────────
+        if (weatherGateEnabled && esSitioConTempest(m.getDock(), dron)) {
             Aptitud aptitud = tempestPollingJob.getAptitudActual();
             if (aptitud == Aptitud.NO_VOLAR) {
                 m.setEstado(EstadoMision.CANCELADA);
                 try { misionBusiness.update(m); } catch (Exception ignored) {}
-                registrarCancelacionClima(m);
+                registrarCancelacionClima(m, aptitud);
                 return ResponseEntity.status(422)
-                        .body(Map.of("error", "Misión cancelada: condiciones climáticas NO VOLAR. Revisá la Estación Tempest."));
+                        .body(Map.of("error", "Condiciones NO VOLAR en Cañadón León. Lanzamiento bloqueado.",
+                                "aptitud", "NO_VOLAR"));
+            }
+            if (aptitud == Aptitud.PRECAUCION && !confirmar) {
+                Evaluacion eval = tempestPollingJob.getEvaluacionActual();
+                double viento = 0, rafaga = 0;
+                if (eval != null) {
+                    WeatherEvaluator.Evaluacion e = eval;
+                    // extraer valores de razones no es ideal — usar el último registro
+                }
+                return ResponseEntity.status(200)
+                        .body(Map.of(
+                                "warning", "PRECAUCION",
+                                "aptitud", "PRECAUCION",
+                                "detalle", eval != null ? String.join(", ", eval.razones()) : "Condiciones de precaución",
+                                "lanzado", "false",
+                                "mensaje", "Estado PRECAUCIÓN en Cañadón León. Confirmá para lanzar de todas formas."));
             }
         }
         // ────────────────────────────────────────────────────────────────
@@ -525,7 +543,11 @@ public class MisionRestController {
         if (m.getDron() != null) {
             dto.dronId     = m.getDron().getId();
             dto.dronNombre = m.getDron().getNombre();
-            dto.site = m.getDron().getYacimiento() == Yacimiento.CAM ? "CAM" : "EFO";
+            dto.site = switch (m.getDron().getYacimiento()) {
+                case CAM -> "CAM";
+                case CANADON_LEON -> "CL";
+                default -> "EFO";
+            };
         }
         // Dock: directo en la misión, o inferido del dron
         com.gestion.qnt.model.Dock dock = m.getDock() != null ? m.getDock()
@@ -588,20 +610,33 @@ public class MisionRestController {
         return m;
     }
 
-    private void registrarCancelacionClima(Mision m) {
+    private void registrarCancelacionClima(Mision m, Aptitud aptitud) {
         try {
             String dronNombre = m.getDron() != null ? m.getDron().getNombre() : "desconocido";
-            String msg = "🔴 Misión '" + m.getNombre() + "' cancelada por MAL_TIEMPO (condiciones NO VOLAR).";
+            String estado = aptitud == Aptitud.NO_VOLAR ? "NO VOLAR" : "PRECAUCIÓN";
+            String emoji  = aptitud == Aptitud.NO_VOLAR ? "🔴" : "🟡";
+            Evaluacion eval = tempestPollingJob.getEvaluacionActual();
+            String detalle = eval != null ? String.join(", ", eval.razones()) : estado;
+            String msg = emoji + " Misión <b>'" + m.getNombre() + "'</b> cancelada — " + estado + ".\n" + detalle;
             telegramService.notifyAll(msg);
             String dedup = "MAL_TIEMPO_MISION_" + m.getId();
             if (!alertaRepository.existsByClaveDedup(dedup)) {
                 Alerta a = new Alerta(TipoAlerta.MAL_TIEMPO, NivelAlerta.CRITICA,
-                        "Misión cancelada por mal tiempo", "Drone: " + dronNombre,
+                        "Misión cancelada por mal tiempo (" + estado + ")", "Drone: " + dronNombre,
                         "MISION", m.getId());
                 a.setClaveDedup(dedup);
                 alertaRepository.save(a);
             }
         } catch (Exception ignored) {}
+    }
+
+    private boolean esSitioConTempest(Dock dock, Dron dron) {
+        if (dock != null) {
+            if (dock.getYacimiento() == Yacimiento.CANADON_LEON) return true;
+            if (dock.getSite() != null && "CL".equals(dock.getSite().getCodigo())) return true;
+        }
+        if (dron != null && dron.getYacimiento() == Yacimiento.CANADON_LEON) return true;
+        return false;
     }
 
     /**

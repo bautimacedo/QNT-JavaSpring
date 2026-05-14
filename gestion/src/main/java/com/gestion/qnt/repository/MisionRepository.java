@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,4 +43,7 @@ public interface MisionRepository extends JpaRepository<Mision, Long> {
 
     @Query("SELECT m FROM Mision m LEFT JOIN FETCH m.piloto LEFT JOIN FETCH m.dron d LEFT JOIN FETCH d.baterias LEFT JOIN FETCH d.helices WHERE d.nombre = :dronNombre AND m.estado = :estado ORDER BY m.fechaInicio DESC NULLS LAST")
     java.util.List<Mision> findByDron_NombreAndEstado(@Param("dronNombre") String dronNombre, @Param("estado") EstadoMision estado);
+
+    @Query("SELECT m FROM Mision m LEFT JOIN FETCH m.piloto LEFT JOIN FETCH m.dron LEFT JOIN FETCH m.dock WHERE m.estado = :estado AND m.fechaProgramada >= :start AND m.fechaProgramada < :end ORDER BY m.fechaProgramada ASC")
+    List<Mision> findPlanificadasDelDia(@Param("estado") EstadoMision estado, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }

@@ -8,6 +8,8 @@ import com.gestion.qnt.model.enums.EstadoMision;
 import com.gestion.qnt.model.enums.NivelAlerta;
 import com.gestion.qnt.model.enums.PrioridadMision;
 import com.gestion.qnt.model.enums.TipoAlerta;
+import com.gestion.qnt.model.enums.Yacimiento;
+import com.gestion.qnt.model.Dron;
 import com.gestion.qnt.repository.AlertaRepository;
 import com.gestion.qnt.repository.MisionRepository;
 import com.gestion.qnt.repository.ProgramacionMisionRepository;
@@ -138,18 +140,23 @@ public class ProgramacionMisionService {
                 dronNombre, pilotoNombre, pilotoId, saved.getId()
         );
 
-        // ── Weather gate ────────────────────────────────────────────────
-        Aptitud aptitud = weatherGateEnabled ? tempestPollingJob.getAptitudActual() : null;
-        if (aptitud == Aptitud.NO_VOLAR) {
+        // ── Weather gate (solo Cañadón León) ────────────────────────────
+        boolean esCL = weatherGateEnabled && esSitioConTempest(dock, saved.getDron());
+        Aptitud aptitud = esCL ? tempestPollingJob.getAptitudActual() : null;
+        if (aptitud == Aptitud.NO_VOLAR || aptitud == Aptitud.PRECAUCION) {
             saved.setEstado(EstadoMision.CANCELADA);
             misionRepository.save(saved);
-            log.warn("Programación {}: misión {} cancelada por MAL_TIEMPO (NO VOLAR)", progId, saved.getId());
-            String msg = "🔴 Misión programada <b>'" + saved.getNombre() + "'</b> cancelada automáticamente — condiciones climáticas NO VOLAR.";
+            WeatherEvaluator.Evaluacion eval = tempestPollingJob.getEvaluacionActual();
+            String detalle = eval != null ? String.join(", ", eval.razones()) : aptitud.name();
+            String emoji = aptitud == Aptitud.NO_VOLAR ? "🔴" : "🟡";
+            String estado = aptitud == Aptitud.NO_VOLAR ? "NO VOLAR" : "PRECAUCIÓN";
+            log.warn("Programación {}: misión {} cancelada por MAL_TIEMPO ({})", progId, saved.getId(), estado);
+            String msg = emoji + " Misión cronogramada <b>'" + saved.getNombre() + "'</b> cancelada automáticamente.\n" +
+                    "<i>Estado climático: " + estado + "</i>\n" + detalle;
             telegramNotificationService.notifyAll(msg);
-            String dedup = "MAL_TIEMPO_MISION_" + saved.getId();
             Alerta a = new Alerta(TipoAlerta.MAL_TIEMPO, NivelAlerta.CRITICA,
-                    "Misión cancelada por mal tiempo", "Drone: " + dronNombre, "MISION", saved.getId());
-            a.setClaveDedup(dedup);
+                    "Misión cancelada por mal tiempo (" + estado + ")", "Drone: " + dronNombre, "MISION", saved.getId());
+            a.setClaveDedup("MAL_TIEMPO_MISION_" + saved.getId());
             alertaRepository.save(a);
             return;
         }
@@ -186,5 +193,14 @@ public class ProgramacionMisionService {
     public void desactivar(ProgramacionMision p) {
         p.setActiva(false);
         programacionRepository.save(p);
+    }
+
+    private boolean esSitioConTempest(Dock dock, Dron dron) {
+        if (dock != null) {
+            if (dock.getYacimiento() == Yacimiento.CANADON_LEON) return true;
+            if (dock.getSite() != null && "CL".equals(dock.getSite().getCodigo())) return true;
+        }
+        if (dron != null && dron.getYacimiento() == Yacimiento.CANADON_LEON) return true;
+        return false;
     }
 }

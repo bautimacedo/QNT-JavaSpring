@@ -54,6 +54,8 @@ public class InternalMisionController {
     @Autowired private FlightHubService flightHubService;
     @Autowired private com.gestion.qnt.scheduler.FlightHubSyncJob flightHubSyncJob;
     @Autowired private com.gestion.qnt.mqtt.DronTelemetriaService dronTelemetriaService;
+    @Autowired private com.gestion.qnt.scheduler.TempestPollingJob tempestPollingJob;
+    @Autowired private com.gestion.qnt.repository.TempestRegistroRepository tempestRegistroRepository;
 
     /**
      * Llamado por n8n cuando FlytBase detecta ATERRIZAJE.
@@ -497,6 +499,38 @@ public class InternalMisionController {
         stats.put("totalVuelosCortos", totalVuelosCortos);
         stats.put("porSite",           porSite);
         return ResponseEntity.ok(stats);
+    }
+
+    // GET /internal/bot/clima — estado meteorológico actual para el bot Telegram
+    @GetMapping("/bot/clima")
+    public ResponseEntity<Map<String, Object>> botClima(
+            @RequestHeader(value = "X-Internal-Secret", required = false) String secret) {
+        if (secretInvalido(secret))
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+
+        com.gestion.qnt.service.WeatherEvaluator.Aptitud aptitud = tempestPollingJob.getAptitudActual();
+        com.gestion.qnt.service.WeatherEvaluator.Evaluacion eval = tempestPollingJob.getEvaluacionActual();
+
+        Map<String, Object> resp = new java.util.LinkedHashMap<>();
+        resp.put("aptitud", aptitud != null ? aptitud.name() : "DESCONOCIDO");
+
+        // Último registro persistido con datos numéricos
+        java.time.Instant desde = java.time.Instant.now().minusSeconds(120);
+        java.util.List<com.gestion.qnt.model.TempestRegistro> recientes =
+                tempestRegistroRepository.findByTimestampAfterOrderByTimestampAsc(desde);
+
+        if (!recientes.isEmpty()) {
+            com.gestion.qnt.model.TempestRegistro ultimo = recientes.get(recientes.size() - 1);
+            resp.put("windAvgKmh",   ultimo.getWindAvg()  != null ? Math.round(ultimo.getWindAvg()  * 3.6) : 0);
+            resp.put("windGustKmh",  ultimo.getWindGust() != null ? Math.round(ultimo.getWindGust() * 3.6) : 0);
+            resp.put("temperatureC", ultimo.getAirTemperature() != null ? Math.round(ultimo.getAirTemperature() * 10.0) / 10.0 : null);
+            resp.put("timestamp",    ultimo.getTimestamp().toString());
+        }
+
+        if (eval != null && !eval.razones().isEmpty()) {
+            resp.put("razones", eval.razones());
+        }
+        return ResponseEntity.ok(resp);
     }
 
     // POST /internal/flighthub/sync-misiones — trigger manual del FlightHubSyncJob

@@ -56,6 +56,8 @@ public class InternalMisionController {
     @Autowired private com.gestion.qnt.mqtt.DronTelemetriaService dronTelemetriaService;
     @Autowired private com.gestion.qnt.scheduler.TempestPollingJob tempestPollingJob;
     @Autowired private com.gestion.qnt.repository.TempestRegistroRepository tempestRegistroRepository;
+    @Autowired private com.gestion.qnt.service.WeatherEvaluator weatherEvaluator;
+    @Autowired private com.gestion.qnt.service.TelegramNotificationService telegramService;
 
     /**
      * Llamado por n8n cuando FlytBase detecta ATERRIZAJE.
@@ -531,6 +533,32 @@ public class InternalMisionController {
             resp.put("razones", eval.razones());
         }
         return ResponseEntity.ok(resp);
+    }
+
+    // POST /internal/test-alerta — simula una ráfaga y envía el mensaje real a Telegram
+    @PostMapping("/test-alerta")
+    public ResponseEntity<Map<String, Object>> testAlerta(
+            @RequestHeader(value = "X-Internal-Secret", required = false) String secret,
+            @RequestParam(defaultValue = "100") double rafagaKmh) {
+        if (secretInvalido(secret))
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+
+        double gustMs = rafagaKmh / 3.6;
+        com.gestion.qnt.service.WeatherEvaluator.Evaluacion eval = weatherEvaluator.evaluarVientoDock(gustMs);
+        String hora = java.time.LocalDateTime.now(java.time.ZoneId.of("America/Argentina/Buenos_Aires"))
+                .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+
+        String msg = switch (eval.aptitud()) {
+            case NO_VOLAR -> "🔴 <b>[TEST] Estación Tempest — NO VOLAR</b>\n<i>" + hora + " hs</i>\n\n"
+                    + String.join(", ", eval.razones()) + "\n\nLas misiones que intenten lanzarse serán canceladas automáticamente.";
+            case PRECAUCION -> "🟡 <b>[TEST] Estación Tempest — PRECAUCIÓN</b>\n<i>" + hora + " hs</i>\n\n"
+                    + String.join(", ", eval.razones());
+            case APTO -> "🟢 <b>[TEST] Estación Tempest — APTO para volar</b>\n<i>" + hora + " hs</i>\n\nCondiciones normales.";
+        };
+
+        telegramService.notifyAll(msg);
+        return ResponseEntity.ok(Map.of("aptitud", eval.aptitud().name(), "rafagaKmh", rafagaKmh,
+                "razones", eval.razones(), "mensajeEnviado", msg));
     }
 
     // POST /internal/flighthub/sync-misiones — trigger manual del FlightHubSyncJob

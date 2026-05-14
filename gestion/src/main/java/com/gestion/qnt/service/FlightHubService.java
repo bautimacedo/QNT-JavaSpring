@@ -203,6 +203,47 @@ public class FlightHubService {
         return coords;
     }
 
+    /**
+     * Lista tareas de FlightHub usando la API v2 (misma que usa n8n).
+     * Reemplaza el workflow n8n "GET FlightHub Tasks".
+     *
+     * @param beginAt timestamp Unix en segundos
+     * @param endAt   timestamp Unix en segundos
+     */
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> listarTareasV2(long beginAt, long endAt) {
+        try {
+            String url = UriComponentsBuilder
+                    .fromUriString(baseUrl + "/task/api/v2/workspaces/" + projectUuid + "/flight-task/list")
+                    .queryParam("source", 0)
+                    .queryParam("sn[]", sn)
+                    .queryParam("begin_at", beginAt)
+                    .queryParam("end_at", endAt)
+                    .queryParam("page", 1)
+                    .queryParam("page_size", 50)
+                    .queryParam("flight_task_status", 1)
+                    .toUriString();
+
+            String json = restClient.get()
+                    .uri(url)
+                    .header("X-User-Token",    userToken)
+                    .header("X-Request-Id",    UUID.randomUUID().toString())
+                    .header("X-Language-Code", "en")
+                    .header("Accept",          "application/json")
+                    .retrieve()
+                    .body(String.class);
+            if (json == null) return List.of();
+            Map<String, Object> response = objectMapper.readValue(json, new TypeReference<>() {});
+            Object data = response.get("data");
+            if (!(data instanceof Map)) return List.of();
+            Object list = ((Map<?, ?>) data).get("list");
+            if (!(list instanceof List)) return List.of();
+            return (List<Map<String, Object>>) list;
+        } catch (Exception e) {
+            throw new RuntimeException("Error al listar tareas FlightHub v2", e);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public List<Map<String, Object>> listarWaylines() {
         try {

@@ -2,7 +2,9 @@ package com.gestion.qnt.controller;
 
 import com.gestion.qnt.model.TempestRegistro;
 import com.gestion.qnt.repository.TempestRegistroRepository;
+import com.gestion.qnt.service.TelegramNotificationService;
 import com.gestion.qnt.service.TempestService;
+import com.gestion.qnt.service.WeatherEvaluator;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -10,6 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClientException;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -20,10 +25,15 @@ public class TempestRestController {
 
     private final TempestService tempestService;
     private final TempestRegistroRepository registroRepo;
+    private final WeatherEvaluator weatherEvaluator;
+    private final TelegramNotificationService telegramService;
 
-    public TempestRestController(TempestService tempestService, TempestRegistroRepository registroRepo) {
-        this.tempestService = tempestService;
-        this.registroRepo   = registroRepo;
+    public TempestRestController(TempestService tempestService, TempestRegistroRepository registroRepo,
+                                  WeatherEvaluator weatherEvaluator, TelegramNotificationService telegramService) {
+        this.tempestService   = tempestService;
+        this.registroRepo     = registroRepo;
+        this.weatherEvaluator = weatherEvaluator;
+        this.telegramService  = telegramService;
     }
 
     @GetMapping("/observations")
@@ -63,5 +73,35 @@ public class TempestRestController {
             @RequestParam(defaultValue = "24") int horas) {
         Instant desde = Instant.now().minusSeconds((long) horas * 3600);
         return ResponseEntity.ok(registroRepo.findByTimestampAfterOrderByTimestampAsc(desde));
+    }
+
+    /** Endpoint de prueba — simula una ráfaga y manda el mensaje real a Telegram. Solo ADMIN. */
+    @PostMapping("/test-alerta")
+    public ResponseEntity<Map<String, Object>> testAlerta(
+            @RequestParam(defaultValue = "100") double rafagaKmh) {
+        double gustMs = rafagaKmh / 3.6;
+        WeatherEvaluator.Evaluacion eval = weatherEvaluator.evaluarVientoDock(gustMs);
+        String hora = LocalDateTime.now(ZoneId.of("America/Argentina/Buenos_Aires"))
+                .format(DateTimeFormatter.ofPattern("HH:mm"));
+
+        String msg = switch (eval.aptitud()) {
+            case NO_VOLAR -> "🔴 <b>[TEST] Estación Tempest — NO VOLAR</b>\n" +
+                    "<i>" + hora + " hs</i>\n\n" +
+                    String.join(", ", eval.razones()) + "\n\n" +
+                    "Las misiones que intenten lanzarse serán canceladas automáticamente.";
+            case PRECAUCION -> "🟡 <b>[TEST] Estación Tempest — PRECAUCIÓN</b>\n" +
+                    "<i>" + hora + " hs</i>\n\n" +
+                    String.join(", ", eval.razones());
+            case APTO -> "🟢 <b>[TEST] Estación Tempest — APTO para volar</b>\n" +
+                    "<i>" + hora + " hs</i>\n\nCondiciones normales.";
+        };
+
+        telegramService.notifyAll(msg);
+        return ResponseEntity.ok(Map.of(
+                "aptitud", eval.aptitud().name(),
+                "rafagaKmh", rafagaKmh,
+                "razones", eval.razones(),
+                "mensajeEnviado", msg
+        ));
     }
 }

@@ -214,7 +214,7 @@ public class FlightHubService {
     public List<Map<String, Object>> listarTareasV2(long beginAt, long endAt) {
         try {
             String url = UriComponentsBuilder
-                    .fromUriString(baseUrl + "/task/api/v2/workspaces/" + projectUuid + "/flight-task/list")
+                    .fromUriString(baseUrl + "/task/api/v2/workspaces/" + projectUuid + "/flight-tasks")
                     .queryParam("source", 0)
                     .queryParam("sn[]", sn)
                     .queryParam("begin_at", beginAt)

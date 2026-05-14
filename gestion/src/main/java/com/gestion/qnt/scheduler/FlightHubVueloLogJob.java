@@ -75,8 +75,9 @@ public class FlightHubVueloLogJob {
 
     private void procesarTarea(Map<String, Object> t) {
         String eventId  = str(t.get("flight_task_id") != null ? t.get("flight_task_id") : t.get("uuid"));
-        String droneSn  = str(t.get("drone_sn"));
-        String dockSn   = str(t.get("take_off_airport_sn") != null ? t.get("take_off_airport_sn") : t.get("sn"));
+        String droneSn  = str(t.get("drone_sn")); // puede venir vacío en v2
+        String dockSn   = str(t.get("take_off_airport_sn") != null ? t.get("take_off_airport_sn")
+                         : (t.get("sn") != null ? t.get("sn") : t.get("connect_device_sn")));
         int    status   = toInt(t.get("task_status"));
         Object endTime  = t.get("task_end_time");
         boolean isFailed = FALLA_MAP.containsKey(status);
@@ -161,6 +162,10 @@ public class FlightHubVueloLogJob {
 
     private static Instant toInstant(Object v) {
         if (v == null) return null;
-        try { return Instant.ofEpochSecond(toLong(v)); } catch (Exception e) { return null; }
+        String s = v.toString().trim();
+        if (s.isEmpty()) return null;
+        try { return Instant.parse(s); } catch (Exception ignored) {}
+        try { return Instant.ofEpochSecond(Long.parseLong(s)); } catch (Exception ignored) {}
+        return null;
     }
 }

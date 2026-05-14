@@ -417,17 +417,18 @@ public class InternalMisionController {
             return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
 
         List<Map<String, Object>> result = dronRepository.findAll().stream()
-                .filter(d -> d.getYacimiento() == Yacimiento.EFO)
+                .filter(d -> d.getYacimiento() != null)
                 .map(d -> {
                     boolean volando = vueloLogRepository.hayVueloActivo(d.getNombre());
-                    // Último evento registrado para este dron
+                    String site = d.getYacimiento().name();
                     List<VueloLog> ultimos = vueloLogRepository.findFiltered(
-                            d.getNombre(), "EFO", null, null, null);
+                            d.getNombre(), site, null, null, null);
                     VueloLog ultimoEvento = ultimos.isEmpty() ? null : ultimos.get(0);
 
                     Map<String, Object> dto = new java.util.LinkedHashMap<>();
                     dto.put("id",            d.getId());
                     dto.put("nombre",        d.getNombre());
+                    dto.put("site",          site);
                     dto.put("estado",        d.getEstado() != null ? d.getEstado().name() : null);
                     dto.put("cantidadVuelos", d.getCantidadVuelos());
                     dto.put("ultimoVuelo",   d.getUltimoVuelo() != null ? d.getUltimoVuelo().toString() : null);

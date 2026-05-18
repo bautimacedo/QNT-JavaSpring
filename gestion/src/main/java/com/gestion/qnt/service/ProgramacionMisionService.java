@@ -13,6 +13,7 @@ import com.gestion.qnt.model.Dron;
 import com.gestion.qnt.repository.AlertaRepository;
 import com.gestion.qnt.repository.MisionRepository;
 import com.gestion.qnt.repository.ProgramacionMisionRepository;
+import com.gestion.qnt.service.FlightHubService;
 import com.gestion.qnt.scheduler.TempestPollingJob;
 import com.gestion.qnt.service.WeatherEvaluator.Aptitud;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,6 +44,9 @@ public class ProgramacionMisionService {
     private FlytbaseService flytbaseService;
 
     @Autowired
+    private FlightHubService flightHubService;
+
+    @Autowired
     private TempestPollingJob tempestPollingJob;
 
     @Autowired
@@ -63,12 +67,14 @@ public class ProgramacionMisionService {
         LocalDate hoy = ahora.toLocalDate();
         LocalTime hora = p.getHora();
 
+        LocalDateTime resultado = null;
         switch (p.getTipoRecurrencia()) {
             case DIARIA: {
                 int n = p.getIntervaloDias() != null ? p.getIntervaloDias() : 1;
                 LocalDateTime c = LocalDateTime.of(hoy, hora);
                 while (!c.isAfter(ahora)) c = c.plusDays(n);
-                return c;
+                resultado = c;
+                break;
             }
             case SEMANAL: {
                 if (p.getDiasSemana() == null || p.getDiasSemana().isEmpty()) return null;
@@ -76,11 +82,12 @@ public class ProgramacionMisionService {
                 for (int i = 0; i < 7; i++) {
                     if (p.getDiasSemana().contains(c.getDayOfWeek())) {
                         LocalDateTime dt = LocalDateTime.of(c, hora);
-                        if (dt.isAfter(ahora)) return dt;
+                        if (dt.isAfter(ahora)) { resultado = dt; break; }
                     }
                     c = c.plusDays(1);
                 }
-                return null;
+                if (resultado == null) return null;
+                break;
             }
             case MENSUAL: {
                 if (p.getDiaMes() == null) return null;
@@ -92,11 +99,21 @@ public class ProgramacionMisionService {
                     c = nm.withDayOfMonth(Math.min(dia, nm.lengthOfMonth()));
                     dt = LocalDateTime.of(c, hora);
                 }
-                return dt;
+                resultado = dt;
+                break;
             }
             default:
                 return null;
         }
+
+        // Clamp dentro de vigencia
+        if (p.getFechaInicioVigencia() != null && resultado.toLocalDate().isBefore(p.getFechaInicioVigencia())) {
+            resultado = p.getFechaInicioVigencia().atTime(hora);
+        }
+        if (p.getFechaFinVigencia() != null && resultado.toLocalDate().isAfter(p.getFechaFinVigencia())) {
+            return null;
+        }
+        return resultado;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -162,23 +179,45 @@ public class ProgramacionMisionService {
         }
         // ────────────────────────────────────────────────────────────────
 
-        if (webhookUrl != null && !webhookUrl.isBlank() && webhookBearer != null && !webhookBearer.isBlank()) {
-            try {
-                flytbaseService.lanzarMision(
-                        webhookUrl, webhookBearer, m.getNombre(),
-                        dock != null ? dock.getLatitud() : null,
-                        dock != null ? dock.getLongitud() : null
-                );
-                saved.setEstado(EstadoMision.EN_CURSO);
-                saved.setFechaInicio(LocalDateTime.now());
-                saved.setUltimaEjecucion(LocalDateTime.now());
-                misionRepository.save(saved);
-                log.info("Programación {} lanzada exitosamente para drone {}", progId, dronNombre);
-            } catch (Exception e) {
-                log.error("Error llamando FlytBase para programación {}: {}", progId, e.getMessage());
+        boolean esCam = m.getDron() != null && m.getDron().getYacimiento() == Yacimiento.CAM;
+
+        if (esCam) {
+            // CAM → DJI FlightHub 2
+            String waylineUuid = src != null ? src.getFlightHubWaylineUuid() : null;
+            if (waylineUuid != null && !waylineUuid.isBlank()) {
+                try {
+                    flightHubService.lanzarMision(saved.getNombre(), waylineUuid);
+                    saved.setEstado(EstadoMision.EN_CURSO);
+                    saved.setFechaInicio(LocalDateTime.now());
+                    saved.setUltimaEjecucion(LocalDateTime.now());
+                    misionRepository.save(saved);
+                    log.info("Programación {} lanzada en FlightHub para drone CAM {}", progId, dronNombre);
+                } catch (Exception e) {
+                    log.error("Error llamando FlightHub para programación {}: {}", progId, e.getMessage());
+                }
+            } else {
+                log.warn("Programación {} CAM sin waylineUuid — misión {} creada en PLANIFICADA sin lanzar", progId, saved.getId());
             }
         } else {
-            log.warn("Programación {} sin webhook — misión {} creada en PLANIFICADA sin lanzar", progId, saved.getId());
+            // EFO → FlytBase
+            if (webhookUrl != null && !webhookUrl.isBlank() && webhookBearer != null && !webhookBearer.isBlank()) {
+                try {
+                    flytbaseService.lanzarMision(
+                            webhookUrl, webhookBearer, m.getNombre(),
+                            dock != null ? dock.getLatitud() : null,
+                            dock != null ? dock.getLongitud() : null
+                    );
+                    saved.setEstado(EstadoMision.EN_CURSO);
+                    saved.setFechaInicio(LocalDateTime.now());
+                    saved.setUltimaEjecucion(LocalDateTime.now());
+                    misionRepository.save(saved);
+                    log.info("Programación {} lanzada en FlytBase para drone EFO {}", progId, dronNombre);
+                } catch (Exception e) {
+                    log.error("Error llamando FlytBase para programación {}: {}", progId, e.getMessage());
+                }
+            } else {
+                log.warn("Programación {} EFO sin webhook — misión {} creada en PLANIFICADA sin lanzar", progId, saved.getId());
+            }
         }
     }
 

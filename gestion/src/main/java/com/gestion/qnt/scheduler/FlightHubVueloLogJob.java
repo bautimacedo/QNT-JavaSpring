@@ -2,10 +2,12 @@ package com.gestion.qnt.scheduler;
 
 import com.gestion.qnt.model.Dock;
 import com.gestion.qnt.model.Dron;
+import com.gestion.qnt.model.Usuario;
 import com.gestion.qnt.model.VueloLog;
 import com.gestion.qnt.model.enums.TipoEventoVuelo;
 import com.gestion.qnt.repository.DockRepository;
 import com.gestion.qnt.repository.DronRepository;
+import com.gestion.qnt.repository.UsuarioRepository;
 import com.gestion.qnt.repository.VueloLogRepository;
 import com.gestion.qnt.service.FlightHubService;
 import org.slf4j.Logger;
@@ -40,6 +42,7 @@ public class FlightHubVueloLogJob {
     @Autowired private VueloLogRepository vueloLogRepository;
     @Autowired private DronRepository dronRepository;
     @Autowired private DockRepository dockRepository;
+    @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private JdbcTemplate jdbcTemplate;
 
     @Scheduled(fixedDelay = 3 * 60 * 1000)
@@ -108,10 +111,11 @@ public class FlightHubVueloLogJob {
             v.setEventId(eventId);
             v.setTimestampFlytbase(toInstant(endTime));
 
-            // Duración si hay start y end
-            Object startTime = t.get("task_start_time");
-            if (startTime != null) {
-                long durSeg = toLong(endTime) - toLong(startTime);
+            // Duración: usar Instant para soportar tanto ISO strings como epoch seconds
+            Instant end   = toInstant(endTime);
+            Instant start = toInstant(t.get("task_start_time"));
+            if (end != null && start != null) {
+                long durSeg = end.getEpochSecond() - start.getEpochSecond();
                 if (durSeg > 0) v.setDuracionMinutos((int) (durSeg / 60));
             }
         } else {
@@ -123,6 +127,37 @@ public class FlightHubVueloLogJob {
         }
 
         vueloLogRepository.save(v);
+
+        // Actualizar stats de dron y horas del piloto solo para vuelos completados (no fallas, no en curso)
+        if (isDone && !isFailed && v.getDuracionMinutos() != null && v.getDuracionMinutos() > 0) {
+            actualizarStatsDron(dron, v.getDuracionMinutos());
+            actualizarHorasPiloto(dron != null ? dron.getNombre() : null, v.getDuracionMinutos());
+        }
+    }
+
+    private void actualizarStatsDron(Dron dron, int duracionMinutos) {
+        if (dron == null) return;
+        dron.setCantidadVuelos((dron.getCantidadVuelos() != null ? dron.getCantidadVuelos() : 0) + 1);
+        dron.setCantidadMinutosVolados((dron.getCantidadMinutosVolados() != null ? dron.getCantidadMinutosVolados() : 0) + duracionMinutos);
+        dronRepository.save(dron);
+    }
+
+    private void actualizarHorasPiloto(String dronNombre, int duracionMinutos) {
+        if (dronNombre == null || dronNombre.isBlank()) return;
+        List<Long> usuarioIds = jdbcTemplate.queryForList(
+                "SELECT usuario_id FROM mision_pendiente WHERE drone_nombre = ? AND procesado = false AND usuario_id IS NOT NULL LIMIT 1",
+                Long.class, dronNombre);
+        if (usuarioIds.isEmpty() || usuarioIds.get(0) == null) return;
+        usuarioRepository.findById(usuarioIds.get(0)).ifPresent(u -> {
+            double horas = (u.getHorasVuelo() != null ? u.getHorasVuelo() : 0.0) + duracionMinutos / 60.0;
+            u.setHorasVuelo(horas);
+            usuarioRepository.save(u);
+            log.info("FlightHubVueloLogJob: horas actualizadas para piloto {} → {:.2f}h", u.getNombre(), horas);
+        });
+        // Marcar como procesado
+        jdbcTemplate.update(
+                "UPDATE mision_pendiente SET procesado = true WHERE drone_nombre = ? AND procesado = false",
+                dronNombre);
     }
 
     private Dron resolverDron(String droneSn, String dockSn) {
@@ -154,10 +189,6 @@ public class FlightHubVueloLogJob {
 
     private static int toInt(Object v) {
         return v instanceof Number n ? n.intValue() : 0;
-    }
-
-    private static long toLong(Object v) {
-        return v instanceof Number n ? n.longValue() : 0L;
     }
 
     private static Instant toInstant(Object v) {

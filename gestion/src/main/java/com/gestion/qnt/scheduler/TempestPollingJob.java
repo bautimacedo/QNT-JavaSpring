@@ -142,11 +142,6 @@ public class TempestPollingJob {
 
         if (eval.aptitud() == Aptitud.NO_VOLAR) {
             String razones = String.join(", ", eval.razones());
-            crearAlerta(
-                NivelAlerta.CRITICA,
-                "🔴 Condiciones NO VOLAR — " + hora,
-                razones
-            );
             telegram.notifyAll(
                 "🔴 <b>Estación Tempest — NO VOLAR</b>\n" +
                 "<i>" + hora + " hs</i>\n\n" +
@@ -154,47 +149,47 @@ public class TempestPollingJob {
                 "Las misiones que intenten lanzarse serán canceladas automáticamente."
             );
             avisarMisionesProgramadas();
+            crearAlerta(NivelAlerta.CRITICA, "🔴 Condiciones NO VOLAR — " + hora, razones);
 
         } else if (eval.aptitud() == Aptitud.PRECAUCION) {
             String razones = String.join(", ", eval.razones());
-            crearAlerta(
-                NivelAlerta.ADVERTENCIA,
-                "🟡 Condiciones PRECAUCIÓN — " + hora,
-                razones
-            );
             telegram.notifyAll(
                 "🟡 <b>Estación Tempest — PRECAUCIÓN</b>\n" +
                 "<i>" + hora + " hs</i>\n\n" +
                 razones
             );
+            crearAlerta(NivelAlerta.ADVERTENCIA, "🟡 Condiciones PRECAUCIÓN — " + hora, razones);
 
         } else if (eval.aptitud() == Aptitud.APTO && anterior != null) {
-            resolverAlertasMalTiempo();
             telegram.notifyAll(
                 "🟢 <b>Estación Tempest — APTO para volar</b>\n" +
                 "<i>" + hora + " hs</i>\n\n" +
                 "Las condiciones mejoraron. Podés reprogramar misiones."
             );
+            resolverAlertasMalTiempo();
         }
     }
 
     private void crearAlerta(NivelAlerta nivel, String mensaje, String subtitulo) {
-        String dedup = "MAL_TIEMPO_TEMPEST_" + java.time.LocalDate.now(ARGENTINA);
-        if (alertaRepo.existsByClaveDedup(dedup)) {
-            // Actualizar la existente si empeoró a CRITICA
-            alertaRepo.findByClaveDedup(dedup).ifPresent(a -> {
-                if (nivel == NivelAlerta.CRITICA) {
-                    a.setNivel(nivel);
-                    a.setMensaje(mensaje);
-                    a.setSubtitulo(subtitulo);
-                    alertaRepo.save(a);
-                }
-            });
-            return;
+        try {
+            String dedup = "MAL_TIEMPO_TEMPEST_" + java.time.LocalDate.now(ARGENTINA);
+            if (alertaRepo.existsByClaveDedup(dedup)) {
+                alertaRepo.findByClaveDedup(dedup).ifPresent(a -> {
+                    if (nivel == NivelAlerta.CRITICA) {
+                        a.setNivel(nivel);
+                        a.setMensaje(mensaje);
+                        a.setSubtitulo(subtitulo);
+                        alertaRepo.save(a);
+                    }
+                });
+                return;
+            }
+            Alerta a = new Alerta(TipoAlerta.MAL_TIEMPO, nivel, mensaje, subtitulo, "ESTACION", null);
+            a.setClaveDedup(dedup);
+            alertaRepo.save(a);
+        } catch (Exception e) {
+            log.warn("TempestPollingJob: no se pudo guardar alerta en BD: {}", e.getMessage());
         }
-        Alerta a = new Alerta(TipoAlerta.MAL_TIEMPO, nivel, mensaje, subtitulo, "ESTACION", null);
-        a.setClaveDedup(dedup);
-        alertaRepo.save(a);
     }
 
     private void resolverAlertasMalTiempo() {

@@ -90,10 +90,13 @@ public class WeatherEvaluator {
             razones.add(String.format("Lluvia %.1f mm/h detectada", precip));
         }
 
-        // Rayos (cualquier rayo en las últimas 3h = no volar)
-        if (lightning > 0) {
+        // Rayos: 3+ strikes en las últimas 3h = NO_VOLAR; 1-2 = PRECAUCIÓN (filtra falsos positivos eléctricos)
+        if (lightning >= 3) {
             noVolar = true;
-            razones.add("Actividad eléctrica detectada en las últimas 3 horas");
+            razones.add("Actividad eléctrica: " + lightning + " strikes en las últimas 3 horas");
+        } else if (lightning > 0) {
+            precaucion = true;
+            razones.add("Posible actividad eléctrica: " + lightning + " strike detectado (puede ser interferencia)");
         }
 
         Aptitud aptitud = noVolar ? Aptitud.NO_VOLAR : precaucion ? Aptitud.PRECAUCION : Aptitud.APTO;

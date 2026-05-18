@@ -8,6 +8,7 @@ import com.gestion.qnt.model.ProgramacionMision;
 import com.gestion.qnt.repository.MisionRepository;
 import com.gestion.qnt.repository.ProgramacionMisionRepository;
 import com.gestion.qnt.service.ProgramacionMisionService;
+import com.gestion.qnt.model.enums.TipoRecurrencia;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,20 +56,26 @@ public class ProgramacionMisionRestController {
     @PostMapping("")
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ProgramacionMisionDTO> create(@RequestBody ProgramacionMisionRequest req) {
+    public ResponseEntity<?> create(@RequestBody ProgramacionMisionRequest req) {
         ProgramacionMision p = fromRequest(req, new ProgramacionMision());
-        if (p.getNombre() == null) return ResponseEntity.badRequest().build();
+        if (p.getNombre() == null) return ResponseEntity.badRequest().body(Map.of("error", "Se requiere una misión plantilla"));
+        String validErr = validarRecurrencia(p);
+        if (validErr != null) return ResponseEntity.badRequest().body(Map.of("error", validErr));
         p.setProxEjecucion(service.calcularProxEjecucion(p));
+        if (p.getProxEjecucion() == null) return ResponseEntity.badRequest().body(Map.of("error", "No se pudo calcular la próxima ejecución con los parámetros indicados"));
         return ResponseEntity.status(HttpStatus.CREATED).body(toDTO(repo.save(p)));
     }
 
     @PutMapping("/{id}")
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ProgramacionMisionDTO> update(@PathVariable Long id, @RequestBody ProgramacionMisionRequest req) {
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody ProgramacionMisionRequest req) {
         return repo.findById(id).map(p -> {
             fromRequest(req, p);
+            String validErr = validarRecurrencia(p);
+            if (validErr != null) return ResponseEntity.badRequest().body(Map.of("error", validErr));
             p.setProxEjecucion(service.calcularProxEjecucion(p));
+            if (p.getProxEjecucion() == null) return ResponseEntity.badRequest().body(Map.of("error", "No se pudo calcular la próxima ejecución con los parámetros indicados"));
             return ResponseEntity.ok(toDTO(repo.save(p)));
         }).orElse(ResponseEntity.notFound().build());
     }
@@ -110,6 +117,20 @@ public class ProgramacionMisionRestController {
     }
 
     // ─── helpers ──────────────────────────────────────────────────────────────
+
+    private String validarRecurrencia(ProgramacionMision p) {
+        if (p.getHora() == null) return "La hora de ejecución es obligatoria";
+        if (p.getTipoRecurrencia() == null) return "El tipo de recurrencia es obligatorio";
+        if (p.getTipoRecurrencia() == TipoRecurrencia.SEMANAL
+                && (p.getDiasSemana() == null || p.getDiasSemana().isEmpty()))
+            return "Seleccioná al menos un día de la semana";
+        if (p.getTipoRecurrencia() == TipoRecurrencia.MENSUAL && p.getDiaMes() == null)
+            return "El día del mes es obligatorio para recurrencia mensual";
+        if (p.getTipoRecurrencia() == TipoRecurrencia.DIARIA
+                && (p.getIntervaloDias() == null || p.getIntervaloDias() < 1))
+            return "El intervalo de días debe ser mayor a 0";
+        return null;
+    }
 
     private ProgramacionMision fromRequest(ProgramacionMisionRequest req, ProgramacionMision p) {
         if (req.misionPlantillaId != null) {
@@ -157,6 +178,7 @@ public class ProgramacionMisionRestController {
                     && plantilla.getWebhookBearer() != null && !plantilla.getWebhookBearer().isBlank();
             dto.misionPlantillaSite = plantilla.getDron() != null && plantilla.getDron().getYacimiento() != null
                     ? plantilla.getDron().getYacimiento().name() : null;
+            dto.misionPlantillaWaylineUuid = plantilla.getFlightHubWaylineUuid();
         }
 
         return dto;

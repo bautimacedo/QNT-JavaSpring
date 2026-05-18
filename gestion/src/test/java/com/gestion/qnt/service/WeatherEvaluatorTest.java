@@ -95,8 +95,15 @@ class WeatherEvaluatorTest {
     }
 
     @Test
-    void evaluar_rayo_esNoVolar() {
+    void evaluar_1strike_esPrecaucion() {
         Evaluacion e = ev.evaluar(obs(2.0, 5.0, 0.0, 1L));
+        assertThat(e.aptitud()).isEqualTo(Aptitud.PRECAUCION);
+        assertThat(e.razones()).anyMatch(r -> r.contains("eléctrica") || r.contains("interferencia"));
+    }
+
+    @Test
+    void evaluar_3strikes_esNoVolar() {
+        Evaluacion e = ev.evaluar(obs(2.0, 5.0, 0.0, 3L));
         assertThat(e.aptitud()).isEqualTo(Aptitud.NO_VOLAR);
         assertThat(e.razones()).anyMatch(r -> r.contains("eléctrica"));
     }

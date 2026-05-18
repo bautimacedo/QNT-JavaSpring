@@ -459,14 +459,12 @@ public class MisionRestController {
                 .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
         m.setPiloto(usuarioActual);
 
-        // Para EFO: registrar en mision_pendiente para atribución de piloto en n8n
-        if (!esCAM) {
-            String pilotoNombre = usuarioActual.getNombre() + " " + (usuarioActual.getApellido() != null ? usuarioActual.getApellido() : "");
-            jdbcTemplate.update(
-                    "INSERT INTO mision_pendiente (drone_nombre, piloto_nombre, usuario_id, mision_id) VALUES (?, ?, ?, ?)",
-                    dron.getNombre(), pilotoNombre.trim(), usuarioActual.getId(), m.getId()
-            );
-        }
+        // Registrar en mision_pendiente para atribución de piloto (EFO: n8n, CAM: FlightHubVueloLogJob)
+        String pilotoNombre = usuarioActual.getNombre() + " " + (usuarioActual.getApellido() != null ? usuarioActual.getApellido() : "");
+        jdbcTemplate.update(
+                "INSERT INTO mision_pendiente (drone_nombre, piloto_nombre, usuario_id, mision_id) VALUES (?, ?, ?, ?)",
+                dron.getNombre(), pilotoNombre.trim(), usuarioActual.getId(), m.getId()
+        );
 
         // Cambiar estado de la misión a EN_CURSO
         EstadoMision estadoAnteriorLanzar = m.getEstado();

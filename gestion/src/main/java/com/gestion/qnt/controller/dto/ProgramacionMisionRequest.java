@@ -1,5 +1,6 @@
 package com.gestion.qnt.controller.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.gestion.qnt.model.enums.TipoRecurrencia;
 
 import java.time.DayOfWeek;
@@ -16,6 +17,8 @@ public class ProgramacionMisionRequest {
     public Integer intervaloDias;
     public LocalTime hora;
     public Boolean activa;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     public LocalDate fechaInicioVigencia;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     public LocalDate fechaFinVigencia;
 }

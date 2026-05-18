@@ -109,4 +109,9 @@ public interface VueloLogRepository extends JpaRepository<VueloLog, Long> {
               )
             """, nativeQuery = true)
     boolean hayVueloActivo(@Param("nombreDron") String nombreDron);
+
+    /** true si existe un DESPEGUE para el drone registrado después de :desde. */
+    @Query(value = "SELECT COUNT(*) > 0 FROM vuelos_log WHERE nombre_dron = :dron AND evento = 'DESPEGUE' AND fecha_registro > :desde",
+           nativeQuery = true)
+    boolean existsDespegueAfter(@Param("dron") String dron, @Param("desde") java.time.LocalDateTime desde);
 }

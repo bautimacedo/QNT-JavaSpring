@@ -193,10 +193,10 @@ public class ProgramacionMisionService {
                     misionRepository.save(saved);
                     log.info("Programación {} lanzada en FlightHub para drone CAM {}", progId, dronNombre);
                 } catch (Exception e) {
-                    log.error("Error llamando FlightHub para programación {}: {}", progId, e.getMessage());
+                    marcarFalloLanzamiento(saved, dronNombre, progId, "FlightHub: " + e.getMessage());
                 }
             } else {
-                log.warn("Programación {} CAM sin waylineUuid — misión {} creada en PLANIFICADA sin lanzar", progId, saved.getId());
+                marcarFalloLanzamiento(saved, dronNombre, progId, "waylineUuid no configurado");
             }
         } else {
             // EFO → FlytBase
@@ -213,12 +213,24 @@ public class ProgramacionMisionService {
                     misionRepository.save(saved);
                     log.info("Programación {} lanzada en FlytBase para drone EFO {}", progId, dronNombre);
                 } catch (Exception e) {
-                    log.error("Error llamando FlytBase para programación {}: {}", progId, e.getMessage());
+                    marcarFalloLanzamiento(saved, dronNombre, progId, "FlytBase webhook error: " + e.getMessage());
                 }
             } else {
-                log.warn("Programación {} EFO sin webhook — misión {} creada en PLANIFICADA sin lanzar", progId, saved.getId());
+                marcarFalloLanzamiento(saved, dronNombre, progId, "webhook FlytBase no configurado");
             }
         }
+    }
+
+    private void marcarFalloLanzamiento(Mision saved, String dronNombre, Long progId, String motivo) {
+        saved.setEstado(EstadoMision.FALLO_LANZAMIENTO);
+        misionRepository.save(saved);
+        jdbcTemplate.update(
+                "UPDATE mision_pendiente SET procesado = true WHERE drone_nombre = ? AND procesado = false",
+                dronNombre);
+        String msg = "⚠️ Misión cronogramada <b>'" + saved.getNombre() + "'</b> no se pudo lanzar.\n" +
+                     "<i>Motivo: " + motivo + "</i>";
+        telegramNotificationService.notifyAll(msg);
+        log.warn("Programación {}: misión {} con FALLO_LANZAMIENTO — {}", progId, saved.getId(), motivo);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)

@@ -52,11 +52,12 @@ public class DashboardRestController {
         long dronesEnMant     = extractCount(dronCounts, Estado.EN_MANTENIMIENTO);
         long dronesEnDesuso   = extractCount(dronCounts, Estado.EN_DESUSO);
 
-        long misionesTotal = misionRepository.count();
-        long planificadas  = extractCount(misionCounts, EstadoMision.PLANIFICADA);
-        long enCurso       = extractCount(misionCounts, EstadoMision.EN_CURSO);
-        long completadas   = extractCount(misionCounts, EstadoMision.COMPLETADA);
-        long canceladas    = extractCount(misionCounts, EstadoMision.CANCELADA);
+        long misionesTotal      = misionRepository.count();
+        long planificadas       = extractCount(misionCounts, EstadoMision.PLANIFICADA);
+        long enCurso            = extractCount(misionCounts, EstadoMision.EN_CURSO);
+        long completadas        = extractCount(misionCounts, EstadoMision.COMPLETADA);
+        long canceladas         = extractCount(misionCounts, EstadoMision.CANCELADA);
+        long falloLanzamiento   = extractCount(misionCounts, EstadoMision.FALLO_LANZAMIENTO);
 
         long alertasActivas = alertaRepository.countByResueltaFalse();
         long batCiclos      = bateriaRepository.countByCiclosCargaGreaterThan(CICLOS_MAX);
@@ -64,7 +65,7 @@ public class DashboardRestController {
 
         return ResponseEntity.ok(new DashboardStatsResponse(
                 dronesTotal, dronesOperativos, dronesEnMant, dronesEnDesuso,
-                misionesTotal, planificadas, enCurso, completadas, canceladas,
+                misionesTotal, planificadas, enCurso, completadas, canceladas, falloLanzamiento,
                 alertasActivas,
                 batCiclos, dronsTempAlta
         ));

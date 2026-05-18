@@ -13,6 +13,7 @@ public record DashboardStatsResponse(
         long misionesEnCurso,
         long misionesCompletadas,
         long misionesCanceladas,
+        long misionesFalloLanzamiento,
 
         // Alertas
         long alertasActivas,

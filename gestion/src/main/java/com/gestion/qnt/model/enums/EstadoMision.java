@@ -7,5 +7,6 @@ public enum EstadoMision {
     PLANIFICADA,
     EN_CURSO,
     COMPLETADA,
-    CANCELADA
+    CANCELADA,
+    FALLO_LANZAMIENTO
 }

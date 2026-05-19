@@ -29,8 +29,10 @@ import org.springframework.dao.DataIntegrityViolationException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -419,7 +421,9 @@ public class InternalMisionController {
         List<Map<String, Object>> result = dronRepository.findAll().stream()
                 .filter(d -> d.getYacimiento() != null)
                 .map(d -> {
-                    boolean volando = vueloLogRepository.hayVueloActivo(d.getNombre());
+                    boolean volando = d.getYacimiento() == Yacimiento.CAM
+                            ? Boolean.FALSE.equals(d.getDroneEnDock())
+                            : vueloLogRepository.hayVueloActivo(d.getNombre());
                     String site = d.getYacimiento().name();
                     List<VueloLog> ultimos = vueloLogRepository.findFiltered(
                             d.getNombre(), site, null, null, null);
@@ -434,7 +438,21 @@ public class InternalMisionController {
                             .filter(v -> v.getEvento() == com.gestion.qnt.model.enums.TipoEventoVuelo.VUELO).count();
                     long totalVuelos = Math.max(d.getCantidadVuelos() != null ? d.getCantidadVuelos() : 0, vuelosLog);
                     dto.put("cantidadVuelos", totalVuelos);
-                    dto.put("ultimoVuelo",   d.getUltimoVuelo() != null ? d.getUltimoVuelo().toString() : null);
+                    Instant ultimoVueloTs = d.getUltimoVuelo();
+                    if (ultimoVueloTs == null) {
+                        ultimoVueloTs = ultimos.stream()
+                                .filter(v -> v.getEvento() == TipoEventoVuelo.VUELO
+                                          || v.getEvento() == TipoEventoVuelo.ATERRIZAJE)
+                                .map(v -> v.getTimestampFlytbase() != null
+                                        ? v.getTimestampFlytbase()
+                                        : v.getFechaRegistro() != null
+                                          ? v.getFechaRegistro().atZone(ZoneId.of("America/Argentina/Buenos_Aires")).toInstant()
+                                          : null)
+                                .filter(Objects::nonNull)
+                                .findFirst()
+                                .orElse(null);
+                    }
+                    dto.put("ultimoVuelo", ultimoVueloTs != null ? ultimoVueloTs.toString() : null);
                     dto.put("volandoAhora",  volando);
                     dto.put("droneEnDock",   d.getDroneEnDock());
                     if (ultimoEvento != null) {

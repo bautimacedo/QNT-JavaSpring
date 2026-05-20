@@ -105,6 +105,12 @@
 			<artifactId>bucket4j-core</artifactId>
 			<version>8.10.1</version>
 		</dependency>
+		<!-- AWS S3 (presigned URLs para inspecciones AIB) -->
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3</artifactId>
+			<version>2.27.21</version>
+		</dependency>
 		<!-- MQTT -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

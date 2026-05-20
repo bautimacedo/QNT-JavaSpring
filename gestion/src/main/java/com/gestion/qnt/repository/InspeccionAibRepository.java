@@ -24,4 +24,7 @@ public interface InspeccionAibRepository extends JpaRepository<InspeccionAib, Lo
 
     @Query("SELECT i FROM InspeccionAib i LEFT JOIN FETCH i.aib a WHERE a.pozo.id = :pozoId ORDER BY i.timestamp DESC")
     List<InspeccionAib> findByPozoId(@Param("pozoId") Long pozoId);
+
+    /** True si existe al menos una inspección asociada al AIB con el id dado. */
+    boolean existsByAib_Id(Long aibId);
 }

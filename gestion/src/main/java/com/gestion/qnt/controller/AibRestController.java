@@ -98,13 +98,20 @@ public class AibRestController {
     @DeleteMapping("/{id}")
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<?> delete(@PathVariable Long id) {
         try {
             aibBusiness.delete(id);
             return ResponseEntity.noContent().build();
         } catch (NotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (BusinessException e) {
+            // El business marca con AibTieneInspeccionesException cuando hay inspecciones.
+            // No importamos la clase package-private; nos basamos en el mensaje, que es
+            // estable y se renderiza al usuario.
+            if (e.getMessage() != null && e.getMessage().contains("tiene inspecciones registradas")) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT)
+                        .body(java.util.Map.of("error", e.getMessage()));
+            }
             return ResponseEntity.internalServerError().build();
         }
     }

@@ -5,12 +5,18 @@ import com.gestion.qnt.model.business.exceptions.BusinessException;
 import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import com.gestion.qnt.model.business.interfaces.IAibBusiness;
 import com.gestion.qnt.repository.AibRepository;
+import com.gestion.qnt.repository.InspeccionAibRepository;
 import com.gestion.qnt.repository.PozoRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+/** Marker para que el controller distinga "no se puede eliminar" (409) de errores genéricos. */
+class AibTieneInspeccionesException extends BusinessException {
+    public AibTieneInspeccionesException(String msg) { super(msg); }
+}
 
 @Service
 @Slf4j
@@ -21,6 +27,9 @@ public class AibBusiness implements IAibBusiness {
 
     @Autowired
     private PozoRepository pozoRepository;
+
+    @Autowired
+    private InspeccionAibRepository inspeccionAibRepository;
 
     @Override
     public List<Aib> list() throws BusinessException {
@@ -97,8 +106,13 @@ public class AibBusiness implements IAibBusiness {
     public void delete(Long id) throws NotFoundException, BusinessException {
         try {
             load(id);
+            if (inspeccionAibRepository.existsByAib_Id(id)) {
+                throw new AibTieneInspeccionesException(
+                        "No se puede eliminar el AIB porque tiene inspecciones registradas. " +
+                        "Eliminá primero las inspecciones desde la vista del pozo.");
+            }
             repository.deleteById(id);
-        } catch (NotFoundException e) {
+        } catch (NotFoundException | AibTieneInspeccionesException e) {
             throw e;
         } catch (Exception e) {
             log.error("Error al eliminar AIB con id {}", id, e);

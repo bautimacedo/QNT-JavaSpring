@@ -7,6 +7,8 @@ public class AibDTO {
     public Long id;
     public String aibId;
     public String nombre;
+    public String modelo;
+    public String notas;
     public Long pozoId;
     public String pozoNombre;
     public LocalDateTime fechaCreacion;

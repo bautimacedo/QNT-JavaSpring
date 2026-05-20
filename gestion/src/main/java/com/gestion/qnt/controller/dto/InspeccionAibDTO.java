@@ -1,51 +1,79 @@
 package com.gestion.qnt.controller.dto;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
+/**
+ * DTO de respuesta de una inspección AIB. Las URLs en el campo `archivos`
+ * apuntan al endpoint GET /api/qnt/v1/inspecciones/aib/{id}/archivo/{tipo}
+ * del propio backend, que hace 302 redirect a una presigned URL de S3.
+ */
 public class InspeccionAibDTO {
 
+    // ── Identidad ──────────────────────────────────────────────────────
     public Long id;
     public String aibId;
     public String aibNombre;
     public Long pozoId;
     public String pozoNombre;
+    public String modelo;
+    public String notas;
     public LocalDateTime timestamp;
     public LocalDateTime fechaRegistro;
+
+    /** Estado de la bomba: ON | OFF | INDETERMINADO. */
     public String estado;
     public Double gpm;
 
-    // Velocidad
-    public Double velSubidaS;
-    public Double velBajadaS;
-    public Double velSubidaInS;
-    public Double velBajadaInS;
-    public Double velRatio;
-    public Double velConfianza;
+    // ── Secciones de métricas ──────────────────────────────────────────
+    /** Tiempos de ciclo de la bomba. null si la bomba está OFF o INDETERMINADO. */
+    public TiemposCicloDTO tiemposCiclo;
+    /** Velocidad instantánea derivada. null si OFF/INDETERMINADO o el AIB no tiene carrera_in. */
+    public VelocidadDTO velocidad;
+    /** Aceleración instantánea. null si OFF/INDETERMINADO o el AIB no tiene carrera_in. */
+    public AceleracionDTO aceleracion;
+    /** Conversión píxeles ↔ pulgadas. null si el AIB no tiene carrera_in configurada. */
+    public ConversionDTO conversion;
+    /** Metadatos del video procesado. Siempre presente. */
+    public VideoDTO video;
 
-    // Derivada px
-    public Double derivadaVelMaxPxS;
-    public Double derivadaVelRmsPxS;
-    public Double derivadaAcelMaxPxS2;
-    public Double derivadaConfianza;
+    /** Mapa tipo→URL relativa. Solo contiene las keys de archivos que la inspección tiene en S3. */
+    public Map<String, String> archivos;
 
-    // Conversión
-    public Double convCarreraIn;
-    public Double convCarreraPx;
-    public Double convScaleInPerPx;
-    public Double convConfianza;
+    // ── Tipos anidados ─────────────────────────────────────────────────
 
-    // Derivada in
-    public Double derivadaInVelMaxInS;
-    public Double derivadaInVelRmsInS;
-    public Double derivadaInAcelMaxInS2;
+    public static class TiemposCicloDTO {
+        public Double subidaS;
+        public Double bajadaS;
+        public Double subidaInS;
+        public Double bajadaInS;
+        public Double ratio;
+        public Double confianza;
+    }
 
-    public String videoUrl;
+    public static class VelocidadDTO {
+        public Double velMaxInS;
+        public Double velRmsInS;
+        public Double confianza;
+    }
 
-    // Imágenes (URLs relativas)
-    public String capturaAnotadaUrl;
-    public String graficoPosicionInUrl;
-    public String graficoProcesadaUrl;
-    public String graficoVelocidadUrl;
-    public String graficoDerivadaInUrl;
-    public String graficoAceleracionInUrl;
+    public static class AceleracionDTO {
+        public Double acelMaxInS2;
+    }
+
+    public static class ConversionDTO {
+        public Double carreraIn;
+        public Double carreraPx;
+        public Double scaleInPerPx;
+        public Double confianza;
+    }
+
+    public static class VideoDTO {
+        public String nombre;
+        public Double fps;
+        public Double duracionSegundos;
+        public Integer framesConDeteccion;
+        public Integer framesTotales;
+        public Double coberturaPorcentaje;
+    }
 }

@@ -7,6 +7,12 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
+/**
+ * Resultado de una inspección automática de un AIB. El pipeline externo procesa
+ * un video y sube los outputs (imágenes, txt, video) a S3, luego POSTea este
+ * objeto al backend con las S3 keys. Los archivos en sí no se almacenan acá
+ * — se sirven on-demand vía presigned URLs.
+ */
 @Entity
 @Table(name = "inspecciones_aib")
 @Getter
@@ -28,45 +34,79 @@ public class InspeccionAib {
     @Column(name = "fecha_registro", updatable = false)
     private LocalDateTime fechaRegistro;
 
-    @Column(nullable = false)
+    /** Estado de la bomba: ON | OFF | INDETERMINADO. */
+    @Column(nullable = false, length = 20)
     private String estado;
 
+    /** Galones por minuto. Null si OFF o INDETERMINADO. */
     @Column
     private Double gpm;
 
-    // Velocidad
-    @Column(name = "vel_subida_s") private Double velSubidaS;
-    @Column(name = "vel_bajada_s") private Double velBajadaS;
-    @Column(name = "vel_subida_in_s") private Double velSubidaInS;
-    @Column(name = "vel_bajada_in_s") private Double velBajadaInS;
-    @Column(name = "vel_ratio") private Double velRatio;
+    // ── Tiempos de ciclo (payload: tiempos_ciclo) ─────────────────────
+    @Column(name = "tc_subida_s")    private Double tcSubidaS;
+    @Column(name = "tc_bajada_s")    private Double tcBajadaS;
+    @Column(name = "tc_subida_in_s") private Double tcSubidaInS;
+    @Column(name = "tc_bajada_in_s") private Double tcBajadaInS;
+    @Column(name = "tc_ratio")       private Double tcRatio;
+    @Column(name = "tc_confianza")   private Double tcConfianza;
+
+    // ── Velocidad (payload: velocidad) ─────────────────────────────────
+    @Column(name = "vel_max_in_s")  private Double velMaxInS;
+    @Column(name = "vel_rms_in_s")  private Double velRmsInS;
     @Column(name = "vel_confianza") private Double velConfianza;
 
-    // Derivada en píxeles
-    @Column(name = "derivada_vel_max_px_s") private Double derivadaVelMaxPxS;
-    @Column(name = "derivada_vel_rms_px_s") private Double derivadaVelRmsPxS;
-    @Column(name = "derivada_acel_max_px_s2") private Double derivadaAcelMaxPxS2;
-    @Column(name = "derivada_confianza") private Double derivadaConfianza;
+    // ── Aceleración (payload: aceleracion) ─────────────────────────────
+    @Column(name = "acel_max_in_s2") private Double acelMaxInS2;
 
-    // Conversión px→in
-    @Column(name = "conv_carrera_in") private Double convCarreraIn;
-    @Column(name = "conv_carrera_px") private Double convCarreraPx;
+    // ── Conversión px→in (payload: conversion) ─────────────────────────
+    @Column(name = "conv_carrera_in")     private Double convCarreraIn;
+    @Column(name = "conv_carrera_px")     private Double convCarreraPx;
     @Column(name = "conv_scale_in_per_px") private Double convScaleInPerPx;
-    @Column(name = "conv_confianza") private Double convConfianza;
+    @Column(name = "conv_confianza")      private Double convConfianza;
 
-    // Derivada en pulgadas
-    @Column(name = "derivada_in_vel_max_in_s") private Double derivadaInVelMaxInS;
-    @Column(name = "derivada_in_vel_rms_in_s") private Double derivadaInVelRmsInS;
-    @Column(name = "derivada_in_acel_max_in_s2") private Double derivadaInAcelMaxInS2;
+    // ── Metadatos del video (payload: video) ───────────────────────────
+    @Column(name = "video_nombre", length = 255)
+    private String videoNombre;
+    @Column(name = "video_fps")
+    private Double videoFps;
+    @Column(name = "video_duracion_segundos")
+    private Double videoDuracionSegundos;
+    @Column(name = "video_frames_con_deteccion")
+    private Integer videoFramesConDeteccion;
+    @Column(name = "video_frames_totales")
+    private Integer videoFramesTotales;
+    @Column(name = "video_cobertura_porcentaje")
+    private Double videoCoberturaPorcentaje;
 
-    @Column(name = "video_url", length = 2048)
-    private String videoUrl;
+    // ── S3 bucket (payload: s3_bucket) ─────────────────────────────────
+    /** Bucket donde viven todos los archivos de esta inspección. Si es null, usar el default. */
+    @Column(name = "s3_bucket", length = 200)
+    private String s3Bucket;
 
-    // Imágenes (paths relativos al upload-dir)
-    @Column(name = "captura_anotada_path") private String capturaAnotadaPath;
-    @Column(name = "grafico_posicion_in_path") private String graficoPosicionInPath;
-    @Column(name = "grafico_procesada_path") private String graficoProcesadaPath;
-    @Column(name = "grafico_velocidad_path") private String graficoVelocidadPath;
-    @Column(name = "grafico_derivada_in_path") private String graficoDerivadaInPath;
-    @Column(name = "grafico_aceleracion_in_path") private String graficoAceleracionInPath;
+    // ── S3 keys de archivos (payload: archivos.*) ─────────────────────
+    // Obligatorios: video, captura, detecciones, grafico_detecciones_raw
+    @Column(name = "s3_key_video", length = 1024)
+    private String s3KeyVideo;
+    @Column(name = "s3_key_captura", length = 1024)
+    private String s3KeyCaptura;
+    @Column(name = "s3_key_grafico_detecciones_raw", length = 1024)
+    private String s3KeyGraficoDeteccionesRaw;
+    @Column(name = "s3_key_detecciones", length = 1024)
+    private String s3KeyDetecciones;
+
+    // Opcionales: solo si la bomba está ON y el AIB tiene carrera_in
+    @Column(name = "s3_key_grafico_tiempos_ciclo", length = 1024)
+    private String s3KeyGraficoTiemposCiclo;
+    @Column(name = "s3_key_grafico_posicion_pulgadas", length = 1024)
+    private String s3KeyGraficoPosicionPulgadas;
+    @Column(name = "s3_key_grafico_velocidad_pulgadas", length = 1024)
+    private String s3KeyGraficoVelocidadPulgadas;
+    @Column(name = "s3_key_grafico_aceleracion_pulgadas", length = 1024)
+    private String s3KeyGraficoAceleracionPulgadas;
+    @Column(name = "s3_key_posiciones_pulgadas", length = 1024)
+    private String s3KeyPosicionesPulgadas;
+    @Column(name = "s3_key_posiciones_tam", length = 1024)
+    private String s3KeyPosicionesTam;
+    @Column(name = "s3_key_velocidad_aceleracion_pulgadas", length = 1024)
+    private String s3KeyVelocidadAceleracionPulgadas;
 }

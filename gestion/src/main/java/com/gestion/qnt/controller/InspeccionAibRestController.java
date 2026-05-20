@@ -6,30 +6,45 @@ import com.gestion.qnt.model.InspeccionAib;
 import com.gestion.qnt.model.business.exceptions.BusinessException;
 import com.gestion.qnt.model.business.exceptions.NotFoundException;
 import com.gestion.qnt.model.business.interfaces.IInspeccionAibBusiness;
+import com.gestion.qnt.service.AwsS3Service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.MessageDigest;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 @RestController
 @RequestMapping(ApiConstants.URL_BASE + "/inspecciones/aib")
 @Slf4j
 public class InspeccionAibRestController {
+
+    /** Mapa tipo→accesor de la S3 key correspondiente en la entity. Whitelist estricta. */
+    private static final Map<String, Function<InspeccionAib, String>> TIPO_TO_KEY = Map.ofEntries(
+            Map.entry("video",                          InspeccionAib::getS3KeyVideo),
+            Map.entry("captura",                        InspeccionAib::getS3KeyCaptura),
+            Map.entry("grafico_detecciones_raw",        InspeccionAib::getS3KeyGraficoDeteccionesRaw),
+            Map.entry("grafico_tiempos_ciclo",          InspeccionAib::getS3KeyGraficoTiemposCiclo),
+            Map.entry("grafico_posicion_pulgadas",      InspeccionAib::getS3KeyGraficoPosicionPulgadas),
+            Map.entry("grafico_velocidad_pulgadas",     InspeccionAib::getS3KeyGraficoVelocidadPulgadas),
+            Map.entry("grafico_aceleracion_pulgadas",   InspeccionAib::getS3KeyGraficoAceleracionPulgadas),
+            Map.entry("detecciones",                    InspeccionAib::getS3KeyDetecciones),
+            Map.entry("posiciones_pulgadas",            InspeccionAib::getS3KeyPosicionesPulgadas),
+            Map.entry("posiciones_tam",                 InspeccionAib::getS3KeyPosicionesTam),
+            Map.entry("velocidad_aceleracion_pulgadas", InspeccionAib::getS3KeyVelocidadAceleracionPulgadas)
+    );
 
     @Autowired
     private IInspeccionAibBusiness business;
@@ -37,42 +52,38 @@ public class InspeccionAibRestController {
     @Autowired
     private com.gestion.qnt.repository.InspeccionAibRepository inspeccionAibRepository;
 
-    @Value("${app.aib.api-key:aib-default-key}")
+    @Autowired
+    private AwsS3Service awsS3Service;
+
+    @Value("${app.aib.api-key}")
     private String apiKey;
 
-    @Value("${app.aib.upload-dir:/var/lib/qnt/inspecciones}")
-    private String uploadDir;
-
     // ─────────────────────────────────────────────
-    // POST — recibe inspección desde pipeline externo (API Key)
+    // POST — recibe inspección del pipeline externo (X-API-Key, JSON puro)
     // ─────────────────────────────────────────────
-    @PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
-    public ResponseEntity<InspeccionAibDTO> receiveInspeccion(
+    public ResponseEntity<?> receiveInspeccion(
             @RequestHeader(value = "X-API-Key", required = false) String headerKey,
-            @RequestPart("datos") String datosJson,
-            @RequestPart(value = "graficos", required = false) List<MultipartFile> graficos) {
+            @RequestBody String datosJson) {
 
         boolean apiKeyValida = !apiKey.isBlank() && MessageDigest.isEqual(
-            apiKey.getBytes(StandardCharsets.UTF_8),
-            (headerKey != null ? headerKey : "").getBytes(StandardCharsets.UTF_8)
+                apiKey.getBytes(StandardCharsets.UTF_8),
+                (headerKey != null ? headerKey : "").getBytes(StandardCharsets.UTF_8)
         );
         if (!apiKeyValida) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         try {
-            InspeccionAib saved = business.receiveInspeccion(datosJson, graficos);
+            InspeccionAib saved = business.receiveInspeccion(datosJson);
             return ResponseEntity.status(HttpStatus.CREATED).body(toDTO(saved));
         } catch (BusinessException e) {
-            log.error("Error al recibir inspección AIB", e);
-            return ResponseEntity.internalServerError().build();
+            log.warn("Inspección AIB rechazada: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
-    // ─────────────────────────────────────────────
-    // GET /inspecciones/aib — lista todas
-    // ─────────────────────────────────────────────
     @GetMapping("")
     @Transactional(readOnly = true)
     @PreAuthorize("isAuthenticated()")
@@ -84,9 +95,6 @@ public class InspeccionAibRestController {
         }
     }
 
-    // ─────────────────────────────────────────────
-    // GET /inspecciones/aib/{id}
-    // ─────────────────────────────────────────────
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
     @PreAuthorize("isAuthenticated()")
@@ -100,9 +108,6 @@ public class InspeccionAibRestController {
         }
     }
 
-    // ─────────────────────────────────────────────
-    // GET /inspecciones/aib/equipo/{aibId} — historial de un AIB
-    // ─────────────────────────────────────────────
     @GetMapping("/equipo/{aibId}")
     @Transactional(readOnly = true)
     @PreAuthorize("isAuthenticated()")
@@ -114,42 +119,6 @@ public class InspeccionAibRestController {
         }
     }
 
-    // ─────────────────────────────────────────────
-    // GET /inspecciones/aib/{id}/graficos/{filename} — sirve imagen
-    // ─────────────────────────────────────────────
-    @GetMapping("/{id}/graficos/{filename}")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<InputStreamResource> getGrafico(
-            @PathVariable Long id,
-            @PathVariable String filename) {
-
-        if (filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        try {
-            InspeccionAib inspeccion = business.load(id);
-            Path filePath = Paths.get(uploadDir, inspeccion.getAib().getAibId(), String.valueOf(id), filename);
-
-            if (!Files.exists(filePath)) return ResponseEntity.notFound().build();
-
-            String contentType = Files.probeContentType(filePath);
-            if (contentType == null) contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
-
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
-                    .body(new InputStreamResource(Files.newInputStream(filePath)));
-        } catch (NotFoundException e) {
-            return ResponseEntity.notFound().build();
-        } catch (BusinessException | IOException e) {
-            log.error("Error al servir gráfico id={} filename={}", id, filename, e);
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    // ─────────────────────────────────────────────
-    // GET /inspecciones/aib/pozo/{pozoId} — historial por pozo
-    // ─────────────────────────────────────────────
     @GetMapping("/pozo/{pozoId}")
     @Transactional(readOnly = true)
     @PreAuthorize("isAuthenticated()")
@@ -164,8 +133,41 @@ public class InspeccionAibRestController {
     }
 
     // ─────────────────────────────────────────────
-    // DELETE /inspecciones/aib/{id}
+    // GET /inspecciones/aib/{id}/archivo/{tipo}
+    // 302 redirect a una presigned URL de S3 (TTL: configurado en AwsS3Service)
     // ─────────────────────────────────────────────
+    @GetMapping("/{id}/archivo/{tipo}")
+    @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getArchivo(@PathVariable Long id, @PathVariable String tipo) {
+        Function<InspeccionAib, String> accessor = TIPO_TO_KEY.get(tipo);
+        if (accessor == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "tipo de archivo desconocido: " + tipo));
+        }
+
+        InspeccionAib insp;
+        try {
+            insp = business.load(id);
+        } catch (NotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (BusinessException e) {
+            return ResponseEntity.internalServerError().build();
+        }
+
+        String key = accessor.apply(insp);
+        if (key == null || key.isBlank()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        try {
+            URL url = awsS3Service.generatePresignedGetUrl(insp.getS3Bucket(), key);
+            return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(url.toString())).build();
+        } catch (Exception e) {
+            log.error("Error generando presigned URL para inspección {} tipo {}", id, tipo, e);
+            return ResponseEntity.internalServerError().body(Map.of("error", "No se pudo generar URL de descarga"));
+        }
+    }
+
     @DeleteMapping("/{id}")
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
@@ -180,6 +182,9 @@ public class InspeccionAibRestController {
         }
     }
 
+    // ─────────────────────────────────────────────
+    // Mapping entity → DTO
+    // ─────────────────────────────────────────────
     private InspeccionAibDTO toDTO(InspeccionAib i) {
         InspeccionAibDTO dto = new InspeccionAibDTO();
         dto.id = i.getId();
@@ -190,41 +195,77 @@ public class InspeccionAibRestController {
         if (i.getAib() != null) {
             dto.aibId = i.getAib().getAibId();
             dto.aibNombre = i.getAib().getNombre();
+            dto.modelo = i.getAib().getModelo();
+            dto.notas = i.getAib().getNotas();
             if (i.getAib().getPozo() != null) {
                 dto.pozoId = i.getAib().getPozo().getId();
                 dto.pozoNombre = i.getAib().getPozo().getNombre();
             }
         }
-        dto.velSubidaS = i.getVelSubidaS();
-        dto.velBajadaS = i.getVelBajadaS();
-        dto.velSubidaInS = i.getVelSubidaInS();
-        dto.velBajadaInS = i.getVelBajadaInS();
-        dto.velRatio = i.getVelRatio();
-        dto.velConfianza = i.getVelConfianza();
-        dto.derivadaVelMaxPxS = i.getDerivadaVelMaxPxS();
-        dto.derivadaVelRmsPxS = i.getDerivadaVelRmsPxS();
-        dto.derivadaAcelMaxPxS2 = i.getDerivadaAcelMaxPxS2();
-        dto.derivadaConfianza = i.getDerivadaConfianza();
-        dto.convCarreraIn = i.getConvCarreraIn();
-        dto.convCarreraPx = i.getConvCarreraPx();
-        dto.convScaleInPerPx = i.getConvScaleInPerPx();
-        dto.convConfianza = i.getConvConfianza();
-        dto.derivadaInVelMaxInS = i.getDerivadaInVelMaxInS();
-        dto.derivadaInVelRmsInS = i.getDerivadaInVelRmsInS();
-        dto.derivadaInAcelMaxInS2 = i.getDerivadaInAcelMaxInS2();
-        dto.videoUrl = i.getVideoUrl();
-        dto.capturaAnotadaUrl = toUrl(i.getCapturaAnotadaPath(), i.getId());
-        dto.graficoPosicionInUrl = toUrl(i.getGraficoPosicionInPath(), i.getId());
-        dto.graficoProcesadaUrl = toUrl(i.getGraficoProcesadaPath(), i.getId());
-        dto.graficoVelocidadUrl = toUrl(i.getGraficoVelocidadPath(), i.getId());
-        dto.graficoDerivadaInUrl = toUrl(i.getGraficoDerivadaInPath(), i.getId());
-        dto.graficoAceleracionInUrl = toUrl(i.getGraficoAceleracionInPath(), i.getId());
+
+        if (anyNotNull(i.getTcSubidaS(), i.getTcBajadaS(), i.getTcSubidaInS(),
+                       i.getTcBajadaInS(), i.getTcRatio(), i.getTcConfianza())) {
+            InspeccionAibDTO.TiemposCicloDTO tc = new InspeccionAibDTO.TiemposCicloDTO();
+            tc.subidaS    = i.getTcSubidaS();
+            tc.bajadaS    = i.getTcBajadaS();
+            tc.subidaInS  = i.getTcSubidaInS();
+            tc.bajadaInS  = i.getTcBajadaInS();
+            tc.ratio      = i.getTcRatio();
+            tc.confianza  = i.getTcConfianza();
+            dto.tiemposCiclo = tc;
+        }
+
+        if (anyNotNull(i.getVelMaxInS(), i.getVelRmsInS(), i.getVelConfianza())) {
+            InspeccionAibDTO.VelocidadDTO v = new InspeccionAibDTO.VelocidadDTO();
+            v.velMaxInS = i.getVelMaxInS();
+            v.velRmsInS = i.getVelRmsInS();
+            v.confianza = i.getVelConfianza();
+            dto.velocidad = v;
+        }
+
+        if (i.getAcelMaxInS2() != null) {
+            InspeccionAibDTO.AceleracionDTO a = new InspeccionAibDTO.AceleracionDTO();
+            a.acelMaxInS2 = i.getAcelMaxInS2();
+            dto.aceleracion = a;
+        }
+
+        if (anyNotNull(i.getConvCarreraIn(), i.getConvCarreraPx(),
+                       i.getConvScaleInPerPx(), i.getConvConfianza())) {
+            InspeccionAibDTO.ConversionDTO c = new InspeccionAibDTO.ConversionDTO();
+            c.carreraIn      = i.getConvCarreraIn();
+            c.carreraPx      = i.getConvCarreraPx();
+            c.scaleInPerPx   = i.getConvScaleInPerPx();
+            c.confianza      = i.getConvConfianza();
+            dto.conversion = c;
+        }
+
+        if (i.getVideoNombre() != null) {
+            InspeccionAibDTO.VideoDTO v = new InspeccionAibDTO.VideoDTO();
+            v.nombre              = i.getVideoNombre();
+            v.fps                 = i.getVideoFps();
+            v.duracionSegundos    = i.getVideoDuracionSegundos();
+            v.framesConDeteccion  = i.getVideoFramesConDeteccion();
+            v.framesTotales       = i.getVideoFramesTotales();
+            v.coberturaPorcentaje = i.getVideoCoberturaPorcentaje();
+            dto.video = v;
+        }
+
+        // Mapa archivos: tipo → URL relativa del backend (que hace 302 a S3)
+        Map<String, String> archivos = new LinkedHashMap<>();
+        for (Map.Entry<String, Function<InspeccionAib, String>> entry : TIPO_TO_KEY.entrySet()) {
+            String key = entry.getValue().apply(i);
+            if (key != null && !key.isBlank()) {
+                archivos.put(entry.getKey(),
+                        ApiConstants.URL_BASE + "/inspecciones/aib/" + i.getId() + "/archivo/" + entry.getKey());
+            }
+        }
+        dto.archivos = archivos;
+
         return dto;
     }
 
-    private String toUrl(String relativePath, Long id) {
-        if (relativePath == null) return null;
-        String filename = Paths.get(relativePath).getFileName().toString();
-        return ApiConstants.URL_BASE + "/inspecciones/aib/" + id + "/graficos/" + filename;
+    private static boolean anyNotNull(Object... values) {
+        for (Object v : values) if (v != null) return true;
+        return false;
     }
 }

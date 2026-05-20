@@ -114,6 +114,8 @@ public class AibRestController {
         dto.id = a.getId();
         dto.aibId = a.getAibId();
         dto.nombre = a.getNombre();
+        dto.modelo = a.getModelo();
+        dto.notas = a.getNotas();
         dto.fechaCreacion = a.getFechaCreacion();
         if (a.getPozo() != null) {
             dto.pozoId = a.getPozo().getId();

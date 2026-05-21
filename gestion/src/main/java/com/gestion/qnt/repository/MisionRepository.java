@@ -46,4 +46,6 @@ public interface MisionRepository extends JpaRepository<Mision, Long> {
 
     @Query("SELECT m FROM Mision m LEFT JOIN FETCH m.piloto LEFT JOIN FETCH m.dron LEFT JOIN FETCH m.dock WHERE m.estado = :estado AND m.fechaProgramada >= :start AND m.fechaProgramada < :end ORDER BY m.fechaProgramada ASC")
     List<Mision> findPlanificadasDelDia(@Param("estado") EstadoMision estado, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    boolean existsByProgramacionIdAndFechaCreacionAfter(Long programacionId, LocalDateTime desde);
 }

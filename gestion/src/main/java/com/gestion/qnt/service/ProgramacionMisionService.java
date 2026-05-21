@@ -63,7 +63,8 @@ public class ProgramacionMisionService {
 
     public LocalDateTime calcularProxEjecucion(ProgramacionMision p) {
         if (p.getTipoRecurrencia() == null || p.getHora() == null) return null;
-        LocalDateTime ahora = LocalDateTime.now();
+        // +90s: garantiza que la próxima ejecución quede fuera del lookahead window del scheduler (60s tick + 30s buffer)
+        LocalDateTime ahora = LocalDateTime.now().plusSeconds(90);
         LocalDate hoy = ahora.toLocalDate();
         LocalTime hora = p.getHora();
 
@@ -122,6 +123,11 @@ public class ProgramacionMisionService {
         Long progId = p.getId();
         ProgramacionMision prog = programacionRepository.findById(progId)
                 .orElseThrow(() -> new RuntimeException("Programación no encontrada: " + progId));
+
+        if (misionRepository.existsByProgramacionIdAndFechaCreacionAfter(progId, LocalDateTime.now().minusMinutes(2))) {
+            log.warn("Programación {}: misión ya creada hace menos de 2 min, saltando duplicado", progId);
+            return;
+        }
 
         Mision src = prog.getMisionPlantilla(); // lazy-loaded safely within this tx
 

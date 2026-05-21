@@ -4,6 +4,8 @@ import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
@@ -17,6 +19,17 @@ import java.time.Duration;
  * Genera presigned URLs para que el frontend acceda a archivos en S3 sin
  * exponer las credenciales AWS. Las URLs no se persisten — se generan
  * on-demand cuando alguien pide un archivo de inspección.
+ *
+ * Credenciales: si AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY están seteadas
+ * (vía env var o JVM property -D), las usa explícitamente. Si no, cae al
+ * DefaultCredentialsProvider del SDK (IAM role en EC2/ECS, ~/.aws/credentials).
+ *
+ * NOTA: la `-D` en JVM setea system properties con el nombre exacto que
+ * uno escribe (ej. `-DAWS_ACCESS_KEY_ID=...` crea la prop `AWS_ACCESS_KEY_ID`).
+ * El DefaultCredentialsProvider del SDK busca específicamente
+ * `aws.accessKeyId` (camelCase) en sys props o `AWS_ACCESS_KEY_ID` en env
+ * vars; por eso `@Value("${AWS_ACCESS_KEY_ID:}")` es lo que matchea con
+ * el setenv.sh actual sin tener que renombrar nada.
  */
 @Service
 @Slf4j
@@ -29,12 +42,26 @@ public class AwsS3Service {
     public AwsS3Service(
             @Value("${aws.region}") String region,
             @Value("${aws.s3.results-bucket}") String defaultBucket,
-            @Value("${aws.s3.presign-ttl-seconds:3600}") long ttlSeconds) {
+            @Value("${aws.s3.presign-ttl-seconds:3600}") long ttlSeconds,
+            @Value("${AWS_ACCESS_KEY_ID:}") String accessKeyId,
+            @Value("${AWS_SECRET_ACCESS_KEY:}") String secretAccessKey) {
         this.defaultBucket = defaultBucket;
         this.ttl = Duration.ofSeconds(ttlSeconds);
-        this.presigner = S3Presigner.builder()
-                .region(Region.of(region))
-                .build();
+
+        S3Presigner.Builder builder = S3Presigner.builder().region(Region.of(region));
+
+        boolean explicitCreds = !accessKeyId.isBlank() && !secretAccessKey.isBlank();
+        if (explicitCreds) {
+            builder.credentialsProvider(
+                    StaticCredentialsProvider.create(
+                            AwsBasicCredentials.create(accessKeyId, secretAccessKey)));
+            log.info("AwsS3Service: usando credenciales explícitas (access key id termina en ...{}).",
+                    accessKeyId.substring(Math.max(0, accessKeyId.length() - 4)));
+        } else {
+            log.info("AwsS3Service: usando DefaultCredentialsProvider (IAM role / ~/.aws / etc.).");
+        }
+
+        this.presigner = builder.build();
         log.info("AwsS3Service inicializado: region={}, bucket={}, ttl={}s", region, defaultBucket, ttlSeconds);
     }
 

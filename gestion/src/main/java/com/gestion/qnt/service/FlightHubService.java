@@ -108,16 +108,19 @@ public class FlightHubService {
     public boolean isDroneFlying() {
         try {
             long now     = System.currentTimeMillis() / 1000L;
-            long twoHAgo = now - 7200;
+            // Ventana de 24h solo para satisfacer el parámetro obligatorio de la API.
+            // Lo que realmente determina si el drone está volando es flight_task_status=1
+            // (en ejecución AHORA). Una misión completada aparece con status=3, no con 1.
+            long dayAgo  = now - 86400;
             String url = UriComponentsBuilder
                     .fromUriString(baseUrl + "/task/api/v2/workspaces/" + projectUuid + "/flight-tasks")
                     .queryParam("source", 0)
                     .queryParam("sn[]", sn)
-                    .queryParam("begin_at", twoHAgo)
+                    .queryParam("begin_at", dayAgo)
                     .queryParam("end_at", now)
                     .queryParam("page", 1)
                     .queryParam("page_size", 10)
-                    .queryParam("flight_task_status", 1)  // 1 = en ejecución
+                    .queryParam("flight_task_status", 1)  // 1 = en ejecución AHORA
                     .toUriString();
 
             String json = restClient.get()

@@ -94,6 +94,55 @@ public class FlightHubService {
     }
 
     /**
+     * Consulta FlightHub para saber si el drone con el SN configurado está actualmente volando.
+     * Busca tareas en ejecución en las últimas 2 horas.
+     *
+     * Se usa antes de lanzar una misión CAM: si FlightHub reporta una tarea activa,
+     * el drone no está en el dock y el lanzamiento debe bloquearse.
+     *
+     * @return true si hay una tarea en ejecución, false si el drone está libre/en dock.
+     *         En caso de error de comunicación con FlightHub, retorna false para no bloquear
+     *         lanzamientos por problemas de red (el operador verá el error de FlightHub al lanzar).
+     */
+    @SuppressWarnings("unchecked")
+    public boolean isDroneFlying() {
+        try {
+            long now     = System.currentTimeMillis() / 1000L;
+            long twoHAgo = now - 7200;
+            String url = UriComponentsBuilder
+                    .fromUriString(baseUrl + "/task/api/v2/workspaces/" + projectUuid + "/flight-tasks")
+                    .queryParam("source", 0)
+                    .queryParam("sn[]", sn)
+                    .queryParam("begin_at", twoHAgo)
+                    .queryParam("end_at", now)
+                    .queryParam("page", 1)
+                    .queryParam("page_size", 10)
+                    .queryParam("flight_task_status", 1)  // 1 = en ejecución
+                    .toUriString();
+
+            String json = restClient.get()
+                    .uri(url)
+                    .header("X-User-Token",    userToken)
+                    .header("X-Request-Id",    UUID.randomUUID().toString())
+                    .header("X-Language-Code", "en")
+                    .header("Accept",          "application/json")
+                    .retrieve()
+                    .body(String.class);
+            if (json == null) return false;
+
+            Map<String, Object> response = objectMapper.readValue(json, new TypeReference<>() {});
+            Object data = response.get("data");
+            if (!(data instanceof Map)) return false;
+            Object list = ((Map<?, ?>) data).get("list");
+            if (!(list instanceof List)) return false;
+            return !((List<?>) list).isEmpty();
+        } catch (Exception e) {
+            // No bloqueamos el lanzamiento por fallo de red — FlightHub rechazará si es necesario
+            return false;
+        }
+    }
+
+    /**
      * Lista tareas de FlightHub en un rango de tiempo.
      *
      * @param beginAt timestamp Unix en segundos

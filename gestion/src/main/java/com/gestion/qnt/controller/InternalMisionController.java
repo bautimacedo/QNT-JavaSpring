@@ -346,7 +346,12 @@ public class InternalMisionController {
         if (dron == null)
             return ResponseEntity.badRequest().body(Map.of("error", "La misión no tiene drone asignado"));
 
-        if (vueloLogRepository.hayVueloActivo(dron.getNombre()))
+        // CAM: consultar FlightHub directamente (fuente de verdad).
+        // EFO: usar vuelos_log local (FlytBase notifica via webhook).
+        boolean droneOcupado = (dron.getYacimiento() == Yacimiento.CAM)
+                ? flightHubService.isDroneFlying()
+                : vueloLogRepository.hayVueloActivo(dron.getNombre());
+        if (droneOcupado)
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("error", "El dron '" + dron.getNombre() + "' ya tiene un vuelo activo"));
 

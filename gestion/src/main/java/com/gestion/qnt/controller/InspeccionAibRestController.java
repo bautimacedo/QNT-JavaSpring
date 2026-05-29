@@ -24,12 +24,23 @@ import java.security.MessageDigest;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 @RestController
 @RequestMapping(ApiConstants.URL_BASE + "/inspecciones/aib")
 @Slf4j
 public class InspeccionAibRestController {
+
+    /** Tipos que se proxean directamente (imágenes). El video y los TXT siguen como 302 a presigned URL. */
+    private static final Set<String> IMAGEN_TIPOS = Set.of(
+            "captura",
+            "grafico_detecciones_raw",
+            "grafico_tiempos_ciclo",
+            "grafico_posicion_pulgadas",
+            "grafico_velocidad_pulgadas",
+            "grafico_aceleracion_pulgadas"
+    );
 
     /** Mapa tipo→accesor de la S3 key correspondiente en la entity. Whitelist estricta. */
     private static final Map<String, Function<InspeccionAib, String>> TIPO_TO_KEY = Map.ofEntries(
@@ -159,6 +170,20 @@ public class InspeccionAibRestController {
             return ResponseEntity.notFound().build();
         }
 
+        // Las imágenes se proxean directamente para evitar CORS cuando el frontend
+        // las descarga con fetch() (usado en la generación del PDF).
+        // El video y los TXT siguen como 302 a presigned URL (son grandes / streaming).
+        if (IMAGEN_TIPOS.contains(tipo)) {
+            try {
+                byte[] bytes = awsS3Service.getBytes(insp.getS3Bucket(), key);
+                MediaType contentType = contentTypeFromKey(key);
+                return ResponseEntity.ok().contentType(contentType).body(bytes);
+            } catch (Exception e) {
+                log.error("Error descargando imagen de S3 para inspección {} tipo {}", id, tipo, e);
+                return ResponseEntity.internalServerError().body(Map.of("error", "No se pudo descargar la imagen"));
+            }
+        }
+
         try {
             URL url = awsS3Service.generatePresignedGetUrl(insp.getS3Bucket(), key);
             return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(url.toString())).build();
@@ -267,5 +292,12 @@ public class InspeccionAibRestController {
     private static boolean anyNotNull(Object... values) {
         for (Object v : values) if (v != null) return true;
         return false;
+    }
+
+    private static MediaType contentTypeFromKey(String key) {
+        String lower = key.toLowerCase();
+        if (lower.endsWith(".png"))  return MediaType.IMAGE_PNG;
+        if (lower.endsWith(".webp")) return MediaType.parseMediaType("image/webp");
+        return MediaType.IMAGE_JPEG; // .jpg / .jpeg / default
     }
 }

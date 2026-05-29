@@ -8,6 +8,7 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3ClientBuilder;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
@@ -55,7 +56,7 @@ public class AwsS3Service {
         boolean explicitCreds = !accessKeyId.isBlank() && !secretAccessKey.isBlank();
 
         S3Presigner.Builder presignerBuilder = S3Presigner.builder().region(awsRegion);
-        S3Client.Builder clientBuilder = S3Client.builder().region(awsRegion);
+        S3ClientBuilder clientBuilder = S3Client.builder().region(awsRegion);
 
         if (explicitCreds) {
             StaticCredentialsProvider creds = StaticCredentialsProvider.create(

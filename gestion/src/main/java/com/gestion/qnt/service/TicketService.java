@@ -54,13 +54,14 @@ public class TicketService {
         Ticket ticket = ticketRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Ticket no encontrado: " + id));
 
+        boolean resuelto = req.estado() == EstadoTicket.RESUELTO || req.estado() == EstadoTicket.CERRADO;
         ticket.setEstado(req.estado());
         ticket.setNotaResolucion(req.notaResolucion());
-        ticket.setResolvedBy(admin);
+        ticket.setResolvedBy(resuelto ? admin : null);
         ticket.setUpdatedAt(Instant.now());
         ticket = ticketRepository.save(ticket);
 
-        if (req.estado() == EstadoTicket.RESUELTO || req.estado() == EstadoTicket.CERRADO) {
+        if (resuelto) {
             try {
                 emailService.sendTicketResolvedToAutor(ticket);
             } catch (Exception e) {

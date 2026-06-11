@@ -21,6 +21,9 @@ public class EmailService {
     @Value("${app.frontend-url:https://qntdrones.com}")
     private String frontendUrl;
 
+    @Value("${app.tickets.admin-email:bautimrf@gmail.com}")
+    private String ticketsAdminEmail;
+
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
     }
@@ -48,7 +51,7 @@ public class EmailService {
             MimeMessage msg = mailSender.createMimeMessage();
             MimeMessageHelper h = new MimeMessageHelper(msg, true, "UTF-8");
             h.setFrom(fromAddress);
-            h.setTo("bautimrf@gmail.com");
+            h.setTo(ticketsAdminEmail);
             h.setSubject("[QNT] Nuevo ticket #" + ticket.getId() + " — " + ticket.getTitulo());
             h.setText(buildTicketAdminHtml(ticket), true);
             mailSender.send(msg);

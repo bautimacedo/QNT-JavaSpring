@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -46,8 +47,9 @@ public class DailyBriefingJob {
         this.telegram        = telegram;
     }
 
-    /** 07:00 ART = 10:00 UTC */
-    @Scheduled(cron = "0 0 10 * * *")
+    /** 07:00 ART — el contenedor corre en TZ America/Argentina/Buenos_Aires */
+    @Scheduled(cron = "0 0 7 * * *")
+    @Transactional(readOnly = true)
     public void enviarBriefingDiario() {
         LocalDate hoy = LocalDate.now(ARGENTINA);
         LocalDateTime inicio = hoy.atStartOfDay();

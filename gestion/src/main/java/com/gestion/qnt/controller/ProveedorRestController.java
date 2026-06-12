@@ -25,7 +25,7 @@ public class ProveedorRestController {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USUARIO')")
     public ResponseEntity<List<Proveedor>> list() {
         try {
             return ResponseEntity.ok(proveedorBusiness.list());
@@ -36,7 +36,7 @@ public class ProveedorRestController {
 
     @GetMapping("/search")
     @Transactional(readOnly = true)
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USUARIO')")
     public ResponseEntity<Proveedor> search(@RequestParam String nombre) {
         if (nombre == null || nombre.isBlank()) {
             return ResponseEntity.badRequest().build();
@@ -52,7 +52,7 @@ public class ProveedorRestController {
 
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USUARIO')")
     public ResponseEntity<Proveedor> getById(@PathVariable Long id) {
         try {
             return ResponseEntity.ok(proveedorBusiness.load(id));
@@ -64,7 +64,7 @@ public class ProveedorRestController {
     }
 
     @PostMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USUARIO')")
     public ResponseEntity<?> create(@RequestBody Proveedor entity) {
         if (entity == null || entity.getNombre() == null || entity.getNombre().isBlank()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El nombre del proveedor es obligatorio");
@@ -78,7 +78,7 @@ public class ProveedorRestController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USUARIO')")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Proveedor entity) {
         if (entity == null || entity.getNombre() == null || entity.getNombre().isBlank()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El nombre del proveedor es obligatorio");

@@ -36,7 +36,12 @@ public class ClimaService {
         this.props        = props;
         this.registroRepo = registroRepo;
         this.siteRepo     = siteRepo;
-        this.restTemplate = new RestTemplate();
+
+        org.springframework.http.client.SimpleClientHttpRequestFactory factory =
+                new org.springframework.http.client.SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(java.time.Duration.ofSeconds(10));
+        factory.setReadTimeout(java.time.Duration.ofSeconds(20));
+        this.restTemplate = new RestTemplate(factory);
     }
 
     // ── Scheduled: cada 5 minutos ───────────────────────────────────────────────

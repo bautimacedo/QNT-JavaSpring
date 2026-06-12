@@ -38,7 +38,7 @@ public class CompraRestController {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USUARIO')")
     public ResponseEntity<List<Compra>> list(
             @RequestParam(required = false) com.gestion.qnt.model.enums.TipoCompra tipoCompra,
             @RequestParam(required = false) Long proveedorId) {

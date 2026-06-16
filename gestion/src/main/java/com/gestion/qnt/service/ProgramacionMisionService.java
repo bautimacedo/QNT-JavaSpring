@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class ProgramacionMisionService {
@@ -242,7 +243,12 @@ public class ProgramacionMisionService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void actualizarProxEjecucion(ProgramacionMision p) {
         p.setUltimaEjecucion(LocalDateTime.now());
-        p.setProxEjecucion(calcularProxEjecucion(p));
+        LocalDateTime base = calcularProxEjecucion(p);
+        if (base != null) {
+            long jitter = ThreadLocalRandom.current().nextLong(-900, 901); // ±15 min en segundos
+            base = base.plusSeconds(jitter);
+        }
+        p.setProxEjecucion(base);
         programacionRepository.save(p);
     }
 

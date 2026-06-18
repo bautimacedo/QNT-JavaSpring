@@ -280,7 +280,8 @@ public class FlightHubService {
                     .queryParam("end_at", endAt)
                     .queryParam("page", 1)
                     .queryParam("page_size", 50)
-                    .queryParam("flight_task_status", 1);
+                    .queryParam("flight_task_status", 1)
+                    .queryParam("list_type", 0); // paridad con el workflow n8n original
             if (snFiltro != null && !snFiltro.isBlank()) {
                 builder.queryParam("sn[]", snFiltro);
             }

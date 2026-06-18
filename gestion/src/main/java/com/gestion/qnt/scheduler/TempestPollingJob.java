@@ -25,6 +25,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -49,6 +51,21 @@ public class TempestPollingJob {
 
     private final AtomicReference<Aptitud>    lastAptitud    = new AtomicReference<>(null);
     private final AtomicReference<Evaluacion> lastEvaluacion = new AtomicReference<>(null);
+
+    // ── Capa de notificación con histéresis (NO afecta getAptitudActual / seguridad) ──
+    private static final double HISTERESIS_GUST_MS      = 1.4;  // ~5 km/h de banda muerta
+    private static final int    CONFIRMACIONES_EMPEORA  = 2;    // ~2 lecturas (~2 min)
+    private static final int    CONFIRMACIONES_MEJORA   = 10;   // ~10 lecturas (~10 min)
+    private static final int    FLAP_MAX_TRANSICIONES   = 3;    // 3+ transiciones en la ventana → inestable
+    private static final long   FLAP_VENTANA_SEG        = 15 * 60;
+    private static final int    ESTABLE_CONFIRMACIONES  = 15;   // ~15 min estable para salir de modo inestable
+
+    private Aptitud notifiedAptitud  = null;  // último estado NOTIFICADO a la gente
+    private Aptitud candidato        = null;  // estado candidato esperando confirmación
+    private int     candidatoCount   = 0;
+    private int     estableCount     = 0;     // lecturas consecutivas en el estado notificado
+    private boolean modoInestable    = false;
+    private final Deque<Instant> transiciones = new ArrayDeque<>();
 
     public TempestPollingJob(
             TempestService tempestService,
@@ -186,18 +203,129 @@ public class TempestPollingJob {
         }
     }
 
+    /**
+     * Capa de notificación con histéresis. NO afecta {@link #getAptitudActual()} (seguridad),
+     * que siempre refleja el estado instantáneo y conservador.
+     *
+     * Tres capas:
+     *  1. Histéresis por banda: salir de un estado peor exige que la ráfaga baje con margen.
+     *  2. Confirmación temporal asimétrica: empeorar avisa rápido (2 lecturas), mejorar exige 10.
+     *     Lluvia/rayos empeoran de inmediato (peligro real).
+     *  3. Modo "condiciones inestables": si flapea, un solo mensaje y silencio hasta estabilizar.
+     */
     private void detectarTransicion(Evaluacion eval) {
-        Aptitud anterior = lastAptitud.getAndSet(eval.aptitud());
-        if (anterior == null || anterior == eval.aptitud()) return;
+        Aptitud instant = eval.aptitud();
+        // ── SEGURIDAD: estado instantáneo siempre actualizado (cancela misiones) ──
+        lastAptitud.set(instant);
 
-        log.info("TempestPollingJob: transición {} → {}", anterior, eval.aptitud());
+        // Primera lectura: fijar baseline sin notificar
+        if (notifiedAptitud == null) { notifiedAptitud = instant; return; }
 
+        // 1. Histéresis por banda sobre la ráfaga
+        Aptitud objetivo = aplicarHisteresis(instant, eval.windGustMs());
+
+        // Estado sostenido: contar estabilidad y, si veníamos inestables, anunciar estabilización
+        if (objetivo == notifiedAptitud) {
+            candidato = null; candidatoCount = 0;
+            if (modoInestable && ++estableCount >= ESTABLE_CONFIRMACIONES) {
+                modoInestable = false; estableCount = 0;
+                emitirNotificacion(objetivo, eval, true);
+            }
+            return;
+        }
+        estableCount = 0;
+
+        // 2. Confirmación temporal asimétrica
+        if (objetivo != candidato) { candidato = objetivo; candidatoCount = 1; }
+        else { candidatoCount++; }
+
+        boolean empeora  = esPeor(objetivo, notifiedAptitud);
+        int requeridas;
+        if (empeora && causaUrgente(eval)) requeridas = 1;            // lluvia/rayos: inmediato
+        else if (empeora)                  requeridas = CONFIRMACIONES_EMPEORA;
+        else                               requeridas = CONFIRMACIONES_MEJORA;
+        if (candidatoCount < requeridas) return;
+
+        // Cambio confirmado
+        Aptitud anterior = notifiedAptitud;
+        notifiedAptitud = objetivo;
+        candidato = null; candidatoCount = 0;
+        registrarTransicion();
+
+        log.info("TempestPollingJob: transición notificada {} → {}", anterior, objetivo);
+
+        // 3. Modo inestable: si hay flapping, un solo aviso y silenciar cambios individuales
+        if (esFlapping()) {
+            if (!modoInestable) {
+                modoInestable = true;
+                notificarInestable(eval);
+            }
+            return;
+        }
+        modoInestable = false;
+        emitirNotificacion(objetivo, eval, false);
+    }
+
+    /** Si el instantáneo MEJORA respecto a lo notificado, exige que la ráfaga baje con margen. */
+    private Aptitud aplicarHisteresis(Aptitud instant, double gustMs) {
+        if (!esPeor(notifiedAptitud, instant)) return instant;  // empeora o igual: aceptar directo
+        if (gustMs < 0) return instant;                          // sin dato de ráfaga: sin banda
+        if (notifiedAptitud == Aptitud.NO_VOLAR
+                && gustMs > WeatherEvaluator.PREC_WIND_GUST_MAX - HISTERESIS_GUST_MS)
+            return Aptitud.NO_VOLAR;
+        if (notifiedAptitud == Aptitud.PRECAUCION
+                && gustMs > WeatherEvaluator.APTO_WIND_GUST_MAX - HISTERESIS_GUST_MS)
+            return Aptitud.PRECAUCION;
+        return instant;
+    }
+
+    /** a es peor (más restrictivo) que b. Orden enum: APTO < PRECAUCION < NO_VOLAR. */
+    private static boolean esPeor(Aptitud a, Aptitud b) {
+        return a.ordinal() > b.ordinal();
+    }
+
+    private static boolean causaUrgente(Evaluacion eval) {
+        return eval.razones().stream().anyMatch(r -> {
+            String s = r.toLowerCase();
+            return s.contains("lluvia") || s.contains("éctrica") || s.contains("strike");
+        });
+    }
+
+    private void registrarTransicion() {
+        Instant ahora = Instant.now();
+        transiciones.addLast(ahora);
+        Instant corte = ahora.minusSeconds(FLAP_VENTANA_SEG);
+        while (!transiciones.isEmpty() && transiciones.peekFirst().isBefore(corte))
+            transiciones.removeFirst();
+    }
+
+    private boolean esFlapping() {
+        return transiciones.size() >= FLAP_MAX_TRANSICIONES;
+    }
+
+    private void notificarInestable(Evaluacion eval) {
         String hora = LocalDateTime.now(ARGENTINA).format(TIME_FMT);
+        String detalle = eval.windGustMs() >= 0
+                ? String.format(" (ráfaga ~%.0f km/h, oscilando en el límite)", eval.windGustMs() * 3.6)
+                : "";
+        telegram.notifyAll(
+            "⚠️ <b>Estación Tempest — Condiciones marginales</b>\n" +
+            "<i>" + hora + " hs</i>\n\n" +
+            "El viento está oscilando alrededor del límite" + detalle + ".\n" +
+            "No se recomienda operar. Pausamos las alertas hasta que se estabilice."
+        );
+        crearAlerta(NivelAlerta.ADVERTENCIA, "⚠️ Condiciones marginales — " + hora,
+                "Viento oscilando en el límite de seguridad");
+    }
 
-        if (eval.aptitud() == Aptitud.NO_VOLAR) {
-            String razones = String.join(", ", eval.razones());
+    private void emitirNotificacion(Aptitud aptitud, Evaluacion eval, boolean estabilizado) {
+        String hora = LocalDateTime.now(ARGENTINA).format(TIME_FMT);
+        String prefijo = estabilizado ? "Condiciones estabilizadas — " : "";
+        String razones = String.join(", ", eval.razones());
+
+        if (aptitud == Aptitud.NO_VOLAR) {
             telegram.notifyAll(
-                "🔴 <b>Estación Tempest — NO VOLAR</b>\n" +
+                "🔴 <b>Estación Tempest — " + prefijo + "NO VOLAR</b>\n" +
                 "<i>" + hora + " hs</i>\n\n" +
                 razones + "\n\n" +
                 "Las misiones que intenten lanzarse serán canceladas automáticamente."
@@ -205,18 +333,17 @@ public class TempestPollingJob {
             avisarMisionesProgramadas();
             crearAlerta(NivelAlerta.CRITICA, "🔴 Condiciones NO VOLAR — " + hora, razones);
 
-        } else if (eval.aptitud() == Aptitud.PRECAUCION) {
-            String razones = String.join(", ", eval.razones());
+        } else if (aptitud == Aptitud.PRECAUCION) {
             telegram.notifyAll(
-                "🟡 <b>Estación Tempest — PRECAUCIÓN</b>\n" +
+                "🟡 <b>Estación Tempest — " + prefijo + "PRECAUCIÓN</b>\n" +
                 "<i>" + hora + " hs</i>\n\n" +
                 razones
             );
             crearAlerta(NivelAlerta.ADVERTENCIA, "🟡 Condiciones PRECAUCIÓN — " + hora, razones);
 
-        } else if (eval.aptitud() == Aptitud.APTO && anterior != null) {
+        } else { // APTO
             telegram.notifyAll(
-                "🟢 <b>Estación Tempest — APTO para volar</b>\n" +
+                "🟢 <b>Estación Tempest — " + prefijo + "APTO para volar</b>\n" +
                 "<i>" + hora + " hs</i>\n\n" +
                 "Las condiciones mejoraron. Podés reprogramar misiones."
             );

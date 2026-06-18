@@ -26,7 +26,12 @@ public class WeatherEvaluator {
 
     public enum Aptitud { APTO, PRECAUCION, NO_VOLAR }
 
-    public record Evaluacion(Aptitud aptitud, List<String> razones) {}
+    public record Evaluacion(Aptitud aptitud, List<String> razones, double windGustMs) {
+        // Compat: constructor sin ráfaga conocida (-1 = desconocida)
+        public Evaluacion(Aptitud aptitud, List<String> razones) {
+            this(aptitud, razones, -1);
+        }
+    }
 
     /**
      * Evalúa a partir del mapa de observaciones devuelto por TempestService.getObservations().
@@ -100,7 +105,7 @@ public class WeatherEvaluator {
         }
 
         Aptitud aptitud = noVolar ? Aptitud.NO_VOLAR : precaucion ? Aptitud.PRECAUCION : Aptitud.APTO;
-        return new Evaluacion(aptitud, razones);
+        return new Evaluacion(aptitud, razones, windGust);
     }
 
     /** Evalúa solo viento desde el anemómetro del dock (MQTT DockSnapshot). */
@@ -109,13 +114,13 @@ public class WeatherEvaluator {
         if (windSpeedMs > PREC_WIND_GUST_MAX) {
             razones.add(String.format("Ráfaga en dock %.1f km/h supera límite de %.0f km/h",
                     windSpeedMs * 3.6, PREC_WIND_GUST_MAX * 3.6));
-            return new Evaluacion(Aptitud.NO_VOLAR, razones);
+            return new Evaluacion(Aptitud.NO_VOLAR, razones, windSpeedMs);
         }
         if (windSpeedMs > APTO_WIND_GUST_MAX) {
             razones.add(String.format("Viento en dock %.1f km/h (precaución)", windSpeedMs * 3.6));
-            return new Evaluacion(Aptitud.PRECAUCION, razones);
+            return new Evaluacion(Aptitud.PRECAUCION, razones, windSpeedMs);
         }
-        return new Evaluacion(Aptitud.APTO, razones);
+        return new Evaluacion(Aptitud.APTO, razones, windSpeedMs);
     }
 
     private double toDouble(Object val, double def) {

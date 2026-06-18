@@ -262,19 +262,29 @@ public class FlightHubService {
      * @param beginAt timestamp Unix en segundos
      * @param endAt   timestamp Unix en segundos
      */
-    @SuppressWarnings("unchecked")
     public List<Map<String, Object>> listarTareasV2(long beginAt, long endAt) {
+        return listarTareasV2(projectUuid, sn, beginAt, endAt);
+    }
+
+    /**
+     * Lista tareas de un proyecto FlightHub específico. Si {@code snFiltro} es null/vacío
+     * trae todas las tareas del proyecto (útil para descubrir el SN del dock).
+     */
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> listarTareasV2(String projectUuid, String snFiltro, long beginAt, long endAt) {
         try {
-            String url = UriComponentsBuilder
+            UriComponentsBuilder builder = UriComponentsBuilder
                     .fromUriString(baseUrl + "/task/api/v2/workspaces/" + projectUuid + "/flight-tasks")
                     .queryParam("source", 0)
-                    .queryParam("sn[]", sn)
                     .queryParam("begin_at", beginAt)
                     .queryParam("end_at", endAt)
                     .queryParam("page", 1)
                     .queryParam("page_size", 50)
-                    .queryParam("flight_task_status", 1)
-                    .toUriString();
+                    .queryParam("flight_task_status", 1);
+            if (snFiltro != null && !snFiltro.isBlank()) {
+                builder.queryParam("sn[]", snFiltro);
+            }
+            String url = builder.toUriString();
 
             String json = restClient.get()
                     .uri(url)

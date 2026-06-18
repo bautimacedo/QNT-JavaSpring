@@ -13,6 +13,7 @@ import com.gestion.qnt.service.FlightHubService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -45,38 +47,58 @@ public class FlightHubVueloLogJob {
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private JdbcTemplate jdbcTemplate;
 
+    // Proyectos FlightHub a sincronizar. Cada uno mapea a un site distinto.
+    @Value("${flighthub.project-uuid:${FLIGHTHUB_PROJECT_UUID:}}")
+    private String camProjectUuid;
+    @Value("${flighthub.sn:${FLIGHTHUB_SN:}}")
+    private String camSn;
+    @Value("${flighthub.cl-project-uuid:${FLIGHTHUB_CL_PROJECT_UUID:}}")
+    private String clProjectUuid;
+
+    /** (projectUuid, snFiltro, site) — snFiltro null trae todas las tareas del proyecto. */
+    private record FhProyecto(String uuid, String sn, String site) {}
+
     @Scheduled(fixedDelay = 3 * 60 * 1000)
     @Transactional
     public void sincronizar() {
         long now     = Instant.now().getEpochSecond();
         long beginAt = now - 60 * 60; // últimos 60 minutos
 
-        List<Map<String, Object>> tasks;
-        try {
-            tasks = flightHubService.listarTareasV2(beginAt, now);
-        } catch (Exception e) {
-            log.warn("FlightHubVueloLogJob: no se pudo consultar FlightHub: {}", e.getMessage());
-            return;
-        }
+        List<FhProyecto> proyectos = new ArrayList<>();
+        if (camProjectUuid != null && !camProjectUuid.isBlank())
+            proyectos.add(new FhProyecto(camProjectUuid, camSn, "CAM"));
+        if (clProjectUuid != null && !clProjectUuid.isBlank())
+            proyectos.add(new FhProyecto(clProjectUuid, null, "CL")); // sn null: trae todo el proyecto CL
 
-        log.info("FlightHubVueloLogJob: {} tareas recibidas de FlightHub", tasks.size());
-        if (tasks.isEmpty()) return;
-
-        int insertados = 0, omitidos = 0;
-        for (Map<String, Object> t : tasks) {
+        for (FhProyecto p : proyectos) {
+            List<Map<String, Object>> tasks;
             try {
-                procesarTarea(t);
-                insertados++;
-            } catch (DataIntegrityViolationException e) {
-                omitidos++;
+                tasks = flightHubService.listarTareasV2(p.uuid(), p.sn(), beginAt, now);
             } catch (Exception e) {
-                log.error("FlightHubVueloLogJob: error procesando tarea {}: {}", t.get("flight_task_id"), e.getMessage());
+                log.warn("FlightHubVueloLogJob[{}]: no se pudo consultar FlightHub: {}", p.site(), e.getMessage());
+                continue;
             }
+
+            log.info("FlightHubVueloLogJob[{}]: {} tareas recibidas", p.site(), tasks.size());
+            if (tasks.isEmpty()) continue;
+
+            int insertados = 0, omitidos = 0;
+            for (Map<String, Object> t : tasks) {
+                try {
+                    procesarTarea(t, p.site());
+                    insertados++;
+                } catch (DataIntegrityViolationException e) {
+                    omitidos++;
+                } catch (Exception e) {
+                    log.error("FlightHubVueloLogJob[{}]: error procesando tarea {}: {}",
+                            p.site(), t.get("flight_task_id"), e.getMessage());
+                }
+            }
+            log.info("FlightHubVueloLogJob[{}]: insertados={}, omitidos={}", p.site(), insertados, omitidos);
         }
-        log.info("FlightHubVueloLogJob: insertados={}, omitidos={}", insertados, omitidos);
     }
 
-    private void procesarTarea(Map<String, Object> t) {
+    private void procesarTarea(Map<String, Object> t, String site) {
         String eventId  = str(t.get("flight_task_id") != null ? t.get("flight_task_id") : t.get("uuid"));
         String droneSn  = str(t.get("drone_sn")); // puede venir vacío en v2
         String dockSn   = str(t.get("take_off_airport_sn") != null ? t.get("take_off_airport_sn")
@@ -93,7 +115,7 @@ public class FlightHubVueloLogJob {
         String detalle = str(t.get("task_name") != null ? t.get("task_name") : t.get("name"));
 
         VueloLog v = new VueloLog();
-        v.setSite("CAM");
+        v.setSite(site);
         v.setNombreDron(dron != null ? dron.getNombre() : null);
         v.setNombreDock(dock != null ? dock.getNombre() : dockSn);
         v.setPiloto(piloto);

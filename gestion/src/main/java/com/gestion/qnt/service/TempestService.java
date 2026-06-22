@@ -29,16 +29,34 @@ public class TempestService {
     private final String token;
     private final String stationId;
     private final String deviceId;
+    private final double windDirOffset;
 
     public TempestService(
             @Value("${tempest.token}") String token,
             @Value("${tempest.station-id:217302}") String stationId,
             @Value("${tempest.device-id:}") String deviceId,
-            @Value("${tempest.base-url:https://swd.weatherflow.com/swd/rest}") String baseUrl) {
+            @Value("${tempest.base-url:https://swd.weatherflow.com/swd/rest}") String baseUrl,
+            @Value("${tempest.wind-direction-offset:180}") double windDirOffset) {
         this.token     = token;
         this.stationId = stationId;
         this.deviceId  = deviceId;
+        this.windDirOffset = windDirOffset;
         this.restClient = RestClient.builder().baseUrl(baseUrl).build();
+    }
+
+    /** Corrige la dirección del viento por el offset físico de la veleta (default 180°). */
+    @SuppressWarnings("unchecked")
+    private void corregirDireccionViento(Map<String, Object> resultado) {
+        if (resultado == null || windDirOffset == 0) return;
+        Object obsObj = resultado.get("obs");
+        if (!(obsObj instanceof List<?> obs) || obs.isEmpty()) return;
+        if (!(obs.get(0) instanceof Map)) return;
+        Map<String, Object> m = (Map<String, Object>) obs.get(0);
+        Object wd = m.get("wind_direction");
+        if (wd instanceof Number n) {
+            double corregida = ((n.doubleValue() + windDirOffset) % 360 + 360) % 360;
+            m.put("wind_direction", corregida);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -51,7 +69,10 @@ public class TempestService {
                 .body(new ParameterizedTypeReference<Map<String, Object>>() {});
 
         List<?> obs = stationObs != null ? (List<?>) stationObs.get("obs") : null;
-        if (obs != null && !obs.isEmpty()) return stationObs;
+        if (obs != null && !obs.isEmpty()) {
+            corregirDireccionViento(stationObs);
+            return stationObs;
+        }
 
         // Fallback: endpoint de dispositivo ST (devuelve obs como arrays de índices fijos)
         if (deviceId == null || deviceId.isBlank()) return stationObs != null ? stationObs : Map.of();
@@ -80,6 +101,7 @@ public class TempestService {
             named.put("sea_level_pressure", s.get("sea_level_pressure"));
         }
 
+        corregirDireccionViento(Map.of("obs", List.of(named)));
         return Map.of(
             "obs",     List.of(named),
             "summary", summary != null ? summary : Map.of(),

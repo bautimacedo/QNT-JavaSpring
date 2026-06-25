@@ -13,10 +13,13 @@ import com.gestion.qnt.service.RegistroHoraService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 @RestController
@@ -38,14 +41,24 @@ public class RegistroHoraRestController {
 
     @GetMapping
     @Transactional(readOnly = true)
-    public ResponseEntity<List<RegistroHoraResponse>> list() {
-        return ResponseEntity.ok(service.listarTodos().stream().map(RegistroHoraResponse::from).toList());
+    public ResponseEntity<List<RegistroHoraResponse>> list(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
+        return ResponseEntity.ok(service.listar(desde, hasta).stream().map(RegistroHoraResponse::from).toList());
     }
 
     @GetMapping("/resumen")
     @Transactional(readOnly = true)
-    public ResponseEntity<List<ResumenHorasResponse>> resumen() {
-        return ResponseEntity.ok(service.resumen());
+    public ResponseEntity<List<ResumenHorasResponse>> resumen(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
+        return ResponseEntity.ok(service.resumen(desde, hasta));
+    }
+
+    @PostMapping("/asistente")
+    public ResponseEntity<List<BorradorHora>> asistente(@RequestBody AsistenteHorasRequest req) {
+        LocalDate hoy = LocalDate.now(ZoneId.of("America/Argentina/Buenos_Aires"));
+        return ResponseEntity.ok(geminiService.parsearRegistros(req.texto(), hoy));
     }
 
     @PostMapping

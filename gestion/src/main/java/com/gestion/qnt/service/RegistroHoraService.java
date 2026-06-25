@@ -10,13 +10,15 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class RegistroHoraService {
+
+    private static final ZoneId ARG = ZoneId.of("America/Argentina/Buenos_Aires");
+    private static final BigDecimal MAX_HORAS = new BigDecimal("24");
 
     private final RegistroHoraRepository repo;
 
@@ -25,10 +27,7 @@ public class RegistroHoraService {
     }
 
     public RegistroHora crear(CreateRegistroHoraRequest req, Usuario autor) {
-        if (req.fecha() == null) throw new IllegalArgumentException("La fecha es obligatoria");
-        if (req.horas() == null || req.horas().compareTo(BigDecimal.ZERO) <= 0)
-            throw new IllegalArgumentException("Las horas deben ser mayores a 0");
-
+        validar(req.fecha(), req.horas());
         RegistroHora r = new RegistroHora();
         r.setAutor(autor);
         r.setFecha(req.fecha());
@@ -37,25 +36,23 @@ public class RegistroHoraService {
         return repo.save(r);
     }
 
-    public List<RegistroHora> listarTodos() {
+    public List<RegistroHora> listar(LocalDate desde, LocalDate hasta) {
+        if (desde != null && hasta != null) {
+            return repo.findByFechaBetweenOrderByFechaDescCreatedAtDesc(desde, hasta);
+        }
         return repo.findAllByOrderByFechaDescCreatedAtDesc();
     }
 
-    /** Resumen de horas totales por autor, sobre todos los registros. */
-    public List<ResumenHorasResponse> resumen() {
-        Map<Long, ResumenAcum> porAutor = new LinkedHashMap<>();
-        for (RegistroHora r : repo.findAllByOrderByFechaDescCreatedAtDesc()) {
-            Usuario a = r.getAutor();
-            if (a == null) continue;
-            ResumenAcum acum = porAutor.computeIfAbsent(a.getId(),
-                    k -> new ResumenAcum(a.getNombre(), a.getApellido()));
-            acum.total = acum.total.add(r.getHoras() != null ? r.getHoras() : BigDecimal.ZERO);
-            acum.count++;
-        }
-        List<ResumenHorasResponse> out = new ArrayList<>();
-        porAutor.forEach((id, acum) ->
-                out.add(new ResumenHorasResponse(id, acum.nombre, acum.apellido, acum.total, acum.count)));
-        return out;
+    /** Resumen de horas por autor (filtro opcional por rango), agregado en la BD. */
+    public List<ResumenHorasResponse> resumen(LocalDate desde, LocalDate hasta) {
+        return repo.resumenPorAutor(desde, hasta).stream()
+                .map(row -> new ResumenHorasResponse(
+                        (Long) row[0],
+                        (String) row[1],
+                        (String) row[2],
+                        (BigDecimal) row[3],
+                        ((Number) row[4]).longValue()))
+                .toList();
     }
 
     /** Solo el autor del registro puede editarlo. */
@@ -65,13 +62,13 @@ public class RegistroHoraService {
         if (!r.getAutor().getId().equals(solicitante.getId()))
             throw new SecurityException("Solo el autor puede editar este registro");
 
-        if (req.fecha() != null) r.setFecha(req.fecha());
-        if (req.horas() != null) {
-            if (req.horas().compareTo(BigDecimal.ZERO) <= 0)
-                throw new IllegalArgumentException("Las horas deben ser mayores a 0");
-            r.setHoras(req.horas());
-        }
-        r.setDescripcion(req.descripcion());
+        LocalDate fecha = req.fecha() != null ? req.fecha() : r.getFecha();
+        BigDecimal horas = req.horas() != null ? req.horas() : r.getHoras();
+        validar(fecha, horas);
+
+        r.setFecha(fecha);
+        r.setHoras(horas);
+        if (req.descripcion() != null) r.setDescripcion(req.descripcion());
         r.setUpdatedAt(Instant.now());
         return repo.save(r);
     }
@@ -85,11 +82,13 @@ public class RegistroHoraService {
         repo.delete(r);
     }
 
-    private static class ResumenAcum {
-        final String nombre;
-        final String apellido;
-        BigDecimal total = BigDecimal.ZERO;
-        long count = 0;
-        ResumenAcum(String nombre, String apellido) { this.nombre = nombre; this.apellido = apellido; }
+    private void validar(LocalDate fecha, BigDecimal horas) {
+        if (fecha == null) throw new IllegalArgumentException("La fecha es obligatoria");
+        if (fecha.isAfter(LocalDate.now(ARG)))
+            throw new IllegalArgumentException("La fecha no puede ser futura");
+        if (horas == null || horas.compareTo(BigDecimal.ZERO) <= 0)
+            throw new IllegalArgumentException("Las horas deben ser mayores a 0");
+        if (horas.compareTo(MAX_HORAS) > 0)
+            throw new IllegalArgumentException("Las horas no pueden superar 24 en un registro");
     }
 }

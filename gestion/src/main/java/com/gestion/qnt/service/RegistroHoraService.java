@@ -8,7 +8,6 @@ import com.gestion.qnt.model.Usuario;
 import com.gestion.qnt.repository.RegistroHoraRepository;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -18,7 +17,6 @@ import java.util.List;
 public class RegistroHoraService {
 
     private static final ZoneId ARG = ZoneId.of("America/Argentina/Buenos_Aires");
-    private static final BigDecimal MAX_HORAS = new BigDecimal("24");
 
     private final RegistroHoraRepository repo;
 
@@ -27,11 +25,10 @@ public class RegistroHoraService {
     }
 
     public RegistroHora crear(CreateRegistroHoraRequest req, Usuario autor) {
-        validar(req.fecha(), req.horas());
+        validar(req.fecha());
         RegistroHora r = new RegistroHora();
         r.setAutor(autor);
         r.setFecha(req.fecha());
-        r.setHoras(req.horas());
         r.setDescripcion(req.descripcion());
         return repo.save(r);
     }
@@ -53,8 +50,7 @@ public class RegistroHoraService {
                         (Long) row[0],
                         (String) row[1],
                         (String) row[2],
-                        (BigDecimal) row[3],
-                        ((Number) row[4]).longValue()))
+                        ((Number) row[3]).longValue()))
                 .toList();
     }
 
@@ -66,11 +62,9 @@ public class RegistroHoraService {
             throw new SecurityException("Solo el autor puede editar este registro");
 
         LocalDate fecha = req.fecha() != null ? req.fecha() : r.getFecha();
-        BigDecimal horas = req.horas() != null ? req.horas() : r.getHoras();
-        validar(fecha, horas);
+        validar(fecha);
 
         r.setFecha(fecha);
-        r.setHoras(horas);
         if (req.descripcion() != null) r.setDescripcion(req.descripcion());
         r.setUpdatedAt(Instant.now());
         return repo.save(r);
@@ -85,13 +79,9 @@ public class RegistroHoraService {
         repo.delete(r);
     }
 
-    private void validar(LocalDate fecha, BigDecimal horas) {
+    private void validar(LocalDate fecha) {
         if (fecha == null) throw new IllegalArgumentException("La fecha es obligatoria");
         if (fecha.isAfter(LocalDate.now(ARG)))
             throw new IllegalArgumentException("La fecha no puede ser futura");
-        if (horas == null || horas.compareTo(BigDecimal.ZERO) <= 0)
-            throw new IllegalArgumentException("Las horas deben ser mayores a 0");
-        if (horas.compareTo(MAX_HORAS) > 0)
-            throw new IllegalArgumentException("Las horas no pueden superar 24 en un registro");
     }
 }

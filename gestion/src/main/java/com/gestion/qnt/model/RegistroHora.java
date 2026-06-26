@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -24,9 +23,6 @@ public class RegistroHora {
 
     @Column(nullable = false)
     private LocalDate fecha;
-
-    @Column(nullable = false, precision = 5, scale = 2)
-    private BigDecimal horas;
 
     @Column(length = 2000)
     private String descripcion;

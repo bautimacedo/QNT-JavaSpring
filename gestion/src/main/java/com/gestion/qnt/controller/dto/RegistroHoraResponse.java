@@ -3,7 +3,6 @@ package com.gestion.qnt.controller.dto;
 import com.gestion.qnt.model.RegistroHora;
 import com.gestion.qnt.model.Usuario;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -11,7 +10,6 @@ public record RegistroHoraResponse(
         Long id,
         UsuarioResumen autor,
         LocalDate fecha,
-        BigDecimal horas,
         String descripcion,
         Instant createdAt,
         Instant updatedAt
@@ -28,7 +26,6 @@ public record RegistroHoraResponse(
                 r.getId(),
                 UsuarioResumen.from(r.getAutor()),
                 r.getFecha(),
-                r.getHoras(),
                 r.getDescripcion(),
                 r.getCreatedAt(),
                 r.getUpdatedAt()

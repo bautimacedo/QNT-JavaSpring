@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -104,17 +103,15 @@ public class GeminiService {
 
     private static final String PROMPT_PARSEO = """
             Hoy es %s (zona horaria America/Argentina/Buenos_Aires).
-            A partir del siguiente texto en lenguaje natural, extraé los registros de trabajo (uno por tarea/día).
+            A partir del siguiente texto en lenguaje natural, extraé las actividades de trabajo (una por tarea/día).
             Reglas:
-            - Resolvé fechas relativas a fechas absolutas YYYY-MM-DD. "los últimos N días" = un registro por
+            - Resolvé fechas relativas a fechas absolutas YYYY-MM-DD. "los últimos N días" = una actividad por
               cada uno de esos días (sin contar futuro). "ayer", "el lunes", etc. también a fecha absoluta.
-            - "horas": número decimal. Si el texto NO especifica las horas, ESTIMÁ una cantidad razonable de
-              jornada (entre 2 y 6) — el usuario las podrá ajustar después.
-            - NO inventes TAREAS que no estén mencionadas en el texto (las horas sí podés estimarlas).
-            - "descripcion": redactá la tarea de forma profesional y concisa usando sustantivos/infinitivos
-              (ej. "Testeo de misiones en CAM", "Validación del módulo de horas"), NUNCA en primera persona
+            - NO inventes TAREAS que no estén mencionadas en el texto.
+            - "descripcion": redactá la actividad de forma profesional y concisa usando sustantivos/infinitivos
+              (ej. "Testeo de misiones en CAM", "Validación del módulo de actividades"), NUNCA en primera persona
               (nada de "hice", "validé", "estuve").
-            - Si el texto describe trabajo pero es vago, generá igual al menos un registro (no devuelvas vacío).
+            - Si el texto describe trabajo pero es vago, generá igual al menos una actividad (no devuelvas vacío).
 
             Texto: %s
             """;
@@ -128,7 +125,7 @@ public class GeminiService {
             vuelos (FlightHub/Flytbase), stock, mantenimiento, alertas, panel ejecutivo y un bot de Telegram.
 
             TU TAREA:
-            Hoy es %s (zona ART). A partir de la indicación de la persona, GENERÁ una lista de registros de
+            Hoy es %s (zona ART). A partir de la indicación de la persona, GENERÁ una lista de actividades de
             trabajo PLAUSIBLES que un desarrollador/operador de este proyecto podría haber hecho. Inventá
             tareas creíbles y variadas dentro del dominio (desarrollo y fixes de módulos, deploys, pruebas,
             análisis de logs, configuración de drones/docks, soporte, reuniones técnicas, etc.).
@@ -141,9 +138,8 @@ public class GeminiService {
                 fechas dentro de ese rango.
               * Si NO menciona ningún período → usá únicamente el día de hoy.
               * NUNCA uses fechas fuera del período indicado, ni fechas futuras (posteriores a hoy).
-            - Cantidad de registros: para un solo día, 1 a 3 tareas; para un rango, 1 o 2 por día (sin pasar
+            - Cantidad de actividades: para un solo día, 1 a 3 tareas; para un rango, 1 o 2 por día (sin pasar
               de ~6 en total). No infles la cantidad si el período es chico.
-            - Horas realistas por registro: entre 1 y 8.
             - Descripciones concretas y profesionales, variadas entre sí, redactadas con sustantivos/infinitivos
               (ej. "Desarrollo del módulo de tickets", "Análisis de logs del Dock"), NUNCA en primera persona.
             - Devolvé SOLO el array JSON.
@@ -181,10 +177,9 @@ public class GeminiService {
                 "type", "OBJECT",
                 "properties", Map.of(
                     "fecha",       Map.of("type", "STRING", "description", "YYYY-MM-DD"),
-                    "horas",       Map.of("type", "NUMBER"),
                     "descripcion", Map.of("type", "STRING")
                 ),
-                "required", new String[]{"fecha", "horas", "descripcion"}
+                "required", new String[]{"fecha", "descripcion"}
             );
             Map<String, Object> body = Map.of(
                 "contents", new Object[]{
@@ -212,9 +207,8 @@ public class GeminiService {
             for (JsonNode n : arr) {
                 try {
                     LocalDate fecha = LocalDate.parse(n.path("fecha").asText());
-                    BigDecimal horas = new BigDecimal(n.path("horas").asText());
                     String desc = n.path("descripcion").asText("");
-                    out.add(new BorradorHora(fecha, horas, desc));
+                    out.add(new BorradorHora(fecha, desc));
                 } catch (Exception ignore) { /* fila mal formada: la salteamos */ }
             }
             return out;

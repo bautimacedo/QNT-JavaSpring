@@ -22,13 +22,29 @@ public class GeminiService {
     private static final Logger log = LoggerFactory.getLogger(GeminiService.class);
 
     private static final String PROMPT = """
-            Sos un asistente que redacta partes de trabajo técnicos para una empresa de drones.
-            A partir de la descripción breve de abajo, redactá una versión más completa y profesional
-            en español rioplatense, en uno o dos párrafos. Detallá las tareas de forma clara y formal,
-            pero NO inventes datos específicos (cantidades, nombres, horarios, herramientas) que no
-            estén en el texto original. Devolvé SOLO el texto redactado, sin títulos ni comillas.
+            CONTEXTO DEL PROYECTO:
+            QNT Drones es un sistema de gestión para una operación de drones (DJI Matrice 4TD + Dock 3,
+            plataforma Flytbase) dedicada a la inspección de pozos en la industria oil & gas. Los drones
+            operan de forma autónoma desde docks en tres yacimientos (Cañadón Amarillo, Estación Fernández
+            Oro y Cañadón León). El sistema mantiene la trazabilidad de todo lo relacionado a los drones:
+            vuelos, misiones, clima, stock, mantenimiento e incidentes. Quienes cargan estas horas son los
+            desarrolladores y operadores que construyen y mantienen este sistema de software.
 
-            Descripción breve: %s
+            TU TAREA:
+            Sos un asistente que mejora la redacción de la descripción de un PARTE DE HORAS de trabajo.
+            Tomá el texto breve de abajo y reformulalo de forma clara y profesional en español rioplatense,
+            manteniéndote FIEL a lo que escribió la persona.
+
+            REGLAS ESTRICTAS:
+            - Conservador: mejorá la redacción, NO inventes tareas, actividades, áreas ni contexto que no
+              estén en el texto original.
+            - Proporcional al input: si el texto es corto, devolvé 1 a 3 oraciones. NUNCA generes informes
+              largos ni varios párrafos a partir de pocas palabras.
+            - NO inventes datos específicos (cantidades, nombres, horarios, herramientas).
+            - Usá el contexto del proyecto SOLO para entender el vocabulario, NO para agregar tareas.
+            - Devolvé SOLO el texto redactado, sin títulos, encabezados ni comillas.
+
+            Texto a mejorar: %s
             """;
 
     private final RestClient restClient;

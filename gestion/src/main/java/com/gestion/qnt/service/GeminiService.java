@@ -134,9 +134,15 @@ public class GeminiService {
             análisis de logs, configuración de drones/docks, soporte, reuniones técnicas, etc.).
 
             REGLAS:
-            - Generá entre 3 y 6 registros, salvo que la persona pida otra cantidad.
-            - Distribuí las fechas dentro del período que indique; si no indica, usá los últimos 7 días.
-              Nunca uses fechas futuras (posteriores a hoy).
+            - Interpretá el PERÍODO que indica la persona y RESPETALO de forma ESTRICTA:
+              * Si menciona un solo día ("hoy", "ayer", una fecha puntual) → TODOS los registros van en ESE
+                mismo día (podés poner varias tareas distintas el mismo día, no inventes otros días).
+              * Si menciona un rango ("esta semana", "los últimos 5 días", "del 10 al 15") → distribuí las
+                fechas dentro de ese rango.
+              * Si NO menciona ningún período → usá únicamente el día de hoy.
+              * NUNCA uses fechas fuera del período indicado, ni fechas futuras (posteriores a hoy).
+            - Cantidad de registros: para un solo día, 1 a 3 tareas; para un rango, 1 o 2 por día (sin pasar
+              de ~6 en total). No infles la cantidad si el período es chico.
             - Horas realistas por registro: entre 1 y 8.
             - Descripciones concretas y profesionales, variadas entre sí, redactadas con sustantivos/infinitivos
               (ej. "Desarrollo del módulo de tickets", "Análisis de logs del Dock"), NUNCA en primera persona.

@@ -61,6 +61,12 @@ public class RegistroHoraRestController {
         return ResponseEntity.ok(geminiService.parsearRegistros(req.texto(), hoy));
     }
 
+    @PostMapping("/generar")
+    public ResponseEntity<List<BorradorHora>> generar(@RequestBody AsistenteHorasRequest req) {
+        LocalDate hoy = LocalDate.now(ZoneId.of("America/Argentina/Buenos_Aires"));
+        return ResponseEntity.ok(geminiService.generarRegistros(req.texto(), hoy));
+    }
+
     @PostMapping
     @Transactional
     public ResponseEntity<?> create(Authentication authentication, @RequestBody CreateRegistroHoraRequest req) {

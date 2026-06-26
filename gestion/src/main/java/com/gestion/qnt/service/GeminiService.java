@@ -113,13 +113,52 @@ public class GeminiService {
             Texto: %s
             """;
 
+    private static final String PROMPT_GENERAR = """
+            CONTEXTO DEL PROYECTO:
+            QNT Drones es un sistema de gestión para una operación de drones (DJI Matrice 4TD + Dock 3,
+            plataforma Flytbase) dedicada a la inspección de pozos en oil & gas, con drones autónomos en
+            tres yacimientos (Cañadón Amarillo, Estación Fernández Oro y Cañadón León). El sistema (software)
+            tiene módulos reales: partes de horas, tickets de soporte, clima (estación Tempest), registro de
+            vuelos (FlightHub/Flytbase), stock, mantenimiento, alertas, panel ejecutivo y un bot de Telegram.
+
+            TU TAREA:
+            Hoy es %s (zona ART). A partir de la indicación de la persona, GENERÁ una lista de registros de
+            trabajo PLAUSIBLES que un desarrollador/operador de este proyecto podría haber hecho. Inventá
+            tareas creíbles y variadas dentro del dominio (desarrollo y fixes de módulos, deploys, pruebas,
+            análisis de logs, configuración de drones/docks, soporte, reuniones técnicas, etc.).
+
+            REGLAS:
+            - Generá entre 3 y 6 registros, salvo que la persona pida otra cantidad.
+            - Distribuí las fechas dentro del período que indique; si no indica, usá los últimos 7 días.
+              Nunca uses fechas futuras (posteriores a hoy).
+            - Horas realistas por registro: entre 1 y 8.
+            - Descripciones concretas y profesionales en español rioplatense, variadas entre sí.
+            - Devolvé SOLO el array JSON.
+
+            Indicación de la persona: %s
+            """;
+
     /**
-     * Parsea texto libre en una lista de borradores de registro de horas usando salida
-     * estructurada (JSON) de Gemini. Si falta la key o falla, devuelve lista vacía.
+     * Parsea texto libre en borradores FIELES a lo que escribió la persona (no inventa).
+     * Lista vacía si falta key o falla.
      */
     public List<BorradorHora> parsearRegistros(String texto, LocalDate hoy) {
+        if (texto == null || texto.isBlank()) return new ArrayList<>();
+        return ejecutarGeneracionJson(String.format(PROMPT_PARSEO, hoy, texto));
+    }
+
+    /**
+     * "Asistente +": GENERA borradores plausibles (inventados pero creíbles del dominio)
+     * a partir de una indicación breve. Lista vacía si falta key o falla.
+     */
+    public List<BorradorHora> generarRegistros(String indicacion, LocalDate hoy) {
+        if (indicacion == null || indicacion.isBlank()) return new ArrayList<>();
+        return ejecutarGeneracionJson(String.format(PROMPT_GENERAR, hoy, indicacion));
+    }
+
+    /** Llama a Gemini con salida estructurada (array de {fecha,horas,descripcion}) y parsea el resultado. */
+    private List<BorradorHora> ejecutarGeneracionJson(String promptText) {
         List<BorradorHora> out = new ArrayList<>();
-        if (texto == null || texto.isBlank()) return out;
         if (apiKey == null || apiKey.isBlank()) {
             log.warn("[Gemini] GEMINI_API_KEY no configurada, asistente sin resultados");
             return out;
@@ -136,9 +175,7 @@ public class GeminiService {
             );
             Map<String, Object> body = Map.of(
                 "contents", new Object[]{
-                    Map.of("parts", new Object[]{
-                        Map.of("text", String.format(PROMPT_PARSEO, hoy, texto))
-                    })
+                    Map.of("parts", new Object[]{ Map.of("text", promptText) })
                 },
                 "generationConfig", Map.of(
                     "responseMimeType", "application/json",
@@ -169,7 +206,7 @@ public class GeminiService {
             }
             return out;
         } catch (Exception e) {
-            log.error("[Gemini] error parseando registros: {}", e.getMessage());
+            log.error("[Gemini] error generando registros: {}", e.getMessage());
             return out;
         }
     }

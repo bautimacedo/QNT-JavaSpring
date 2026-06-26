@@ -41,6 +41,8 @@ public class GeminiService {
             - Proporcional al input: si el texto es corto, devolvé 1 a 3 oraciones. NUNCA generes informes
               largos ni varios párrafos a partir de pocas palabras.
             - NO inventes datos específicos (cantidades, nombres, horarios, herramientas).
+            - Redactá usando sustantivos/infinitivos (ej. "Validación del módulo de horas", "Testeo de
+              misiones en CAM"), NUNCA en primera persona (nada de "validé", "hice", "estuve").
             - Usá el contexto del proyecto SOLO para entender el vocabulario, NO para agregar tareas.
             - Devolvé SOLO el texto redactado, sin títulos, encabezados ni comillas.
 
@@ -102,13 +104,17 @@ public class GeminiService {
 
     private static final String PROMPT_PARSEO = """
             Hoy es %s (zona horaria America/Argentina/Buenos_Aires).
-            A partir del siguiente texto en lenguaje natural, extraé los registros de trabajo.
+            A partir del siguiente texto en lenguaje natural, extraé los registros de trabajo (uno por tarea/día).
             Reglas:
-            - Resolvé fechas relativas (ayer, hoy, el lunes, anteayer) a fecha absoluta en formato YYYY-MM-DD.
-            - "horas" es un número decimal de horas trabajadas (ej. 2.5).
-            - "descripcion" es la tarea redactada de forma clara y profesional en español rioplatense.
-            - NO inventes horas, fechas ni tareas que no estén implícitas en el texto.
-            - Si el texto menciona varios días o tareas, devolvé un registro por cada uno.
+            - Resolvé fechas relativas a fechas absolutas YYYY-MM-DD. "los últimos N días" = un registro por
+              cada uno de esos días (sin contar futuro). "ayer", "el lunes", etc. también a fecha absoluta.
+            - "horas": número decimal. Si el texto NO especifica las horas, ESTIMÁ una cantidad razonable de
+              jornada (entre 2 y 6) — el usuario las podrá ajustar después.
+            - NO inventes TAREAS que no estén mencionadas en el texto (las horas sí podés estimarlas).
+            - "descripcion": redactá la tarea de forma profesional y concisa usando sustantivos/infinitivos
+              (ej. "Testeo de misiones en CAM", "Validación del módulo de horas"), NUNCA en primera persona
+              (nada de "hice", "validé", "estuve").
+            - Si el texto describe trabajo pero es vago, generá igual al menos un registro (no devuelvas vacío).
 
             Texto: %s
             """;
@@ -132,7 +138,8 @@ public class GeminiService {
             - Distribuí las fechas dentro del período que indique; si no indica, usá los últimos 7 días.
               Nunca uses fechas futuras (posteriores a hoy).
             - Horas realistas por registro: entre 1 y 8.
-            - Descripciones concretas y profesionales en español rioplatense, variadas entre sí.
+            - Descripciones concretas y profesionales, variadas entre sí, redactadas con sustantivos/infinitivos
+              (ej. "Desarrollo del módulo de tickets", "Análisis de logs del Dock"), NUNCA en primera persona.
             - Devolvé SOLO el array JSON.
 
             Indicación de la persona: %s

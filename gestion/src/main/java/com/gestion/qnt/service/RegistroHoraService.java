@@ -45,7 +45,10 @@ public class RegistroHoraService {
 
     /** Resumen de horas por autor (filtro opcional por rango), agregado en la BD. */
     public List<ResumenHorasResponse> resumen(LocalDate desde, LocalDate hasta) {
-        return repo.resumenPorAutor(desde, hasta).stream()
+        List<Object[]> filas = (desde != null && hasta != null)
+                ? repo.resumenPorAutorEntre(desde, hasta)
+                : repo.resumenPorAutor();
+        return filas.stream()
                 .map(row -> new ResumenHorasResponse(
                         (Long) row[0],
                         (String) row[1],

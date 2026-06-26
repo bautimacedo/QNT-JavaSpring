@@ -14,11 +14,18 @@ public interface RegistroHoraRepository extends JpaRepository<RegistroHora, Long
 
     List<RegistroHora> findByFechaBetweenOrderByFechaDescCreatedAtDesc(LocalDate desde, LocalDate hasta);
 
-    /** Resumen agregado de horas por autor, con filtro opcional de rango de fechas. */
+    /** Resumen agregado de horas por autor (todos los registros). */
     @Query("SELECT r.autor.id, r.autor.nombre, r.autor.apellido, SUM(r.horas), COUNT(r) " +
            "FROM RegistroHora r " +
-           "WHERE (:desde IS NULL OR r.fecha >= :desde) AND (:hasta IS NULL OR r.fecha <= :hasta) " +
            "GROUP BY r.autor.id, r.autor.nombre, r.autor.apellido " +
            "ORDER BY r.autor.nombre")
-    List<Object[]> resumenPorAutor(@Param("desde") LocalDate desde, @Param("hasta") LocalDate hasta);
+    List<Object[]> resumenPorAutor();
+
+    /** Resumen agregado de horas por autor, filtrado por rango de fechas. */
+    @Query("SELECT r.autor.id, r.autor.nombre, r.autor.apellido, SUM(r.horas), COUNT(r) " +
+           "FROM RegistroHora r " +
+           "WHERE r.fecha BETWEEN :desde AND :hasta " +
+           "GROUP BY r.autor.id, r.autor.nombre, r.autor.apellido " +
+           "ORDER BY r.autor.nombre")
+    List<Object[]> resumenPorAutorEntre(@Param("desde") LocalDate desde, @Param("hasta") LocalDate hasta);
 }

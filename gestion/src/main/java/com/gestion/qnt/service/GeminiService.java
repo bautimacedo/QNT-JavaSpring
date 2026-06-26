@@ -38,7 +38,7 @@ public class GeminiService {
 
     public GeminiService(
             @Value("${gemini.api-key:${GEMINI_API_KEY:}}") String apiKey,
-            @Value("${gemini.model:gemini-2.0-flash}") String model,
+            @Value("${gemini.model:gemini-2.5-flash}") String model,
             @Value("${gemini.base-url:https://generativelanguage.googleapis.com/v1beta}") String baseUrl) {
         this.apiKey = apiKey;
         this.model  = model;

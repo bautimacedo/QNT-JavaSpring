@@ -9,7 +9,8 @@ import java.time.Instant;
 
 @Entity
 @Table(name = "tempest_registros", indexes = {
-    @Index(name = "idx_tempest_timestamp", columnList = "timestamp DESC")
+    @Index(name = "idx_tempest_timestamp", columnList = "timestamp DESC"),
+    @Index(name = "idx_tempest_site_ts", columnList = "site_id, timestamp DESC")
 })
 @Getter
 @Setter
@@ -19,6 +20,10 @@ public class TempestRegistro {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "site_id")
+    private Site site;
 
     @Column(nullable = false)
     private Instant timestamp;

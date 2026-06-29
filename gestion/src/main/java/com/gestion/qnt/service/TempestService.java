@@ -1,6 +1,7 @@
 package com.gestion.qnt.service;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.gestion.qnt.clima.TempestProperties;
+import com.gestion.qnt.clima.TempestProperties.SiteConfig;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
@@ -26,59 +27,53 @@ public class TempestService {
     };
 
     private final RestClient restClient;
-    private final String token;
-    private final String stationId;
-    private final String deviceId;
-    private final double windDirOffset;
+    private final TempestProperties props;
 
-    public TempestService(
-            @Value("${tempest.token}") String token,
-            @Value("${tempest.station-id:217302}") String stationId,
-            @Value("${tempest.device-id:}") String deviceId,
-            @Value("${tempest.base-url:https://swd.weatherflow.com/swd/rest}") String baseUrl,
-            @Value("${tempest.wind-direction-offset:180}") double windDirOffset) {
-        this.token     = token;
-        this.stationId = stationId;
-        this.deviceId  = deviceId;
-        this.windDirOffset = windDirOffset;
-        this.restClient = RestClient.builder().baseUrl(baseUrl).build();
+    public TempestService(TempestProperties props) {
+        this.props = props;
+        this.restClient = RestClient.builder().baseUrl(props.getBaseUrl()).build();
     }
 
-    /** Corrige la dirección del viento por el offset físico de la veleta (default 180°). */
-    @SuppressWarnings("unchecked")
-    private void corregirDireccionViento(Map<String, Object> resultado) {
-        if (resultado == null || windDirOffset == 0) return;
-        Object obsObj = resultado.get("obs");
-        if (!(obsObj instanceof List<?> obs) || obs.isEmpty()) return;
-        if (!(obs.get(0) instanceof Map)) return;
-        Map<String, Object> m = (Map<String, Object>) obs.get(0);
-        Object wd = m.get("wind_direction");
-        if (wd instanceof Number n) {
-            double corregida = ((n.doubleValue() + windDirOffset) % 360 + 360) % 360;
-            m.put("wind_direction", corregida);
-        }
+    /** Estaciones configuradas. */
+    public List<SiteConfig> getSites() { return props.getSites(); }
+
+    /** La primera estación configurada (default, para los métodos legacy sin parámetro). */
+    public SiteConfig defaultSite() {
+        return props.getSites().isEmpty() ? null : props.getSites().get(0);
     }
 
+    public SiteConfig siteByCode(String code) {
+        return props.getSites().stream()
+                .filter(s -> s.getCode().equalsIgnoreCase(code))
+                .findFirst().orElse(null);
+    }
+
+    // ── Observaciones ────────────────────────────────────────────────────────
+
+    /** Observaciones de una estación específica. */
     @SuppressWarnings("unchecked")
-    public Map<String, Object> getObservations() throws RestClientException {
-        // Intentar endpoint de estación (devuelve obs con keys nombradas)
+    public Map<String, Object> getObservations(SiteConfig site) throws RestClientException {
+        if (site == null) return Map.of();
+        String token = props.getToken();
+
         Map<String, Object> stationObs = restClient.get()
-                .uri("/observations/station/{id}?token={token}", stationId, token)
+                .uri("/observations/station/{id}?token={token}", site.getStationId(), token)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {})
                 .body(new ParameterizedTypeReference<Map<String, Object>>() {});
 
         List<?> obs = stationObs != null ? (List<?>) stationObs.get("obs") : null;
         if (obs != null && !obs.isEmpty()) {
-            corregirDireccionViento(stationObs);
+            corregirDireccionViento(stationObs, site.getWindOffset());
             return stationObs;
         }
 
-        // Fallback: endpoint de dispositivo ST (devuelve obs como arrays de índices fijos)
-        if (deviceId == null || deviceId.isBlank()) return stationObs != null ? stationObs : Map.of();
+        // Fallback: endpoint de dispositivo ST (obs como arrays de índices fijos)
+        if (site.getDeviceId() == null || site.getDeviceId().isBlank())
+            return stationObs != null ? stationObs : Map.of();
 
         Map<String, Object> deviceObs = restClient.get()
-                .uri("/observations/device/{id}?token={token}", deviceId, token)
+                .uri("/observations/device/{id}?token={token}", site.getDeviceId(), token)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {})
                 .body(new ParameterizedTypeReference<Map<String, Object>>() {});
@@ -88,39 +83,71 @@ public class TempestService {
         List<?> rawObs = (List<?>) deviceObs.get("obs");
         if (rawObs == null || rawObs.isEmpty()) return deviceObs;
 
-        // Convertir array de índices a mapa con keys nombradas
         List<?> first = (List<?>) rawObs.get(0);
         Map<String, Object> named = new LinkedHashMap<>();
         for (int i = 0; i < OBS_ST_KEYS.length && i < first.size(); i++) {
             if (OBS_ST_KEYS[i] != null) named.put(OBS_ST_KEYS[i], first.get(i));
         }
 
-        // Agregar sea_level_pressure desde summary si existe
         Object summary = deviceObs.get("summary");
         if (summary instanceof Map<?, ?> s && s.containsKey("sea_level_pressure")) {
             named.put("sea_level_pressure", s.get("sea_level_pressure"));
         }
 
-        corregirDireccionViento(Map.of("obs", List.of(named)));
-        return Map.of(
-            "obs",     List.of(named),
-            "summary", summary != null ? summary : Map.of(),
-            "status",  Map.of("status_code", 0, "status_message", "SUCCESS")
-        );
+        Map<String, Object> resultado = new LinkedHashMap<>();
+        resultado.put("obs", List.of(named));
+        resultado.put("summary", summary != null ? summary : Map.of());
+        resultado.put("status", Map.of("status_code", 0, "status_message", "SUCCESS"));
+        corregirDireccionViento(resultado, site.getWindOffset());
+        return resultado;
     }
 
+    /** Legacy: observaciones de la estación por defecto. */
+    public Map<String, Object> getObservations() throws RestClientException {
+        return getObservations(defaultSite());
+    }
+
+    // ── Pronóstico e info ─────────────────────────────────────────────────────
+
     public Map<String, Object> getForecast(double lat, double lon) throws RestClientException {
+        SiteConfig def = defaultSite();
+        String stationId = def != null ? def.getStationId() : "";
         return restClient.get()
                 .uri("/better_forecast?station_id={id}&token={token}&lat={lat}&lon={lon}",
-                        stationId, token, lat, lon)
+                        stationId, props.getToken(), lat, lon)
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
+    }
+
+    /** Pronóstico de una estación específica (usa su station-id y lat/lon). */
+    public Map<String, Object> getForecast(SiteConfig site) throws RestClientException {
+        if (site == null) return Map.of();
+        return restClient.get()
+                .uri("/better_forecast?station_id={id}&token={token}&lat={lat}&lon={lon}",
+                        site.getStationId(), props.getToken(), site.getLat(), site.getLon())
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
     }
 
     public Map<String, Object> getStationInfo() throws RestClientException {
         return restClient.get()
-                .uri("/stations?token={token}", token)
+                .uri("/stations?token={token}", props.getToken())
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
+    }
+
+    /** Corrige la dirección del viento por el offset físico de la veleta. */
+    @SuppressWarnings("unchecked")
+    private void corregirDireccionViento(Map<String, Object> resultado, double offset) {
+        if (resultado == null || offset == 0) return;
+        Object obsObj = resultado.get("obs");
+        if (!(obsObj instanceof List<?> obs) || obs.isEmpty()) return;
+        if (!(obs.get(0) instanceof Map)) return;
+        Map<String, Object> m = (Map<String, Object>) obs.get(0);
+        Object wd = m.get("wind_direction");
+        if (wd instanceof Number n) {
+            double corregida = ((n.doubleValue() + offset) % 360 + 360) % 360;
+            m.put("wind_direction", corregida);
+        }
     }
 }

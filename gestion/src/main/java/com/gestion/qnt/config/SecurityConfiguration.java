@@ -92,6 +92,8 @@ public class SecurityConfiguration {
                 .requestMatchers("/api/qnt/v1/auth/**").permitAll() 
                 
                 .requestMatchers(HttpMethod.GET, "/api/qnt/v1/clima", "/api/qnt/v1/clima/**").permitAll()
+                // Servicio meteorológico público (página /weather) — solo lectura
+                .requestMatchers(HttpMethod.GET, "/api/qnt/v1/meteo/publico/**").permitAll()
                 // Endpoints internos para n8n (protegidos por X-Internal-Secret header, no por JWT)
                 .requestMatchers("/api/qnt/v1/internal/**").permitAll()
                 // Endpoint de inspecciones AIB (protegido por X-API-Key header, no por JWT)

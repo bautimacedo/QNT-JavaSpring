@@ -104,6 +104,12 @@ public class VueloLogRestController {
                             && v.getDuracionMinutos() < 3)
                     .count();
 
+            // Tiempo total volado (suma de duraciones de los VUELO con duración registrada)
+            long totalMinutos = registros.stream()
+                    .filter(v -> v.getEvento() == TipoEventoVuelo.VUELO && v.getDuracionMinutos() != null)
+                    .mapToLong(VueloLog::getDuracionMinutos)
+                    .sum();
+
             Map<String, Map<String, Long>> porSite = new HashMap<>();
             registros.stream()
                     .filter(v -> v.getSite() != null)
@@ -118,6 +124,8 @@ public class VueloLogRestController {
                         sm.put("malTiempo", logs.stream().filter(v -> v.getEvento() == TipoEventoVuelo.MAL_TIEMPO).count());
                         sm.put("vuelosCortos", logs.stream().filter(v -> v.getEvento() == TipoEventoVuelo.VUELO
                                 && v.getDuracionMinutos() != null && v.getDuracionMinutos() < 3).count());
+                        sm.put("minutos", logs.stream().filter(v -> v.getEvento() == TipoEventoVuelo.VUELO
+                                && v.getDuracionMinutos() != null).mapToLong(VueloLog::getDuracionMinutos).sum());
                         porSite.put(s, sm);
                     });
 
@@ -127,6 +135,7 @@ public class VueloLogRestController {
             stats.put("totalFallas",       totalFallas);
             stats.put("totalMalTiempo",    totalMalTiempo);
             stats.put("totalVuelosCortos", totalVuelosCortos);
+            stats.put("totalMinutos",      totalMinutos);
             stats.put("porSite",           porSite);
             return ResponseEntity.ok(stats);
         } catch (Exception e) {

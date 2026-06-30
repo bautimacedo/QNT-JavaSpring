@@ -54,6 +54,8 @@ public class FlightHubVueloLogJob {
     private String camSn;
     @Value("${flighthub.cl-project-uuid:${FLIGHTHUB_CL_PROJECT_UUID:}}")
     private String clProjectUuid;
+    @Value("${flighthub.cl-sn:${FLIGHTHUB_CL_SN:}}")
+    private String clSn;
 
     /** (projectUuid, snFiltro, site) — snFiltro null trae todas las tareas del proyecto. */
     private record FhProyecto(String uuid, String sn, String site) {}
@@ -68,7 +70,7 @@ public class FlightHubVueloLogJob {
         if (camProjectUuid != null && !camProjectUuid.isBlank())
             proyectos.add(new FhProyecto(camProjectUuid, camSn, "CAM"));
         if (clProjectUuid != null && !clProjectUuid.isBlank())
-            proyectos.add(new FhProyecto(clProjectUuid, null, "CL")); // sn null: trae todo el proyecto CL
+            proyectos.add(new FhProyecto(clProjectUuid, clSn, "CL")); // FlightHub exige sn[] para devolver tareas
 
         for (FhProyecto p : proyectos) {
             List<Map<String, Object>> tasks;

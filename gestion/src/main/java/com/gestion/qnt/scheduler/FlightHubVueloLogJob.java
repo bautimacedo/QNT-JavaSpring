@@ -76,7 +76,7 @@ public class FlightHubVueloLogJob {
             proyectos.add(new FhProyecto(clProjectUuid, clSn, "CL")); // FlightHub exige sn[] para devolver tareas
 
         for (FhProyecto p : proyectos) {
-            int insertados = 0, omitidos = 0;
+            int insertados = 0, actualizados = 0, omitidos = 0;
             for (int estado : ESTADOS_A_REGISTRAR) {
                 List<Map<String, Object>> tasks;
                 try {
@@ -88,34 +88,53 @@ public class FlightHubVueloLogJob {
                 }
                 for (Map<String, Object> t : tasks) {
                     try {
-                        if (procesarTarea(t, p.site(), estado)) insertados++;
-                        else omitidos++;
+                        switch (procesarTarea(t, p.site(), estado)) {
+                            case INSERTADO   -> insertados++;
+                            case ACTUALIZADO -> actualizados++;
+                            case OMITIDO     -> omitidos++;
+                        }
                     } catch (Exception e) {
                         log.error("FlightHubVueloLogJob[{}]: error procesando tarea {}: {}",
                                 p.site(), t.get("flight_task_id"), e.getMessage());
                     }
                 }
             }
-            log.info("FlightHubVueloLogJob[{}]: insertados={}, omitidos={}", p.site(), insertados, omitidos);
+            log.info("FlightHubVueloLogJob[{}]: insertados={}, actualizados={}, omitidos={}",
+                    p.site(), insertados, actualizados, omitidos);
         }
     }
+
+    private enum Resultado { INSERTADO, ACTUALIZADO, OMITIDO }
 
     /**
      * Registra una tarea finalizada. El tipo de evento se decide por {@code flightTaskStatus}
      * (el estado consultado: 2=completada, 3/4/5=falla), NO por el campo interno {@code task_status}
-     * (que puede valer 5 en un vuelo exitoso). Devuelve true si insertó, false si ya estaba (dedup).
+     * (que puede valer 5 en un vuelo exitoso).
+     * Si el vuelo ya existe pero sin duración (ej. lo había cargado n8n a medias), la completa.
      */
-    private boolean procesarTarea(Map<String, Object> t, String site, int flightTaskStatus) {
+    private Resultado procesarTarea(Map<String, Object> t, String site, int flightTaskStatus) {
         String eventId = str(t.get("flight_task_id") != null ? t.get("flight_task_id") : t.get("uuid"));
-        if (eventId == null || eventId.isBlank()) return false;
-        // Dedup explícito: evita la violación de constraint (que en PostgreSQL aborta la tx completa).
-        if (vueloLogRepository.existsByEventId(eventId)) return false;
+        if (eventId == null || eventId.isBlank()) return Resultado.OMITIDO;
+
+        boolean isFailed = FALLA_MAP.containsKey(flightTaskStatus);
+        Object endTime   = t.get("task_end_time");
+        Integer duracion = isFailed ? null : calcularDuracion(t.get("task_start_time"), endTime);
+
+        // ¿Ya existe? Completar la duración si la tenemos y le falta; si no, omitir.
+        var existente = vueloLogRepository.findByEventId(eventId);
+        if (existente.isPresent()) {
+            VueloLog v = existente.get();
+            if (duracion != null && v.getDuracionMinutos() == null) {
+                v.setDuracionMinutos(duracion);
+                vueloLogRepository.save(v);
+                return Resultado.ACTUALIZADO;
+            }
+            return Resultado.OMITIDO;
+        }
 
         String droneSn  = str(t.get("drone_sn")); // puede venir vacío en v2
         String dockSn   = str(t.get("take_off_airport_sn") != null ? t.get("take_off_airport_sn")
                          : (t.get("sn") != null ? t.get("sn") : t.get("connect_device_sn")));
-        Object endTime  = t.get("task_end_time");
-        boolean isFailed = FALLA_MAP.containsKey(flightTaskStatus);
 
         Dron dron = resolverDron(droneSn, dockSn);
         Dock dock = resolverDock(dockSn);
@@ -141,12 +160,7 @@ public class FlightHubVueloLogJob {
             // Completada (flight_task_status=2): VUELO con duración real (end − start).
             v.setEvento(TipoEventoVuelo.VUELO);
             v.setTimestampFlytbase(toInstant(endTime));
-            Instant end   = toInstant(endTime);
-            Instant start = toInstant(t.get("task_start_time"));
-            if (end != null && start != null) {
-                long durSeg = end.getEpochSecond() - start.getEpochSecond();
-                if (durSeg > 0) v.setDuracionMinutos((int) (durSeg / 60));
-            }
+            v.setDuracionMinutos(duracion);
         }
 
         vueloLogRepository.save(v);
@@ -156,7 +170,16 @@ public class FlightHubVueloLogJob {
             actualizarStatsDron(dron, v.getDuracionMinutos());
             actualizarHorasPiloto(dron != null ? dron.getNombre() : null, v.getDuracionMinutos());
         }
-        return true;
+        return Resultado.INSERTADO;
+    }
+
+    /** Duración en minutos entre dos timestamps FlightHub (ISO o epoch), o null si no se puede. */
+    private static Integer calcularDuracion(Object start, Object end) {
+        Instant ini = toInstant(start);
+        Instant fin = toInstant(end);
+        if (ini == null || fin == null) return null;
+        long durSeg = fin.getEpochSecond() - ini.getEpochSecond();
+        return durSeg > 0 ? (int) (durSeg / 60) : null;
     }
 
     private void actualizarStatsDron(Dron dron, int duracionMinutos) {

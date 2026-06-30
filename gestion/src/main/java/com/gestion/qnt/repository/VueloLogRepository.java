@@ -10,8 +10,8 @@ import java.util.Optional;
 
 public interface VueloLogRepository extends JpaRepository<VueloLog, Long> {
 
-    /** Dedup: true si ya existe un registro con ese event_id. */
-    boolean existsByEventId(String eventId);
+    /** Dedup / actualización: registro con ese event_id, si existe. */
+    Optional<VueloLog> findByEventId(String eventId);
 
     @Query(value = """
             SELECT * FROM vuelos_log

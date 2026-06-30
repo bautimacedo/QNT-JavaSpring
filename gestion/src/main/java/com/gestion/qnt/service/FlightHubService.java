@@ -270,8 +270,18 @@ public class FlightHubService {
      * Lista tareas de un proyecto FlightHub específico. Si {@code snFiltro} es null/vacío
      * trae todas las tareas del proyecto (útil para descubrir el SN del dock).
      */
-    @SuppressWarnings("unchecked")
+    /** Compat: delega con flight_task_status=1 (en ejecución). */
     public List<Map<String, Object>> listarTareasV2(String projectUuid, String snFiltro, long beginAt, long endAt) {
+        return listarTareasV2(projectUuid, snFiltro, beginAt, endAt, 1);
+    }
+
+    /**
+     * Lista tareas de un proyecto FlightHub filtrando por {@code flightTaskStatus}
+     * (1=en ejecución, 2=completada, 3/4/5=falla). Si {@code snFiltro} es null/vacío
+     * trae todas las tareas del proyecto.
+     */
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> listarTareasV2(String projectUuid, String snFiltro, long beginAt, long endAt, int flightTaskStatus) {
         try {
             UriComponentsBuilder builder = UriComponentsBuilder
                     .fromUriString(baseUrl + "/task/api/v2/workspaces/" + projectUuid + "/flight-tasks")
@@ -280,7 +290,7 @@ public class FlightHubService {
                     .queryParam("end_at", endAt)
                     .queryParam("page", 1)
                     .queryParam("page_size", 50)
-                    .queryParam("flight_task_status", 1)
+                    .queryParam("flight_task_status", flightTaskStatus)
                     .queryParam("list_type", 0); // paridad con el workflow n8n original
             if (snFiltro != null && !snFiltro.isBlank()) {
                 builder.queryParam("sn[]", snFiltro);

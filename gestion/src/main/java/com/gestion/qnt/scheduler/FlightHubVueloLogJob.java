@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -60,11 +59,15 @@ public class FlightHubVueloLogJob {
     /** (projectUuid, snFiltro, site) — snFiltro null trae todas las tareas del proyecto. */
     private record FhProyecto(String uuid, String sn, String site) {}
 
-    @Scheduled(fixedDelay = 3 * 60 * 1000)
+    // Estados FlightHub a registrar: 2=completada, 3/4/5=falla.
+    // El estado 1 (en ejecución) NO se registra acá: lo usa isDroneFlying() (weather gate) con otro propósito.
+    private static final int[] ESTADOS_A_REGISTRAR = {2, 3, 4, 5};
+
+    @Scheduled(fixedDelay = 10 * 60 * 1000)
     @Transactional
     public void sincronizar() {
         long now     = Instant.now().getEpochSecond();
-        long beginAt = now - 60 * 60; // últimos 60 minutos
+        long beginAt = now - 7L * 24 * 60 * 60; // últimos 7 días (dedup por event_id hace barato re-consultar)
 
         List<FhProyecto> proyectos = new ArrayList<>();
         if (camProjectUuid != null && !camProjectUuid.isBlank())
@@ -73,42 +76,46 @@ public class FlightHubVueloLogJob {
             proyectos.add(new FhProyecto(clProjectUuid, clSn, "CL")); // FlightHub exige sn[] para devolver tareas
 
         for (FhProyecto p : proyectos) {
-            List<Map<String, Object>> tasks;
-            try {
-                tasks = flightHubService.listarTareasV2(p.uuid(), p.sn(), beginAt, now);
-            } catch (Exception e) {
-                log.warn("FlightHubVueloLogJob[{}]: no se pudo consultar FlightHub: {}", p.site(), e.getMessage());
-                continue;
-            }
-
-            log.info("FlightHubVueloLogJob[{}]: {} tareas recibidas", p.site(), tasks.size());
-            if (tasks.isEmpty()) continue;
-
             int insertados = 0, omitidos = 0;
-            for (Map<String, Object> t : tasks) {
+            for (int estado : ESTADOS_A_REGISTRAR) {
+                List<Map<String, Object>> tasks;
                 try {
-                    procesarTarea(t, p.site());
-                    insertados++;
-                } catch (DataIntegrityViolationException e) {
-                    omitidos++;
+                    tasks = flightHubService.listarTareasV2(p.uuid(), p.sn(), beginAt, now, estado);
                 } catch (Exception e) {
-                    log.error("FlightHubVueloLogJob[{}]: error procesando tarea {}: {}",
-                            p.site(), t.get("flight_task_id"), e.getMessage());
+                    log.warn("FlightHubVueloLogJob[{}]: no se pudo consultar FlightHub (status={}): {}",
+                            p.site(), estado, e.getMessage());
+                    continue;
+                }
+                for (Map<String, Object> t : tasks) {
+                    try {
+                        if (procesarTarea(t, p.site(), estado)) insertados++;
+                        else omitidos++;
+                    } catch (Exception e) {
+                        log.error("FlightHubVueloLogJob[{}]: error procesando tarea {}: {}",
+                                p.site(), t.get("flight_task_id"), e.getMessage());
+                    }
                 }
             }
             log.info("FlightHubVueloLogJob[{}]: insertados={}, omitidos={}", p.site(), insertados, omitidos);
         }
     }
 
-    private void procesarTarea(Map<String, Object> t, String site) {
-        String eventId  = str(t.get("flight_task_id") != null ? t.get("flight_task_id") : t.get("uuid"));
+    /**
+     * Registra una tarea finalizada. El tipo de evento se decide por {@code flightTaskStatus}
+     * (el estado consultado: 2=completada, 3/4/5=falla), NO por el campo interno {@code task_status}
+     * (que puede valer 5 en un vuelo exitoso). Devuelve true si insertó, false si ya estaba (dedup).
+     */
+    private boolean procesarTarea(Map<String, Object> t, String site, int flightTaskStatus) {
+        String eventId = str(t.get("flight_task_id") != null ? t.get("flight_task_id") : t.get("uuid"));
+        if (eventId == null || eventId.isBlank()) return false;
+        // Dedup explícito: evita la violación de constraint (que en PostgreSQL aborta la tx completa).
+        if (vueloLogRepository.existsByEventId(eventId)) return false;
+
         String droneSn  = str(t.get("drone_sn")); // puede venir vacío en v2
         String dockSn   = str(t.get("take_off_airport_sn") != null ? t.get("take_off_airport_sn")
                          : (t.get("sn") != null ? t.get("sn") : t.get("connect_device_sn")));
-        int    status   = toInt(t.get("task_status"));
         Object endTime  = t.get("task_end_time");
-        boolean isFailed = FALLA_MAP.containsKey(status);
-        boolean isDone   = endTime != null;
+        boolean isFailed = FALLA_MAP.containsKey(flightTaskStatus);
 
         Dron dron = resolverDron(droneSn, dockSn);
         Dock dock = resolverDock(dockSn);
@@ -123,40 +130,33 @@ public class FlightHubVueloLogJob {
         v.setPiloto(piloto);
         v.setDetalleVuelo(detalle);
         v.setDespegueFallido(isFailed);
+        v.setEventId(eventId);
         if (dron != null && dron.getBateriaPorc() != null)
             v.setBateria(dron.getBateriaPorc());
 
         if (isFailed) {
-            v.setEvento(FALLA_MAP.get(status));
-            v.setEventId(eventId);
+            v.setEvento(FALLA_MAP.get(flightTaskStatus));
             v.setTimestampFlytbase(toInstant(endTime != null ? endTime : t.get("task_start_time")));
-        } else if (isDone) {
+        } else {
+            // Completada (flight_task_status=2): VUELO con duración real (end − start).
             v.setEvento(TipoEventoVuelo.VUELO);
-            v.setEventId(eventId);
             v.setTimestampFlytbase(toInstant(endTime));
-
-            // Duración: usar Instant para soportar tanto ISO strings como epoch seconds
             Instant end   = toInstant(endTime);
             Instant start = toInstant(t.get("task_start_time"));
             if (end != null && start != null) {
                 long durSeg = end.getEpochSecond() - start.getEpochSecond();
                 if (durSeg > 0) v.setDuracionMinutos((int) (durSeg / 60));
             }
-        } else {
-            // En curso
-            v.setEvento(TipoEventoVuelo.VUELO);
-            v.setEventId(eventId + "_DESPEGUE");
-            v.setTimestampFlytbase(toInstant(t.get("task_start_time") != null
-                    ? t.get("task_start_time") : t.get("run_at")));
         }
 
         vueloLogRepository.save(v);
 
-        // Actualizar stats de dron y horas del piloto solo para vuelos completados (no fallas, no en curso)
-        if (isDone && !isFailed && v.getDuracionMinutos() != null && v.getDuracionMinutos() > 0) {
+        // Stats de dron y horas del piloto solo para vuelos completados con duración.
+        if (!isFailed && v.getDuracionMinutos() != null && v.getDuracionMinutos() > 0) {
             actualizarStatsDron(dron, v.getDuracionMinutos());
             actualizarHorasPiloto(dron != null ? dron.getNombre() : null, v.getDuracionMinutos());
         }
+        return true;
     }
 
     private void actualizarStatsDron(Dron dron, int duracionMinutos) {
@@ -209,10 +209,6 @@ public class FlightHubVueloLogJob {
 
     private static String str(Object v) {
         return v != null ? v.toString().trim() : null;
-    }
-
-    private static int toInt(Object v) {
-        return v instanceof Number n ? n.intValue() : 0;
     }
 
     private static Instant toInstant(Object v) {

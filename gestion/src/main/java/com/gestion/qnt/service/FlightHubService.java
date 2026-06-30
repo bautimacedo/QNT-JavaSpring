@@ -295,10 +295,13 @@ public class FlightHubService {
             if (snFiltro != null && !snFiltro.isBlank()) {
                 builder.queryParam("sn[]", snFiltro);
             }
-            String url = builder.toUriString();
+            // Pasar un URI ya codificado (objeto), no un String: si se pasa como String,
+            // RestClient lo re-procesa como uri-template y descarta el parámetro sn[] →
+            // la API devuelve 0 sin error. Con sn[] correcto, devuelve las tareas.
+            java.net.URI uri = builder.encode().build().toUri();
 
             String json = restClient.get()
-                    .uri(url)
+                    .uri(uri)
                     .header("X-User-Token",    userToken)
                     .header("X-Request-Id",    UUID.randomUUID().toString())
                     .header("X-Language-Code", "en")

@@ -28,6 +28,34 @@ public class EmailService {
         this.mailSender = mailSender;
     }
 
+    @Value("${app.reportes.actividades-emails:}")
+    private String reportesActividadesEmails;
+
+    /** Envía un reporte de actividades (PDF adjunto) a la lista configurada de destinatarios. */
+    public void sendReporteActividades(String asunto, String titulo, String periodo,
+                                       byte[] pdf, String nombrePdf) {
+        String[] destinatarios = java.util.Arrays.stream(reportesActividadesEmails.split(","))
+                .map(String::trim).filter(s -> !s.isEmpty()).toArray(String[]::new);
+        if (destinatarios.length == 0) {
+            log.warn("No hay destinatarios configurados (app.reportes.actividades-emails); no se envía el reporte '{}'", titulo);
+            return;
+        }
+        try {
+            MimeMessage msg = mailSender.createMimeMessage();
+            MimeMessageHelper h = new MimeMessageHelper(msg, true, "UTF-8");
+            h.setFrom(fromAddress);
+            h.setTo(destinatarios);
+            h.setSubject(asunto);
+            h.setText(baseHtmlWrapper(titulo, periodo,
+                    "<p style=\"font-size:14px;color:#333;\">Adjuntamos el reporte de actividades en PDF.</p>"), true);
+            h.addAttachment(nombrePdf, new org.springframework.core.io.ByteArrayResource(pdf));
+            mailSender.send(msg);
+            log.info("Reporte de actividades '{}' enviado a {} destinatario(s)", titulo, destinatarios.length);
+        } catch (MessagingException e) {
+            log.error("Error enviando el reporte de actividades '{}'", titulo, e);
+        }
+    }
+
     public void sendPasswordResetEmail(String toEmail, String token) {
         String resetLink = frontendUrl + "/reset-password?token=" + token;
 

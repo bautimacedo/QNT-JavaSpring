@@ -106,10 +106,14 @@ public class ReporteController {
             return ResponseEntity.badRequest().body(Map.of("error", "El archivo no es un PDF válido"));
         }
 
+        // Basename por String (no Paths.get): el nombre puede tener acentos/ñ y el charset del
+        // filesystem del contenedor los rechaza (InvalidPathException → 500 al guardar).
+        String nombreArchivo = fn.substring(Math.max(fn.lastIndexOf('/'), fn.lastIndexOf('\\')) + 1);
+
         ReporteFalla r = new ReporteFalla();
         r.setTitulo(titulo);
         r.setFecha(fecha);
-        r.setArchivoNombre(Paths.get(fn).getFileName().toString());
+        r.setArchivoNombre(nombreArchivo);
         r.setContenido(archivo.getBytes());
         r.setFechaSubida(Instant.now());
         reporteFallaRepository.save(r);

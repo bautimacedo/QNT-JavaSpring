@@ -3,6 +3,7 @@ package com.gestion.qnt.controller.dto;
 import com.gestion.qnt.model.enums.MetodoPago;
 import com.gestion.qnt.model.enums.TipoCompra;
 import com.gestion.qnt.model.enums.TipoEquipo;
+import com.gestion.qnt.model.enums.TitularidadTarjeta;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -41,6 +42,7 @@ public record CreateCompraRequest(
         MetodoPago metodoPago,
         String companiaTarjeta,
         String ultimos4Tarjeta,
+        TitularidadTarjeta titularidadTarjeta,
 
         TipoEquipo tipoEquipo,
         String descripcionEquipo,

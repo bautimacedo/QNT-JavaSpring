@@ -13,6 +13,7 @@ import java.util.List;
 
 import com.gestion.qnt.model.enums.MetodoPago;
 import com.gestion.qnt.model.enums.TipoCompra;
+import com.gestion.qnt.model.enums.TitularidadTarjeta;
 import com.gestion.qnt.model.enums.TipoEquipo;
 
 @Entity
@@ -70,6 +71,10 @@ public class Compra {
 
     @Column(name = "ultimos4_tarjeta", length = 4)
     private String ultimos4Tarjeta;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "titularidad_tarjeta", length = 20)
+    private TitularidadTarjeta titularidadTarjeta;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_equipo", nullable = true)

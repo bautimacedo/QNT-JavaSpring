@@ -429,7 +429,8 @@ public class InternalMisionController {
                     boolean volando = d.getYacimiento() == Yacimiento.CAM
                             ? Boolean.FALSE.equals(d.getDroneEnDock())
                             : vueloLogRepository.hayVueloActivo(d.getNombre());
-                    String site = d.getYacimiento().name();
+                    // getSiteCode() y no name(): vuelos_log guarda "CL", no "CANADON_LEON"
+                    String site = d.getYacimiento().getSiteCode();
                     List<VueloLog> ultimos = vueloLogRepository.findFiltered(
                             d.getNombre(), site, null, null, null);
                     VueloLog ultimoEvento = ultimos.isEmpty() ? null : ultimos.get(0);

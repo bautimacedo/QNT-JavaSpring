@@ -466,13 +466,18 @@ public class CompraBusiness implements ICompraBusiness {
             if (ultimos4 == null || !ultimos4.matches("^[0-9]{4}$")) {
                 throw new BusinessException("Cuando el metodoPago es TARJETA, ultimos4Tarjeta debe tener exactamente 4 dígitos");
             }
+            if (request.titularidadTarjeta() == null) {
+                throw new BusinessException("Cuando el metodoPago es TARJETA, titularidadTarjeta es obligatorio (CORPORATIVA o PERSONAL)");
+            }
 
             compra.setCompaniaTarjeta(compania.trim());
             compra.setUltimos4Tarjeta(ultimos4);
+            compra.setTitularidadTarjeta(request.titularidadTarjeta());
         } else {
             // Para métodos de pago que no son tarjeta, siempre se guardan como null.
             compra.setCompaniaTarjeta(null);
             compra.setUltimos4Tarjeta(null);
+            compra.setTitularidadTarjeta(null);
         }
     }
 

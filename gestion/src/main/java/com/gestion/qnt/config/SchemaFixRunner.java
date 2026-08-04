@@ -25,6 +25,12 @@ public class SchemaFixRunner {
         // piloto_id es nullable: el piloto se asigna al lanzar la misión, no al crearla
         jdbcTemplate.execute("ALTER TABLE misiones ALTER COLUMN piloto_id DROP NOT NULL");
 
+        // titularidad_tarjeta (ticket #3): identifica si la tarjeta es CORPORATIVA o PERSONAL.
+        // Idempotente. OJO: en prod (ddl-auto=validate) este runner corre DESPUÉS del validate,
+        // así que la columna debe existir ANTES del deploy (correr el ALTER en la DB a mano).
+        // Acá queda para dev/otros entornos y como documentación.
+        jdbcTemplate.execute("ALTER TABLE compras ADD COLUMN IF NOT EXISTS titularidad_tarjeta VARCHAR(20)");
+
         migrateVuelosLog();
     }
 

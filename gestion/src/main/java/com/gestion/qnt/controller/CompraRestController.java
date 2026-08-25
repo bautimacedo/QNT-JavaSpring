@@ -138,14 +138,16 @@ public class CompraRestController {
     @DeleteMapping("/{id}")
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<?> delete(@PathVariable Long id) {
         try {
             compraBusiness.delete(id);
             return ResponseEntity.noContent().build();
         } catch (NotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (BusinessException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            // Bloqueo de negocio (licencias/seguros asociados) → 409, con el motivo,
+            // no un 500 vacío que el frontend no puede mostrar.
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 
